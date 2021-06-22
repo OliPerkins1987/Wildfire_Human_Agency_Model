@@ -31,13 +31,15 @@ class AFT(ap.Agent):
         self.afr= ''
         self.fc = 0
         
-    def get_pars(self):
+    def get_pars(self, AFT_dict):
         
-        pass
+        self.Dist_func = AFT_dict['AFT_dist'][str(self.ls + '/' + self.afr)]
+        
         
     def compete(self):
         
         pass
+    
     
     def fire_use(self):
         

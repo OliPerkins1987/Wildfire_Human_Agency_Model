@@ -11,18 +11,46 @@ import numpy as np
 
 from Core_functionality.aft_setup.agent_class import AFT
 
+###########################################################################################
+
+### Arable AFTs
+
+###########################################################################################
+
 class Swidden(AFT):
-    
-    pass
+
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Pre'
+        self.ls  = 'Cropland'
+
 
 class SOSH(AFT):
     
-    pass
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Trans'
+        self.ls  = 'Cropland'
+
 
 class MOSH(AFT):
     
-    pass
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Trans'
+        self.ls  = 'Cropland'
+
 
 class Intense_arable(AFT):
     
-    pass
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Intense'
+        self.ls  = 'Cropland'
+
+
+#################################################################################
+
+### Livestock AFTs
+
+#################################################################################
