@@ -31,8 +31,8 @@ class SOSH(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Cropland'
-
-
+        
+        
 class MOSH(AFT):
     
     def setup(self):

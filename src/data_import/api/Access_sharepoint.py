@@ -2,6 +2,7 @@
 import sharepy
 import io
 import pandas as pd
+import netCDF4 as nc
 import os
 import json
 from dotenv import load_dotenv
@@ -12,7 +13,8 @@ env_path = Path("..") / ".env"  # move up one directory
 load_dotenv(dotenv_path=env_path)
 print(os.getenv("SERVER"))
 
-def read_shpt_data(file_path: str, date_cols=None, date_format=None, types=None, low_memory=True):
+def read_shpt_data(file_path: str, date_cols=None, date_format=None, types=None, low_memory=True, 
+                   download_dir = ''):
     """Takes in file name and returns dataframe, uses sharepy to authenticate
     session
     Args:
@@ -24,15 +26,22 @@ def read_shpt_data(file_path: str, date_cols=None, date_format=None, types=None,
     file_base = "https://emckclac-my.sharepoint.com/personal/k1758409_kcl_ac_uk/"
     r = s.get(file_base + file_path)
     if r.status_code == 200:
+        
         if file_path[-3:] == "csv":
             # for csv files
             f = io.BytesIO(r.content)
             df = pd.read_csv(f, encoding="cp1252", parse_dates=date_cols, date_parser=date_format, dtype=types, low_memory=low_memory)   # windows encoding for csv
             return df
+        
+        elif file_path[-2:] == 'nc':
+            # for raster files
+            s.getfile(file_base + file_path, filename= download_dir + '/' + file_path[34:-3] + '.nc')
+        
         else:
-            # non-csv files
+            # other files
             f = io.BytesIO(r.content)
             return f
+        
     else:
         print(f"Error, Status Code: {r.status_code}")
 
