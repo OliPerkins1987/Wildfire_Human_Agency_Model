@@ -66,13 +66,44 @@ class WHAM(ap.Model):
                           [np.array(x / tot_y).reshape(self.p.ylen, self.p.xlen) for x in ls_scores[l]]))
                
         
-        ### stash LFS scores as Y-axis
-        self.Y_axis = ls_scores
+            ### Here - multiply Yscore by X-axis
+            ### ls_scores[l] = [x * X_axis[l] for x in ls_scores[l]]
+        
+        ### stash LFS scores
+        self.LFS = ls_scores
         
         
     def allocate_AFT(self):
-
-        pass
+        
+        AFT_scores   = {}
+        
+        ### Loop through agents and assign fractional coverage
+        for a in self.agents:
+            
+            if a.sub_AFT['exists'] == False:
+            
+                AFT_scores[type(a).__name__] = self.LFS[a.ls][a.afr]
+                
+            elif a.sub_AFT['exists'] == True:
+                
+                ### Where AFT is a fraction of a single LFS
+                if a.sub_AFT['kind'] == 'Fraction':
+                    
+                    a.AFT_vals                   = np.array(a.AFT_vals).reshape(self.p.ylen, self.p.xlen)
+                    AFT_scores[type(a).__name__] = self.LFS[a.ls][a.afr] * a.AFT_vals
+                    
+                ### Where AFT is a whole LFS plus a fraction of another
+                elif a.sub_AFT['kind'] == 'Addition':
+                    
+                    a.AFT_vals                   = np.array(a.AFT_vals).reshape(self.p.ylen, self.p.xlen)
+                    AFT_scores[type(a).__name__] = self.LFS[a.ls][a.afr] + (self.LFS[a.sub_AFT['ls']][a.sub_AFT['afr']] * a.AFT_vals)
+                
+                ### Where AFT is a fraction of several LFS
+                elif a.sub_AFT['kind'] == 'Multiple':
+                    
+                    pass
+                
+        self.AFT_scores = AFT_scores
     
     #####################################################################################
     
@@ -123,7 +154,7 @@ test = WHAM(parameters)
 test.setup()
 test.agents.setup()
 test.agents.get_pars(test.p.AFT_pars)
-#test.agents.compete()
-#test.allocate_Y_axis()
+test.agents.compete()
+test.allocate_Y_axis()
 test.agents.sub_compete()
-
+test.allocate_AFT()
