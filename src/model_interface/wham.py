@@ -29,7 +29,7 @@ class WHAM(ap.Model):
     
     ##############################
     
-    ### AFT distribution function
+    ### AFT distribution functions
     
     ###############################
     
@@ -38,22 +38,48 @@ class WHAM(ap.Model):
         pass
     
     
-    def allocate_space(self):
+    def allocate_Y_axis(self):
         
-        ### Y-axis
+        ### Gather Y-axis from AFTs
         
         land_systems = pd.Series([x for x in self.agents.ls]).unique()[0]
         afrs         = pd.Series([x for x in self.agents.afr]).unique()[0]
         ls_scores    = {}
     
+    
+        if type(land_systems) == str:
+            land_systems = [land_systems] #catch the case where only 1 ls type
+            
         for l in land_systems:
             
+            ### get predictions
             ls_scores[l] = [x.Dist_vals for x in self.agents if x.ls == l]
+                
+            ### remove dupes 
+            unique_arr   = [np.array(x) for x in set(map(tuple, ls_scores[l]))]
             
-        ### X-axis * Y-axis
-    
+            ### calculate total by land system by cell
+            tot_y        = np.add.reduce(unique_arr)
+            
+            ### divide by total & reshape to world map
+            ls_scores[l] = dict(zip(list(dict.fromkeys([x.afr for x in self.agents if x.ls == l])), 
+                          [np.array(x / tot_y).reshape(self.p.ylen, self.p.xlen) for x in ls_scores[l]]))
+               
+        
+        ### stash LFS scores as Y-axis
+        self.Y_axis = ls_scores
+        
+        
+    def allocate_AFT(self):
 
+        pass
+    
+    #####################################################################################
+    
     ### scheduler, recorder, end conditions
+
+    #####################################################################################
+
     def update(self):
         
         pass
@@ -63,7 +89,8 @@ class WHAM(ap.Model):
         
         ### AFT distribution
         self.agents.compete()
-        self.allocate_space()
+        self.allocate_X_axis()
+        self.allocate_Y_axis()
         
         ### Fire
         
@@ -81,13 +108,13 @@ class WHAM(ap.Model):
 
 parameters = {
     
-    'xlen': 100, 
-    'ylen': 100,
+    'xlen': 144, 
+    'ylen': 192,
     'AFTs': [Swidden, SOSH, MOSH, Intense_arable],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 0,
-    'Theta'    : 0.1
+    'theta'    : 0.1
     
     }
 
@@ -96,4 +123,7 @@ test = WHAM(parameters)
 test.setup()
 test.agents.setup()
 test.agents.get_pars(test.p.AFT_pars)
-test.agents.compete()
+#test.agents.compete()
+#test.allocate_Y_axis()
+test.agents.sub_compete()
+

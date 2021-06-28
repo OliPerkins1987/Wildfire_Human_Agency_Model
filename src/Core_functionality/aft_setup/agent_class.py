@@ -25,59 +25,101 @@ class AFT(ap.Agent):
         Basic constants:
         ls = land system of AFT
         afr= anthropogenic fire regime of AFT
-        fc = fractional coverage of AFT's grid cell
-            
+        sub_AFT = does this AFT subdivide an LFS? Kind is one of fraction, addition
+                    
         '''  
       
         self.ls = ''
         self.afr= ''
-        self.fc = 0
-        
+        self.sub_AFT = {'exists': False,
+                        'kind'  : ''}
+                
     def get_pars(self, AFT_dict):
         
-        ### Distribution tree
+        ### Distribution tree for LFS
+        self.Dist_frame  = AFT_dict['AFT_dist'][str(self.ls + '/' + self.afr)]
+        self.Dist_struct = define_tree_links(self.Dist_frame)
+        self.Dist_vars   = [x for x in self.Dist_frame.iloc[:,1].tolist() if x != '<leaf>']
+                
         
-        self.Dist_frame = AFT_dict['AFT_dist'][str(self.ls + '/' + self.afr)]
-        self.Dist_struct= define_tree_links(self.Dist_frame)
-        self.Dist_pars  = [x for x in self.Dist_frame.iloc[:,1].tolist() if x != '<leaf>']
+        ### Sub-split from LFS to AFT
+        if self.sub_AFT['exists'] == True:
+            
+            self.AFT_frame = AFT_dict['AFT_dist'][str('Sub_AFTs' + '/' + self.sub_AFT['afr'] + '_' + self.sub_AFT['ls'])]
+            self.AFT_struct= define_tree_links(self.AFT_frame)
+            self.AFT_vars   = [x for x in self.AFT_frame.iloc[:,1].tolist() if x != '<leaf>']
+            
+        else:
+            
+            self.AFT_frame = 'None'
         
-        ### Dist parameter vals - needs to include vals for bootstrapping
+        
+        ### Add parameter vals - needs to include vals for bootstrapping
         
         
-        ### Fire use
+        ### Add Fire use
         
-        
+    
+    #########################################################################
+
+    ### AFT Distribution
+
+    #########################################################################    
+    
     def compete(self):
         
         ''' 
-        Competition between AFTs - 
-        currently only works for a single set of parameter vals
+        Competition between LFS - currently only works for a single set of parameter vals
         
+        Can we find a way to stop predicting over duplicate parameter sets for LFS?
         '''
         
         ### gather correct numpy arrays 4 predictor variables
-        self.Dist_dat = dict(zip(self.Dist_pars, 
-                         [self.model.p.Maps[x][self.model.p.timestep, :, :] for x in self.Dist_pars]))
+        self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] for x in self.Dist_vars]
 
-        ''' Should this code be factored out into a separate function??'''
-        ### convert numpy arrays to pandas
-        shp           = [x for x in self.Dist_dat.values()][0].shape
-        
-        self.Dist_dat = pd.DataFrame(np.column_stack([self.Dist_dat[x].reshape(shp[0]*shp[1], 
-                            1) for x in self.Dist_dat.keys()]))
-        
-        self.Dist_dat.columns = self.Dist_pars
+
+        ### combine numpy arrays to single pandas       
+        self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
+                           [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
         
         ### do prediction
         self.Dist_vals = self.Dist_dat.apply(predict_from_tree, 
                           axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
                            prob = 'yprob.TRUE')
         
-        self.Dist_vals = np.array(self.Dist_vals).reshape(shp[1], shp[0])
+        ### apply theta zero-ing out constraint
+        self.Dist_vals = [0 if x <= self.p.theta else x for x in self.Dist_vals]
+           
         
-        ### push competition score to some kind of central parameter array
+    def sub_compete(self):
         
-        pass
+        ''' Competition between AFTs within each LFS '''
+        
+        if self.sub_AFT['exists'] == True:
+        
+            ### gather correct numpy arrays 4 predictor variables
+            self.AFT_dat   = [self.model.p.Maps[x][self.model.p.timestep, :, :] for x in self.AFT_vars]
+        
+            ### combine numpy arrays to single pandas       
+            self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 
+                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
+            
+            ### do prediction
+            self.AFT_vals  = self.AFT_dat.apply(predict_from_tree, 
+                              axis = 1, tree = self.AFT_frame, struct = self.AFT_struct, 
+                               prob = type(self).__name__)
+            
+            
+        else:
+            
+            self.AFT_vals  = 'None'
+    
+    
+    #######################################################################
+    
+    ### Fire
+    
+    #######################################################################
     
     
     def fire_use(self):

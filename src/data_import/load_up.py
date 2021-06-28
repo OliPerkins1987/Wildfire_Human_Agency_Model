@@ -74,7 +74,7 @@ Map_data = dict(zip([x for x in Map_data.keys()],
 ###########################################################################
 
 Map_data['HDI_GDP']          = np.log(Map_data['GDP']) * Map_data['HDI']
-Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
+Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
 
 
 

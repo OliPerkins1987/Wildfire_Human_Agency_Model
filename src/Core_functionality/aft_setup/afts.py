@@ -23,7 +23,9 @@ class Swidden(AFT):
         AFT.setup(self)
         self.afr = 'Pre'
         self.ls  = 'Cropland'
-
+        ## needs a third mathod for multiple fractions across LFS
+        self.sub_AFT = {'exists': True, 'kind': 'Addition',  
+                        'afr': 'Trans', 'ls': 'Cropland'}    ## also shares a part of transition
 
 class SOSH(AFT):
     
@@ -31,6 +33,8 @@ class SOSH(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Cropland'
+        self.sub_AFT = {'exists': True, 'kind': 'Fraction',
+                         'afr': 'Trans', 'ls': 'Cropland'} 
         
         
 class MOSH(AFT):
@@ -39,6 +43,8 @@ class MOSH(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Cropland'
+        self.sub_AFT = {'exists': True, 'kind': 'Fraction',
+                         'afr': 'Trans', 'ls': 'Cropland'} 
 
 
 class Intense_arable(AFT):
@@ -47,6 +53,7 @@ class Intense_arable(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Cropland'
+        self.sub_AFT = {'exists': False} 
 
 
 #################################################################################
