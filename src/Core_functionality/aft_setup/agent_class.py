@@ -45,13 +45,13 @@ class AFT(ap.Agent):
         ### Sub-split from LFS to AFT
         if self.sub_AFT['exists'] == True:
             
-            self.AFT_frame = AFT_dict['AFT_dist'][str('Sub_AFTs' + '/' + self.sub_AFT['afr'] + '_' + self.sub_AFT['ls'])]
-            self.AFT_struct= define_tree_links(self.AFT_frame)
+            self.AFT_frame  = AFT_dict['AFT_dist'][str('Sub_AFTs' + '/' + self.sub_AFT['afr'] + '_' + self.sub_AFT['ls'])]
+            self.AFT_struct = define_tree_links(self.AFT_frame)
             self.AFT_vars   = [x for x in self.AFT_frame.iloc[:,1].tolist() if x != '<leaf>']
             
         else:
             
-            self.AFT_frame = 'None'
+            self.AFT_frame  = 'None'
         
         
         ### Add parameter vals - needs to include vals for bootstrapping
@@ -75,7 +75,7 @@ class AFT(ap.Agent):
         '''
         
         ### gather correct numpy arrays 4 predictor variables
-        self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] for x in self.Dist_vars]
+        self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
 
         ### combine numpy arrays to single pandas       
@@ -98,7 +98,7 @@ class AFT(ap.Agent):
         if self.sub_AFT['exists'] == True:
         
             ### gather correct numpy arrays 4 predictor variables
-            self.AFT_dat   = [self.model.p.Maps[x][self.model.p.timestep, :, :] for x in self.AFT_vars]
+            self.AFT_dat   = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
         
             ### combine numpy arrays to single pandas       
             self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 

@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun 22 10:41:39 2021
+
+@author: Oli
+"""
+
+import agentpy as ap
+import pandas as pd
+import numpy as np
+
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+
+
+class land_system(ap.Agent):
+    
+    ''' 
+    Model class to hold information on land system distribution
+    '''
+    
+    def setup(self):
+        
+        '''
+        
+        Basic constants:
+        dist_method - how does this land system distribute itself - through competition or through prescribed inputs?
+                    
+        '''  
+      
+        self.dist_method = 'Prescribed' #or 'Competition' or 'Specified'
+        self.pars_key    = '' ## what is the key in the core_pars dictionary where parameterisation is stored 
+                
+    def get_pars(self, LS_dict):
+        
+        
+        ### Get distribution parameters
+        if self.dist_method == 'Competition':
+            
+            self.Dist_frame  = LS_dict['AFT_dist'][self.pars_key]
+            self.Dist_struct = define_tree_links(self.Dist_frame)
+            self.Dist_vars   = [x for x in self.Dist_frame.iloc[:,1].tolist() if x != '<leaf>']
+            
+        elif self.dist_method == 'Prescribed':
+            
+            self.Dist_frame  = 'None'
+            
+        elif self.dist_method == 'Specified':
+        
+            pass
+        
+        
+        ### Add parameter vals - needs to include vals for bootstrapping
+        
+    
+    #########################################################################
+
+    ### AFT Distribution
+
+    #########################################################################    
+    
+    def get_vals(self):
+        
+        ''' 
+        Competition between ls - currently only works for a single set of parameter vals
+        
+        Can we find a way to stop predicting over duplicate parameter sets for LFS?
+        '''
+        
+        if self.dist_method == 'Competition':
+        
+            ### gather correct numpy arrays 4 predictor variables
+            self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
+
+
+            ### combine numpy arrays to single pandas       
+            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
+                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+        
+            ### do prediction
+            self.Dist_vals = np.array(self.Dist_dat.apply(predict_from_tree, 
+                              axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
+                               prob = 'yprob.TRUE'))
+            
+        elif self.dist_method == 'Prescribed':
+        
+            ### NB uses agent class name to identify map 
+            self.Dist_vals  = self.model.p.Maps[type(self).__name__][self.model.p.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
+        
+        
+        elif self.dist_method == 'Specified':
+            
+            ### method for establishing competitiveness score specified in individual ls sub_class            
+            pass
+
+    
+

@@ -9,7 +9,10 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
+from Core_functionality.aft_setup.agent_class import AFT
 from Core_functionality.aft_setup.afts import Swidden, SOSH, MOSH, Intense_arable
+from Core_functionality.aft_setup.land_system_class import land_system
+from Core_functionality.aft_setup.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied
 
 class WHAM(ap.Model):
 
@@ -21,6 +24,11 @@ class WHAM(ap.Model):
 
         # Create grid
         self.grid = ap.Grid(self, (self.xlen, self.ylen), track_empty=False)
+        
+        
+        # Create land systems
+        self.ls     = ap.AgentList(self, 
+                       [y[0] for y in [ap.AgentList(self, 1, x) for x in self.p.LS]])
         
         # Create AFTs
         self.agents = ap.AgentList(self, 
@@ -35,16 +43,34 @@ class WHAM(ap.Model):
     
     def allocate_X_axis(self):
         
-        pass
-    
+        ### Gather X-axis vals from land systems       
+        ls_scores    = dict(zip([type(x).__name__ for x in self.ls], 
+                        [x.Dist_vals for x in self.ls]))
+        
+        #################################################
+        ### Perform calculation to get X_axis
+        #################################################
+        
+        ### Forestry
+        ls_scores['Forestry'] =  ls_scores['Forestry'] * (1 - ls_scores['Nonex']['Forest']) * (1 - ls_scores['Unoccupied'])
+        
+        ### Non-ex & Unoccupied
+        Open_vegetation                =  1 - ls_scores['Cropland'] - ls_scores['Pasture'] - ls_scores['Rangeland'] - ls_scores['Forestry'] - ls_scores['Urban']
+        ls_scores['Nonex']['Combined'] =  Open_vegetation * (ls_scores['Nonex']['Other'] / (ls_scores['Nonex']['Other'] + ls_scores['Unoccupied']))
+        ls_scores['Unoccupied']        =  Open_vegetation * (ls_scores['Unoccupied'] / (ls_scores['Nonex']['Other'] + ls_scores['Unoccupied']))
+        ls_scores['Nonex']             =  ls_scores['Nonex']['Combined']
+        
+        ### reshape and stash
+        self.X_axis                    =  dict(zip([x for x in ls_scores.keys()], 
+                                            [x.reshape(self.p.ylen, self.p.xlen) for x in ls_scores.values()]))
+        
     
     def allocate_Y_axis(self):
         
-        ### Gather Y-axis from AFTs
+        ### Gather Y-axis scores from AFTs
         
         land_systems = pd.Series([x for x in self.agents.ls]).unique()[0]
-        afrs         = pd.Series([x for x in self.agents.afr]).unique()[0]
-        ls_scores    = {}
+        afr_scores   = {}
     
     
         if type(land_systems) == str:
@@ -53,24 +79,24 @@ class WHAM(ap.Model):
         for l in land_systems:
             
             ### get predictions
-            ls_scores[l] = [x.Dist_vals for x in self.agents if x.ls == l]
+            afr_scores[l] = [x.Dist_vals for x in self.agents if x.ls == l]
                 
             ### remove dupes 
-            unique_arr   = [np.array(x) for x in set(map(tuple, ls_scores[l]))]
+            unique_arr   = [np.array(x) for x in set(map(tuple, afr_scores[l]))]
             
             ### calculate total by land system by cell
             tot_y        = np.add.reduce(unique_arr)
             
             ### divide by total & reshape to world map
-            ls_scores[l] = dict(zip(list(dict.fromkeys([x.afr for x in self.agents if x.ls == l])), 
-                          [np.array(x / tot_y).reshape(self.p.ylen, self.p.xlen) for x in ls_scores[l]]))
+            afr_scores[l] = [np.array(x / tot_y).reshape(self.p.ylen, self.p.xlen) for x in afr_scores[l]]
                
         
             ### Here - multiply Yscore by X-axis
-            ### ls_scores[l] = [x * X_axis[l] for x in ls_scores[l]]
+            afr_scores[l] = dict(zip(list(dict.fromkeys([x.afr for x in self.agents if x.ls == l])), 
+                             [x * self.X_axis[l] for x in afr_scores[l]]))
         
-        ### stash LFS scores
-        self.LFS = ls_scores
+        ### stash afr scores
+        self.LFS = afr_scores
         
         
     def allocate_AFT(self):
@@ -142,6 +168,7 @@ parameters = {
     'xlen': 144, 
     'ylen': 192,
     'AFTs': [Swidden, SOSH, MOSH, Intense_arable],
+    'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 0,
@@ -151,9 +178,18 @@ parameters = {
 
 test = WHAM(parameters)
 
+### setup
 test.setup()
+test.ls.setup()
+test.ls.get_pars(test.p.AFT_pars)
 test.agents.setup()
 test.agents.get_pars(test.p.AFT_pars)
+
+### ls
+test.ls.get_vals()
+test.allocate_X_axis()
+
+### AFT
 test.agents.compete()
 test.allocate_Y_axis()
 test.agents.sub_compete()
