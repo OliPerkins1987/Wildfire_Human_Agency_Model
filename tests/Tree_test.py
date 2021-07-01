@@ -8,6 +8,10 @@ import pytest
 import pandas as pd
 import numpy as np
 import os
+import sys
+
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
 exec(open("test_setup.py").read())
@@ -18,7 +22,7 @@ exec(open("test_setup.py").read())
 
 ###############
 
-os.chdir(test_dat_path)
+os.chdir(str(test_dat_path) + '\Trees')
 
 tree_frame = pd.read_csv('Swidden_tree.csv')
 tree_dat   = pd.read_csv('Swidden_dat.csv')

@@ -9,7 +9,7 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.aft_setup.land_system_class import land_system
+from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
 
 ###########################################################################################

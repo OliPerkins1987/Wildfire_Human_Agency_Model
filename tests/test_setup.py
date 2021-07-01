@@ -8,4 +8,4 @@ Contains constants for setup of test runs
 """
 
 
-test_dat_path = r'C:\Users\Oli\Documents\PhD\wham\tests\test_data\Trees'
+test_dat_path = r'C:\Users\Oli\Documents\PhD\wham\tests\test_data'

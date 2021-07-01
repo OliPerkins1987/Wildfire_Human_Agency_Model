@@ -9,7 +9,7 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.aft_setup.agent_class import AFT
+from Core_functionality.AFTs.agent_class import AFT
 
 ###########################################################################################
 

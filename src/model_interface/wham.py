@@ -9,10 +9,10 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.aft_setup.agent_class import AFT
-from Core_functionality.aft_setup.afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.aft_setup.land_system_class import land_system
-from Core_functionality.aft_setup.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied
+from Core_functionality.AFTs.agent_class import AFT
+from Core_functionality.AFTs.afts import Swidden, SOSH, MOSH, Intense_arable
+from Core_functionality.AFTs.land_system_class import land_system
+from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
 class WHAM(ap.Model):
 
@@ -82,10 +82,10 @@ class WHAM(ap.Model):
             afr_scores[l] = [x.Dist_vals for x in self.agents if x.ls == l]
                 
             ### remove dupes 
-            unique_arr   = [np.array(x) for x in set(map(tuple, afr_scores[l]))]
+            unique_arr    = [np.array(x) for x in set(map(tuple, afr_scores[l]))]
             
             ### calculate total by land system by cell
-            tot_y        = np.add.reduce(unique_arr)
+            tot_y         = np.add.reduce(unique_arr)
             
             ### divide by total & reshape to world map
             afr_scores[l] = [np.array(x / tot_y).reshape(self.p.ylen, self.p.xlen) for x in afr_scores[l]]
@@ -157,40 +157,4 @@ class WHAM(ap.Model):
     
     
     
-#################################################
 
-### Instantiate
-
-#################################################
-
-parameters = {
-    
-    'xlen': 144, 
-    'ylen': 192,
-    'AFTs': [Swidden, SOSH, MOSH, Intense_arable],
-    'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
-    'AFT_pars': Core_pars,
-    'Maps'    : Map_data,
-    'timestep': 0,
-    'theta'    : 0.1
-    
-    }
-
-test = WHAM(parameters)
-
-### setup
-test.setup()
-test.ls.setup()
-test.ls.get_pars(test.p.AFT_pars)
-test.agents.setup()
-test.agents.get_pars(test.p.AFT_pars)
-
-### ls
-test.ls.get_vals()
-test.allocate_X_axis()
-
-### AFT
-test.agents.compete()
-test.allocate_Y_axis()
-test.agents.sub_compete()
-test.allocate_AFT()

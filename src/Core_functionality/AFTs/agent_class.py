@@ -131,4 +131,20 @@ class AFT(ap.Agent):
         
         pass
 
+##################################################################
+
+### dummy agent for testing
+
+##################################################################
+
+class dummy_agent(AFT):
+    
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Test'
+        self.ls  = 'Test'
+        
+        self.sub_AFT = {'exists': True, 'kind': 'Addition',  
+                        'afr': 'Test', 'ls': 'Test'}    
+
 

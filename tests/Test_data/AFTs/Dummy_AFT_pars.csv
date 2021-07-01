@@ -1,0 +1,6 @@
+,var,n,dev,yval,splits.cutleft,splits.cutright,Swidden,dummy_agent,SOSH
+1,Test,550,1206.3526,"Small-holder (arable, subsistence)",<415.545,>415.545,0.31272727,0.32545455,0.36181818
+2,<leaf>,327,684.8884,Shifting cultivation,,,0.4765625,0.22327044,0.29801325
+3,Test,223,405.0616,"Small-holder (arable, market)",<7.82206,>7.82206,0.07623318,0.48878924,0.43497758
+6,<leaf>,200,369.356,"Small-holder (arable, subsistence)",,,0.08243728,0.41071429,0.50972763
+7,<leaf>,23,0,"Small-holder (arable, market)",,,0,1,0
