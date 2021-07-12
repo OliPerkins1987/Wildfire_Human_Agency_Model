@@ -1,0 +1,1 @@
+c:\users\oli\anaconda3\envs\mafia\lib\site-packages\wham-0.0.0-py3.8.egg

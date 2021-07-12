@@ -44,8 +44,8 @@ Core_pars['AFT_dist']['Sub_AFTs/Test_Test'] = Dummy_frame
 ### Mock model
 parameters = {
     
-    'xlen': 144, 
-    'ylen': 192,
+    'xlen': 192, 
+    'ylen': 144,
     'AFTs': [dummy_agent, dummy_agent],
     'LS'  : [],
     'AFT_pars': Core_pars,
@@ -62,19 +62,7 @@ parameters = {
 
 ##########################################################################
 
-def test_mod_Y():
-    
-    mod = WHAM(parameters)
-    mod.setup()
-    mod.agents.setup()
-    mod.agents.get_pars(mod.p.AFT_pars)
-    mod.agents.compete()
-    mod.allocate_Y_axis()
-    
-    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.values.reshape(27648,)[0]]).reshape(144, 192), 
-            Map_test))
-
-def test_LFS_compete():
+def test_AFR_compete():
     
     errors = []
     
@@ -96,4 +84,15 @@ def test_LFS_compete():
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
 
-
+def test_mod_Y():
+    
+    mod = WHAM(parameters)
+    mod.setup()
+    mod.agents.setup()
+    mod.agents.get_pars(mod.p.AFT_pars)
+    mod.X_axis = {'Test': np.array([1]*27648).reshape(144, 192)}
+    mod.agents.compete()
+    mod.allocate_Y_axis()
+    
+    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.values.reshape(27648,)[0]]).reshape(144, 192), 
+            Map_test))

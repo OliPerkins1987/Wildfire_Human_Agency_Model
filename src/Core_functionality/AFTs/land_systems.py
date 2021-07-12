@@ -58,7 +58,7 @@ class Unoccupied(land_system):
     def setup(self):
         land_system.setup(self)
         self.dist_method = 'Competition'
-        self.pars_key    = 'Nonex/Pre'
+        self.pars_key    = 'Xaxis/Unoccupied'
 
 
 
@@ -77,7 +77,8 @@ class Forestry(land_system):
         
     def get_vals(self):
         self.Dist_vals  = self.model.p.Maps['Forest'][self.model.p.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
-        
+        self.Dist_vals  = np.array([x if x >= 0 else 0 for x in self.Dist_vals])
+
 
 class Nonex(land_system):
     
@@ -112,7 +113,7 @@ class Nonex(land_system):
             ### do prediction
             self.Dist_vals[k] = np.array(self.Dist_dat.apply(predict_from_tree, 
                                   axis = 1, tree = self.Dist_frame[k], struct = self.Dist_struct[k], 
-                                   prob = 'yprob.TRUE'))
+                                   prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
 
 
 

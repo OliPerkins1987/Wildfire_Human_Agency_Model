@@ -61,18 +61,7 @@ parameters = {
 
 ##########################################################################
 
-def test_LFS_dat_load():
-    
-    mod = WHAM(parameters)
-    mod.setup()
-    mod.agents.setup()
-    mod.agents.get_pars(mod.p.AFT_pars)
-    mod.agents.compete()
-    
-    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.values.reshape(27648,)[0]]).reshape(144, 192), 
-            Map_test))
-
-def test_LFS_compete():
+def test_afr_compete():
     
     errors = []
     

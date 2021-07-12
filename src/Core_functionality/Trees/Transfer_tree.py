@@ -63,7 +63,8 @@ def define_tree_links(tree):
     return(tree_struct)
 
 
-def predict_from_tree(dat, tree, struct, prob = 'yprob.TRUE'):
+def predict_from_tree(dat, tree, struct, prob = 'yprob.TRUE', 
+                      na_return = 0, skip_val = -3.3999999521443642e+38):
     
     ''' 
     
@@ -75,7 +76,15 @@ def predict_from_tree(dat, tree, struct, prob = 'yprob.TRUE'):
     prob should be 'yprob.TRUE' for class
     prob should be 'yval' for reg
     
+    na_return gives the value to be returned where data are missing
+    skip_val gives a value for nc.Dataset.fill_value - defaults to R default val
+    
     '''
+        
+    
+    if any(dat == skip_val):
+        
+        return(na_return)
     
     tree_key = 0
     tree_type= 'Node'

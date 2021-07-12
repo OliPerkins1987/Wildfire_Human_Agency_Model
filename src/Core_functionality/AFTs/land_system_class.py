@@ -79,13 +79,13 @@ class land_system(ap.Agent):
             ### do prediction
             self.Dist_vals = np.array(self.Dist_dat.apply(predict_from_tree, 
                               axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE'))
+                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
             
         elif self.dist_method == 'Prescribed':
         
-            ### NB uses agent class name to identify map 
+            ### NB uses agent class name to identify map - second line removes missing
             self.Dist_vals  = self.model.p.Maps[type(self).__name__][self.model.p.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
-        
+            self.Dist_vals  = np.array([x if x >= 0 else 0 for x in self.Dist_vals])
         
         elif self.dist_method == 'Specified':
             

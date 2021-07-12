@@ -34,7 +34,7 @@ Nonex_frame   = pd.read_csv('Nonex_pars.csv')
 
 
 ### Mock load up
-Core_pars = {'AFT_dist': {'Nonex/Pre': Nonex_frame}, 
+Core_pars = {'AFT_dist': {'Xaxis/Unoccupied': Nonex_frame}, 
              'Fire_use': {}} 
 
 Map_data                  = {}
@@ -54,8 +54,8 @@ def test_ls_prescribed():
     ### Mock model
     parameters = {
     
-    'xlen': 144, 
-    'ylen': 192,
+    'xlen': 192, 
+    'ylen': 144,
     'AFTs': [],
     'LS'  : [Cropland],
     'AFT_pars': Core_pars,
@@ -71,8 +71,11 @@ def test_ls_prescribed():
     mod.ls.get_pars(mod.p.AFT_pars)
     mod.ls.get_vals()
         
-    assert(np.array_equal(mod.ls.Dist_vals[0].reshape(144, 192), 
-                          Dummy_dat[0, :, :].data))
+    Crop_dat = Dummy_dat[0, :, :].data.reshape(144*192)
+    Crop_dat = np.array([x if x >= 0 else 0 for x in Crop_dat ])
+    
+    assert(np.array_equal(mod.ls.Dist_vals[0], 
+                          Crop_dat))
 
 
 def test_ls_compete():
@@ -80,8 +83,8 @@ def test_ls_compete():
     ### Mock model
     parameters = {
     
-    'xlen': 144, 
-    'ylen': 192,
+    'xlen': 192, 
+    'ylen': 144,
     'AFTs': [],
     'LS'  : [Unoccupied],
     'AFT_pars': Core_pars,
@@ -111,5 +114,11 @@ def test_ls_compete():
     
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
+    
+    ### Come back to this when missig values are dealt with
+    
+def test_ls_specified():
+    
+    pass
     
     
