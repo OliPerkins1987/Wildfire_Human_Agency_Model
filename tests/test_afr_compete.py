@@ -50,7 +50,8 @@ parameters = {
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 0,
-    'theta'    : 0.1
+    'theta'    : 0.1, 
+    'bootstrap': False
     
     }
 

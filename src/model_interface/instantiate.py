@@ -15,12 +15,13 @@ parameters = {
     
     'xlen': 192, 
     'ylen': 144,
-    'AFTs': [Hunter_gatherer, Recreationalist, SLM, Conservationist],
-    'LS'  : [Cropland, Pasture, Rangeland, Forestry, Nonex, Urban, Unoccupied],
+    'AFTs': [Conservationist],
+    'LS'  : [Unoccupied],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 0,
-    'theta'    : 0.1
+    'theta'    : 0.1,
+    'bootstrap': True
     
     }
 
@@ -30,8 +31,10 @@ test = WHAM(parameters)
 test.setup()
 test.ls.setup()
 test.ls.get_pars(test.p.AFT_pars)
+test.ls.get_boot_vals(test.p.AFT_pars)
 test.agents.setup()
 test.agents.get_pars(test.p.AFT_pars)
+test.agents.get_boot_vals(test.p.AFT_pars)
 
 ### ls
 test.ls.get_vals()

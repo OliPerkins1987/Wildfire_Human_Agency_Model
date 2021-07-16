@@ -9,7 +9,7 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars
 
 
 class land_system(ap.Agent):
@@ -23,8 +23,11 @@ class land_system(ap.Agent):
         '''
         
         Basic constants:
-        dist_method - how does this land system distribute itself - through competition or through prescribed inputs?
+        dist_method - how does this land system distribute itself: 
+        through competition or through prescribed inputs?
                     
+        'specified' allows distribution method to be defined at the LS level itself
+        
         '''  
       
         self.dist_method = 'Prescribed' #or 'Competition' or 'Specified'
@@ -49,8 +52,24 @@ class land_system(ap.Agent):
             pass
         
         
-        ### Add parameter vals - needs to include vals for bootstrapping
+    def get_boot_vals(self, LS_dict):
         
+        if self.dist_method == 'Competition':
+        
+            self.boot_Dist_pars   = {'Thresholds':'', 
+                                       'Probs': ''}    
+        
+            self.boot_Dist_pars['Thresholds']   = LS_dict['Dist_pars']['Thresholds'][self.pars_key]
+            self.boot_Dist_pars['Probs']        = LS_dict['Dist_pars']['Probs'][self.pars_key]
+        
+        elif self.dist_method == 'Prescribed':
+            
+            self.boot_Dist_pars = 'None'
+            
+        elif self.dist_method == 'Specified':
+        
+            pass
+    
     
     #########################################################################
 
@@ -61,12 +80,15 @@ class land_system(ap.Agent):
     def get_vals(self):
         
         ''' 
-        Competition between ls - currently only works for a single set of parameter vals
+        Raw fraction / competition scores for land systems
+        Feeds into Allocate_X_axis in WHAM class
         
         Can we find a way to stop predicting over duplicate parameter sets for LFS?
+        
         '''
         
-        if self.dist_method == 'Competition':
+        if self.dist_method == 'Competition' and self.model.p.bootstrap == False:
+                
         
             ### gather correct numpy arrays 4 predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
@@ -80,6 +102,35 @@ class land_system(ap.Agent):
             self.Dist_vals = np.array(self.Dist_dat.apply(predict_from_tree, 
                               axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
                                prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
+            
+        
+        elif self.dist_method == 'Competition' and self.model.p.bootstrap == True:
+            
+            self.Dist_vals = []
+            
+            ### gather correct numpy arrays 4 predictor variables
+            self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
+
+
+            ### combine numpy arrays to single pandas       
+            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
+                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            
+            ### bootstrapped prediction
+            for i in range(self.boot_Dist_pars['Thresholds'][0].shape[0]):
+                
+                self.Dist_frame = update_pars(self.Dist_frame, self.boot_Dist_pars['Thresholds'], 
+                                    self.boot_Dist_pars['Probs'], method = 'bootstrapped', 
+                                    target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+                
+                Dist_vals = self.Dist_dat.apply(predict_from_tree, 
+                          axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
+                           prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                
+                self.Dist_vals.append([0 if x <= self.p.theta else x for x in Dist_vals])
+                
+            self.Dist_vals = pd.DataFrame(np.column_stack(self.Dist_vals)).mean(axis = 1).to_list()
+            
             
         elif self.dist_method == 'Prescribed':
         

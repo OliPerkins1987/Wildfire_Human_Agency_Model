@@ -5,9 +5,11 @@ Created on Tue Jun 22 10:41:39 2021
 @author: Oli
 """
 
+
 import agentpy as ap
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
@@ -16,6 +18,10 @@ from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed
 from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
+
+
+
+
 
 class WHAM(ap.Model):
 

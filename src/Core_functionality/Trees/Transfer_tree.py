@@ -109,3 +109,50 @@ def predict_from_tree(dat, tree, struct, prob = 'yprob.TRUE',
     return(pred)
 
 
+def update_pars(tree, thresholds, probs, method = str, 
+                target = 'yprob.TRUE', source = 'TRUE.', boot_int = 0):
+       
+    '''
+    Updates a tree frame from a set of bootstrapped parameters
+    boot_int can be given as a key-word arg to move sequentially through the parameter list
+    
+    '''
+    
+    target_col = np.where(tree.columns == target)[0][0]
+    source_col = np.where(probs[0].columns == source)[0][0]
+    
+    thresh_n = 0
+    prob_n   = 0
+    
+    if method == 'random':
+    
+        r = np.random.randint(thresholds[0].shape[0])  
+    
+        for i in range(tree.shape[0]):
+        
+            if tree['var'][i] != '<leaf>':
+            
+                tree.iloc[i, 5] = str('<' + str(thresholds[thresh_n].iloc[r, 0]))
+                thresh_n += 1
+                
+            elif tree['var'][i] == '<leaf>':
+                
+                tree.iloc[i, target_col] = probs[prob_n].iloc[r, source_col]
+                prob_n += 1
+        
+    elif method == 'bootstrapped':
+    
+        for i in range(tree.shape[0]):
+        
+            if tree['var'][i] != '<leaf>':
+            
+                tree.iloc[i, 5] = str('<' + str(thresholds[thresh_n].iloc[boot_int, 0]))
+                thresh_n += 1
+                
+            elif tree['var'][i] == '<leaf>':
+                
+                tree.iloc[i, target_col] = probs[prob_n].iloc[boot_int, source_col]
+                prob_n += 1
+    
+    return(tree)
+    

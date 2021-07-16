@@ -15,6 +15,7 @@ import json
 from dotenv import load_dotenv
 from datetime import datetime
 from pathlib import Path
+from copy import deepcopy
 
 
 ###########################################################################
@@ -36,7 +37,11 @@ file_list = shpt_file_list()
 matching  = [s for s in file_list if "wham_files" in s]
 
 Core_pars = {'AFT_dist': '', 
-             'Fire_use': ''} #empty dict to house files
+             'Fire_use': '',
+             'Dist_pars': {'Thresholds': '', 
+             'Probabilities': '', 
+             'Weighted_thresholds':'',
+             'Weighted_probabilities': ''}} #empty dict to house files
 
 ##########################################################################
 
@@ -44,12 +49,57 @@ Core_pars = {'AFT_dist': '',
 
 ##########################################################################
 
+### Tree structures
+
 AFT_dist              = [s for s in matching if "AFT Distribution/Trees" in s]
 Core_pars['AFT_dist'] = [s for s in AFT_dist if "Tree_frame.csv" in s]
 
 Core_pars_keys        = [x[51:-15] for x in Core_pars['AFT_dist']]
 Core_pars_vals        = [read_shpt_data(x) for x in Core_pars['AFT_dist']]
 Core_pars['AFT_dist'] = dict(zip(Core_pars_keys, Core_pars_vals))
+
+### Thresholds
+Core_pars['Dist_pars']['Thresholds']           = [s for s in AFT_dist if "Thresholds" in s]
+Core_pars['Dist_pars']['Weighted_thresholds']  = [s for s in AFT_dist if "Weighted_thresholds" in s]
+
+Core_pars_keys                       = [x[51:-17] for x in Core_pars['Dist_pars']['Thresholds']]
+Core_pars_vals                       = [read_shpt_data(x) for x in Core_pars['Dist_pars']['Thresholds']]
+Core_pars['Dist_pars']['Thresholds'] = {}
+
+for i in range(len(Core_pars_keys)):
+    
+    Core_pars['Dist_pars']['Thresholds'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
+
+Core_pars_keys                                 = [x[51:-26] for x in Core_pars['Dist_pars']['Weighted_thresholds']]
+Core_pars_vals                                 = [read_shpt_data(x) for x in Core_pars['Dist_pars']['Weighted_thresholds']]
+Core_pars['Dist_pars']['Weighted_thresholds']  = {}
+
+for i in range(len(Core_pars_keys)):
+    
+    Core_pars['Dist_pars']['Weighted_thresholds'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
+
+
+### Probs
+Core_pars['Dist_pars']['Probs']           = [s for s in AFT_dist if "Probs" in s]
+Core_pars['Dist_pars']['Weighted_probs']  = [s for s in AFT_dist if "Weighted_probs" in s]
+
+Core_pars_keys                            = [x[51:-12] for x in Core_pars['Dist_pars']['Probs']]
+Core_pars_vals                            = [read_shpt_data(x) for x in Core_pars['Dist_pars']['Probs']]
+Core_pars['Dist_pars']['Probs']           = {}
+
+for i in range(len(Core_pars_keys)):
+    
+    Core_pars['Dist_pars']['Probs'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
+
+Core_pars_keys                            = [x[51:-21] for x in Core_pars['Dist_pars']['Weighted_probs']]
+Core_pars_vals                            = [read_shpt_data(x) for x in Core_pars['Dist_pars']['Weighted_probs']]
+Core_pars['Dist_pars']['Weighted_probs']  = {}
+
+for i in range(len(Core_pars_keys)):
+    
+    Core_pars['Dist_pars']['Weighted_probs'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
+
+
 
 ###########################################################################
 
@@ -80,4 +130,25 @@ Map_data['HDI_GDP']          = np.log(Map_data['GDP']) * Map_data['HDI']
 Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
 Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
 Map_data['WFI']              = (1/Map_data['TRI']) * Map_data['GDP']
+
+
+
+###########################################################################
+
+### Combined weighted/un-weighted thresholds
+
+###########################################################################
+
+for key in Core_pars['Dist_pars']['Thresholds'].keys():
+    
+    for j in range(len(Core_pars['Dist_pars']['Thresholds'][key])):
+        
+        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j] , 
+                                                                  Core_pars['Dist_pars']['Weighted_thresholds'][key][j]])
+        
+    for j in range(len(Core_pars['Dist_pars']['Probs'][key])):
+
+        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j] , 
+                                                                  Core_pars['Dist_pars']['Weighted_probs'][key][j]])
+
 
