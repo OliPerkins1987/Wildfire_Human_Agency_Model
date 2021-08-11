@@ -9,8 +9,8 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars
-
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from copy import deepcopy
 
 class land_system(ap.Agent):
     
@@ -98,12 +98,12 @@ class land_system(ap.Agent):
             self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
                               [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
         
-            ### do prediction
-            self.Dist_vals = np.array(self.Dist_dat.apply(predict_from_tree, 
-                              axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
+            ### do prediction - Theta not applied to ls classes
+            self.Dist_vals = np.array(predict_from_tree_fast(dat = self.Dist_dat, 
+                              tree = self.Dist_frame, struct = self.Dist_struct, 
                                prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
             
-        
+
         elif self.dist_method == 'Competition' and self.model.p.bootstrap == True:
             
             self.Dist_vals = []
@@ -123,11 +123,14 @@ class land_system(ap.Agent):
                                     self.boot_Dist_pars['Probs'], method = 'bootstrapped', 
                                     target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
                 
-                Dist_vals = self.Dist_dat.apply(predict_from_tree, 
-                          axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
-                           prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                d         = deepcopy(self.Dist_dat)
                 
-                self.Dist_vals.append([0 if x <= self.p.theta else x for x in Dist_vals])
+                Dist_vals = predict_from_tree_fast(dat = d, 
+                              tree = self.Dist_frame, struct = self.Dist_struct, 
+                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                
+                ### Theta not applied to ls classes
+                self.Dist_vals.append([x for x in Dist_vals])
                 
             self.Dist_vals = pd.DataFrame(np.column_stack(self.Dist_vals)).mean(axis = 1).to_list()
             

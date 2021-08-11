@@ -16,12 +16,12 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'AFTs': [Conservationist],
-    'LS'  : [Unoccupied],
+    'LS'  : [Nonex],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 0,
     'theta'    : 0.1,
-    'bootstrap': True
+    'bootstrap': False
     
     }
 
