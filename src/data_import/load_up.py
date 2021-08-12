@@ -126,11 +126,28 @@ Map_data['Mask'] = np.array(read_shpt_data(Mask[0])).reshape(27648)
 
 ###########################################################################
 
-Map_data['HDI_GDP']          = np.log(Map_data['GDP']) * Map_data['HDI']
+### These need sorting out!!
+
 Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
 Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
+Map_data['HDI_GDP']          = np.log(Map_data['GDP'].data) * Map_data['HDI']
 Map_data['WFI']              = (1/Map_data['TRI']) * Map_data['GDP']
 
+
+### sort out missing values in processed data
+for i in range(Map_data['HDI_GDP'].shape[0]):
+    
+    for j in range(Map_data['HDI_GDP'].shape[1]):
+        
+        for k in range(Map_data['HDI_GDP'].shape[2]):
+            
+            if np.isnan(Map_data['HDI_GDP'].data[i, j, k]):
+                 
+                Map_data['HDI_GDP'].data[i, j, k] = -3.3999999521443642e+38
+            
+            if Map_data['WFI'].data[i, j, k] == 0.0:
+            
+                Map_data['WFI'].data[i, j, k] = -3.3999999521443642e+38
 
 
 ###########################################################################

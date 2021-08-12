@@ -23,3 +23,22 @@ def get_model_output(model, kind, ls_type):
         
 
     return(temp)
+
+
+def get_afr_vals(afr_dict):
+    
+    afr_res = {}
+    
+    for afr in ['Pre', 'Trans', 'Intense', 'Post']:
+    
+        afr_vals = []
+    
+        for ls in afr_dict.keys():
+        
+            if afr in afr_dict[ls].keys():
+                
+                afr_vals.append(afr_dict[ls][afr])
+                
+        afr_res[afr] = sum(afr_vals)
+    
+    return(afr_res)

@@ -8,8 +8,9 @@ Created on Tue Jun 22 10:41:39 2021
 import agentpy as ap
 import pandas as pd
 import numpy as np
+from copy import deepcopy
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 
 
 class AFT(ap.Agent):
@@ -148,9 +149,11 @@ class AFT(ap.Agent):
                            [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
         
             ### do prediction
-            self.Dist_vals = self.Dist_dat.apply(predict_from_tree, 
-                          axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
-                           prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+            self.Dist_vals = predict_from_tree_fast(dat = self.Dist_dat, 
+                              tree = self.Dist_frame, struct = self.Dist_struct, 
+                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+        
+        
         
             ### apply theta zero-ing out constraint
             self.Dist_vals = [0 if x <= self.p.theta else x for x in self.Dist_vals]
@@ -176,9 +179,11 @@ class AFT(ap.Agent):
                                     target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
            
                 ### do prediction
-                Dist_vals = self.Dist_dat.apply(predict_from_tree, 
-                          axis = 1, tree = self.Dist_frame, struct = self.Dist_struct, 
-                           prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                d         = deepcopy(self.Dist_dat)
+                
+                Dist_vals = predict_from_tree_fast(dat = d, 
+                              tree = self.Dist_frame, struct = self.Dist_struct, 
+                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
         
                 ### apply theta zero-ing out constraint
                 self.Dist_vals.append([0 if x <= self.p.theta else x for x in Dist_vals])
@@ -204,11 +209,12 @@ class AFT(ap.Agent):
                                   [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
             
                 ### do prediction
-                self.AFT_vals  = self.AFT_dat.apply(predict_from_tree, 
-                                 axis = 1, tree = self.AFT_frame, struct = self.AFT_struct, 
-                                  prob = type(self).__name__, skip_val = -3.3999999521443642e+38, na_return = 0)
+                self.AFT_vals  = predict_from_tree_fast(self.AFT_dat, tree = self.AFT_frame, 
+                                 struct = self.AFT_struct, prob = type(self).__name__, 
+                                  skip_val = -3.3999999521443642e+38, na_return = 0)
+
             
-            else:
+            elif self.sub_AFT['kind'] == 'Multiple':
                 
                 self.AFT_dat  = []
                 self.AFT_vals = []
@@ -222,11 +228,11 @@ class AFT(ap.Agent):
                     self.AFT_dat[i]   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[i], 
                                          [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat[i]])))
             
-                    ### do prediction
-                    self.AFT_vals.append(self.AFT_dat[i].apply(predict_from_tree, 
-                                         axis = 1, tree = self.AFT_frame[i], struct = self.AFT_struct[i], 
-                                         prob = type(self).__name__, skip_val = -3.3999999521443642e+38, na_return = 0))
-            
+                    ### do prediction - these are added together in the WHAM AFT allocate routine
+                    self.AFT_vals.append(predict_from_tree_fast(self.AFT_dat[i], tree = self.AFT_frame[i], 
+                                 struct = self.AFT_struct[i], prob = type(self).__name__, 
+                                  skip_val = -3.3999999521443642e+38, na_return = 0))
+
         
         
         ### bootstrapped parameters
@@ -254,10 +260,12 @@ class AFT(ap.Agent):
                                     target = type(self).__name__, source = type(self).__name__, boot_int = i)
            
                     ### do prediction
-                    self.AFT_vals.append(self.AFT_dat.apply(predict_from_tree, 
-                          axis = 1, tree = self.AFT_frame, struct = self.AFT_struct, 
-                           prob = type(self).__name__, skip_val = -3.3999999521443642e+38, na_return = 0))
-            
+                    a = deepcopy(self.AFT_dat)
+                    
+                    self.AFT_vals.append(predict_from_tree_fast(a, tree = self.AFT_frame, 
+                                 struct = self.AFT_struct, prob = type(self).__name__, 
+                                  skip_val = -3.3999999521443642e+38, na_return = 0))
+                                     
             
                 self.AFT_vals = pd.DataFrame(np.column_stack(self.AFT_vals)).mean(axis = 1).to_list()
         
@@ -287,10 +295,12 @@ class AFT(ap.Agent):
                                     target = type(self).__name__, source = type(self).__name__, boot_int = j)
            
                         ### do prediction
-                        self.AFT_vals[i].append(self.AFT_dat[i].apply(predict_from_tree, 
-                          axis = 1, tree = self.AFT_frame[i], struct = self.AFT_struct[i], 
-                           prob = type(self).__name__, skip_val = -3.3999999521443642e+38, na_return = 0))
-                    
+                        a = deepcopy(self.AFT_dat[i])
+                        
+                        self.AFT_vals[i].append(predict_from_tree_fast(a, tree = self.AFT_frame[i], 
+                                 struct = self.AFT_struct[i], prob = type(self).__name__, 
+                                  skip_val = -3.3999999521443642e+38, na_return = 0))
+
             
                     self.AFT_vals[i] = pd.DataFrame(np.column_stack(self.AFT_vals[i])).mean(axis = 1).to_list()
             

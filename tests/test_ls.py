@@ -92,7 +92,7 @@ def test_ls_compete():
     'Maps'    : Map_data,
     'timestep': 0,
     'theta'    : 0.1, 
-    
+    'bootstrap': False
     
     }
     

@@ -14,7 +14,7 @@ import os
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 exec(open("test_setup.py").read())
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, predict_from_tree_fast
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent
 from Core_functionality.AFTs.afts import SOSH, Intense_arable
 from model_interface.wham import WHAM
@@ -95,5 +95,5 @@ def test_mod_Y():
     mod.agents.compete()
     mod.allocate_Y_axis()
     
-    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.values.reshape(27648,)[0]]).reshape(144, 192), 
+    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.Test.values.reshape(27648,)[0]]).reshape(144, 192), 
             Map_test))

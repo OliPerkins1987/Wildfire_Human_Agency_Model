@@ -13,7 +13,7 @@ import sys
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, predict_from_tree_fast
 exec(open("test_setup.py").read())
 
 ###############
@@ -97,5 +97,24 @@ def test_tree_reg_pred():
 
 
 
+### prediction tests
 
+def test_tree_class_pred_fast():
+    
+    tree_struct = define_tree_links(tree_frame)
+    preds       = predict_from_tree_fast(dat = tree_dat, tree = tree_frame, 
+                                    struct = tree_struct, prob = 'yprob.TRUE')
+    
+    assert(preds.to_list() == pytest.approx(tree_dat['overall.pred'].to_list(), abs = 1e-2))
+
+
+def test_tree_reg_pred_fast():
+    
+    tree_struct = define_tree_links(Residue_tree)
+    preds       = predict_from_tree_fast(dat = Residue_dat,
+                     tree = Residue_tree, struct = tree_struct, prob = 'yval')
+    
+    
+    R_preds     = Residue_dat['pred']
+    assert(preds.to_list() == pytest.approx(R_preds.to_list(), abs = 1e-2))
 

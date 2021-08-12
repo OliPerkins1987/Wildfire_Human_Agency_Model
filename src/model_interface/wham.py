@@ -19,8 +19,11 @@ from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
+###################################################################
 
+### Core model class
 
+###################################################################
 
 
 class WHAM(ap.Model):
@@ -87,7 +90,7 @@ class WHAM(ap.Model):
         
         ### Gather Y-axis scores from AFTs
         
-        land_systems = pd.Series([x for x in self.agents.ls]).unique()[0]
+        land_systems = [y for y in pd.Series([x for x in self.agents.ls]).unique()]
         afr_scores   = {}
     
     
@@ -99,7 +102,7 @@ class WHAM(ap.Model):
             ### get predictions
             afr_scores[l] = [x.Dist_vals for x in self.agents if x.ls == l]
                 
-            ### remove dupes 
+            ### remove dupes - this only works with more than 1 AFR per LS
             unique_arr    = [np.array(x) for x in set(map(tuple, afr_scores[l]))]
             
             ### calculate total by land system by cell
