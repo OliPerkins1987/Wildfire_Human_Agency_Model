@@ -9,12 +9,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def get_model_output(model, kind, ls_type):
+def get_model_output(model, kind):
 
     if kind == 'AFT':    
 
         temp = np.column_stack([(x.reshape(27648))for x in model.AFT_scores.values()])
         temp = pd.DataFrame(temp)
+        temp.columns = [type(x).__name__ for x in model.agents]
         
     elif kind == 'LFS':
         

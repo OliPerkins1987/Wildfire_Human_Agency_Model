@@ -32,7 +32,8 @@ class land_system(ap.Agent):
       
         self.dist_method = 'Prescribed' #or 'Competition' or 'Specified'
         self.pars_key    = '' ## what is the key in the core_pars dictionary where parameterisation is stored 
-                
+        
+        
     def get_pars(self, LS_dict):
         
         

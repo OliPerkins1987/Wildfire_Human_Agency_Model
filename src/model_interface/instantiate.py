@@ -34,7 +34,8 @@ parameters = {
     'LS'  : [Cropland, Rangeland, Pasture, Forestry, Urban, Nonex, Unoccupied],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
+    'timestep': 12,
+    'end_run' : 12,
     'theta'    : 0.1,
     'bootstrap': False
     
@@ -44,22 +45,9 @@ test = WHAM(parameters)
 
 ### setup
 test.setup()
-test.ls.setup()
-test.ls.get_pars(test.p.AFT_pars)
-test.ls.get_boot_vals(test.p.AFT_pars)
-test.agents.setup()
-test.agents.get_pars(test.p.AFT_pars)
-test.agents.get_boot_vals(test.p.AFT_pars)
 
-### ls
-test.ls.get_vals()
-test.allocate_X_axis()
-
-### AFT
-test.agents.compete()
-test.allocate_Y_axis()
-test.agents.sub_compete()
-test.allocate_AFT()
+### go
+test.go()
 
 
 

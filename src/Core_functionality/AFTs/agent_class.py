@@ -34,7 +34,8 @@ class AFT(ap.Agent):
         self.afr= ''
         self.sub_AFT = {'exists': False,
                         'kind'  : ''}
-                
+        
+
     def get_pars(self, AFT_dict):
         
         ### Distribution tree for LFS

@@ -5,29 +5,37 @@ Created on Wed Jun 30 10:38:02 2021
 @author: Oli
 """
 
-'''
 
 ### This set of test should be used to check macro-scale model outputs 
 ###  against internal logic and R-based calculations 
+### Due to load times - run as a standalone experiment
 
-import agentpy as ap
-import pandas as pd
+'''
+
+#### Load
+import pytest
 import numpy as np
+import pandas as pd
+import os
 
+from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
-from Core_functionality.AFTs.afts import Swidden, SOSH, MOSH, Intense_arable
+from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
+from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
+from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
+from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
-from model_interface.wham import WHAM
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
-exec(open(real_dat_path + "\load_up.py").read())
+#################################################
 
+### Load real data
 
-os.chdir(str(test_dat_path) + '\R_outputs')
-X_axis = pd.read_csv('X_axis_1990.csv')
-JULES_mask = pd.read_csv('JULES_mask.csv')
+#################################################
+
+os.chdir(r'C:\Users\Oli\Documents\PhD\wham\src')
+exec(open(r"C:\Users\Oli\Documents\PhD\wham\src\data_import\load_up.py").read())
+
 
 #################################################
 
@@ -39,12 +47,18 @@ parameters = {
     
     'xlen': 192, 
     'ylen': 144,
-    'AFTs': [Swidden, SOSH, MOSH, Intense_arable],
-    'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
+    'AFTs': [Swidden, SOSH, MOSH, Intense_arable, 
+             Pastoralist, Ext_LF_r, Int_LF_r, 
+             Ext_LF_p, Int_LF_p, 
+             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
+             Hunter_gatherer, Recreationalist, SLM, Conservationist],
+    'LS'  : [Cropland, Rangeland, Pasture, Forestry, Urban, Nonex, Unoccupied],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
-    'theta'    : 0.1
+    'timestep': 12,
+    'end_run' : 12,
+    'theta'    : 0.1,
+    'bootstrap': False
     
     }
 
@@ -52,20 +66,10 @@ test = WHAM(parameters)
 
 ### setup
 test.setup()
-test.ls.setup()
-test.ls.get_pars(test.p.AFT_pars)
-test.agents.setup()
-test.agents.get_pars(test.p.AFT_pars)
 
-### ls
-test.ls.get_vals()
-test.allocate_X_axis()
+### go
+test.go()
 
-### AFT
-test.agents.compete()
-test.allocate_Y_axis()
-test.agents.sub_compete()
-test.allocate_AFT()
 
 ##############################################################################
 
@@ -85,8 +89,8 @@ def test_X_data_format():
  "<class 'numpy.ndarray'>",
  "<class 'numpy.ndarray'>",
  "<class 'numpy.ndarray'>",
- "<class 'numpy.ndarray'>",
- "<class 'dict'>"])
+ "<class 'dict'>",
+ "<class 'numpy.ndarray'>" ])
 
 
 def test_X_axis_total():
@@ -108,7 +112,7 @@ def test_X_axis_total():
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
 
     
-def test_Y_axis_output():
+def test_Y_axis_Forestry():
     
     errors = []
     
@@ -119,7 +123,7 @@ def test_Y_axis_output():
     Forestry_results['X_axis']= test.X_axis['Forestry'].reshape(27648)
     Forestry_results['Error'] = Forestry_results['Total'] - Forestry_results['X_axis']
     
-    if not np.mean(np.abs(Forestry_results['Error'])) < 0.001 and np.max(Forestry_results['Error']):
+    if np.any(np.abs(Forestry_results['Error'][Forestry_results['Total'] != 0]) > 0.01):
         errors.append("Forestry LFS do not match mask")
     
     assert not errors, "errors occured:\n{}".format("\n".join(errors))

@@ -65,7 +65,8 @@ parameters = {
 
 ##########################################################################
 
-def test_AFT_allocate():
+def test_AFT_addition():
+
     
     ### setup 1st agent for test
     a = dummy_agent  
@@ -93,7 +94,41 @@ def test_AFT_allocate():
             a.AFT_vals  = a.AFT_dat.apply(predict_from_tree, 
                                  axis = 1, tree = a.AFT_frame, struct = a.AFT_struct, 
                                   prob = 'dummy_agent', skip_val = -3.3999999521443642e+38, na_return = 0)
+        
+
+    parameters = {
     
+    'xlen': 192, 
+    'ylen': 144,
+    'AFTs': [a],
+    'LS'  : [],
+    'AFT_pars': Core_pars,
+    'Maps'    : Map_data,
+    'timestep': 0,
+    'theta'    : 0.1
+    
+    }
+    
+    mod = WHAM(parameters)
+    mod.agents = [a]
+    mod.ylen = mod.p.ylen
+    mod.xlen = mod.p.xlen
+    mod.LFS = {'Test':{'Test':np.array([0.5]*27648).reshape(mod.ylen, mod.xlen)}}
+    mod.allocate_AFT()
+
+    vals = [pd.Series(x.reshape(27648)).value_counts() for x in mod.AFT_scores.values()]
+
+    errors = []
+    
+    if not np.array_equal(vals[0].values, np.array([27233,   415])):
+        errors.append("Addition AFT distribution failed")
+
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+
+
+
+def test_AFT_multiple():
+
     ### setup 2nd agent for test
     b     = multiple_agent    
     b.afr = 'Test'
@@ -126,13 +161,11 @@ def test_AFT_allocate():
                                          prob = 'dummy_agent', skip_val = -3.3999999521443642e+38, na_return = 0))
 
 
-
-
     parameters = {
     
     'xlen': 192, 
     'ylen': 144,
-    'AFTs': [a, b],
+    'AFTs': [b],
     'LS'  : [],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
@@ -142,23 +175,18 @@ def test_AFT_allocate():
     }
     
     mod = WHAM(parameters)
-    mod.setup()
-    mod.LFS = {'Test':{'Test':np.array([0.5]*27648).reshape(144, 192)}}
+    mod.agents = [b]
+    mod.ylen = mod.p.ylen
+    mod.xlen = mod.p.xlen
+    mod.LFS = {'Test':{'Test':np.array([0.5]*27648).reshape(mod.ylen, mod.xlen)}}
     mod.allocate_AFT()
 
-    vals = [pd.Series(x.reshape(27648)).value_counts()  for x in mod.AFT_scores.values()]
+    vals = [pd.Series(x.reshape(27648)).value_counts() for x in mod.AFT_scores.values()]
 
     errors = []
     
-    if not np.array_equal(vals[0].values, np.array([27233,   415])):
-        errors.append("Addition AFT distribution failed")
-    
-    if not np.array_equal(vals[1].values, np.array([27064,   584])):
+    if not np.array_equal(vals[0].values, np.array([27064,   584])):
         errors.append("Multiple fractions AFT distribution failed")
-    
-    if not [x for x in mod.AFT_scores.values()][0][100][100] == 1.0 and [x for x in mod.AFT_scores.values()][0][0][100] == 0.61163522: 
-        errors.append("Data ordering error in map output")
-
 
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
 

@@ -46,7 +46,23 @@ class WHAM(ap.Model):
         self.agents = ap.AgentList(self, 
                        [y[0] for y in [ap.AgentList(self, 1, x) for x in self.p.AFTs]])
 
+
+        ### Call land system & AFT set up
+        self.ls.setup()
+        self.ls.get_pars(self.p.AFT_pars)
+        self.ls.get_boot_vals(self.p.AFT_pars)
+        
+        self.agents.setup()
+        self.agents.get_pars(self.p.AFT_pars)
+        self.agents.get_boot_vals(self.p.AFT_pars)
     
+    def go(self):
+        
+        while self.p.timestep <= self.p.end_run:
+    
+            self.step()
+            print(self.p.timestep)
+            
     ##############################
     
     ### AFT distribution functions
@@ -109,12 +125,12 @@ class WHAM(ap.Model):
             tot_y         = np.add.reduce(unique_arr)
             
             ### divide by total & reshape to world map
-            afr_scores[l] = [np.array(x / tot_y).reshape(self.ylen, self.xlen) for x in unique_arr]
+            afr_scores[l] = [np.array(x / tot_y).reshape(self.ylen, self.xlen) for x in afr_scores[l]]
                
         
             ### Here - multiply Yscore by X-axis
-            afr_scores[l] = dict(zip(list(dict.fromkeys([y for y in pd.Series([x.afr for x in self.agents if x.ls == l]).unique()])), 
-                             [x * self.X_axis[l] for x in afr_scores[l]]))
+            afr_scores[l] = dict(zip([x.afr for x in self.agents if x.ls == l], 
+                             [y * self.X_axis[l] for y in afr_scores[l]]))
         
         ### stash afr scores
         self.LFS = afr_scores
@@ -161,24 +177,54 @@ class WHAM(ap.Model):
     
     #####################################################################################
     
-    ### scheduler, recorder, end conditions
+    ### scheduler, recorders, end conditions
 
     #####################################################################################
+    
+    def step(self):
+        
+        ### ls distribution
+        self.ls.get_vals()
+        self.allocate_X_axis()
 
+        ### afr distribution
+        self.agents.compete()
+        self.allocate_Y_axis()
+
+        ### AFT distribution
+        self.agents.sub_compete()
+        self.allocate_AFT()
+
+        ### Fire
+     
+         
+        ### update
+     
+        self.update()
+    
+    
     def update(self):
+        
+        self.p.timestep += 1
+        self.record()       ### store data in model object
+        self.write_out()    ### write data to disk
+        
+    
+    def record(self):
+        
+        ''' choose data to stash in ram '''
+        
+        pass        
+            
+    
+    def write_out(self):
+        
+        '''choose data to write'''
+                
         
         pass
     
     
-    def step(self):
-        
-        ### AFT distribution
-        self.agents.compete()
-        self.allocate_X_axis()
-        self.allocate_Y_axis()
-        
-        ### Fire
-        
     def end(self):
         
         pass

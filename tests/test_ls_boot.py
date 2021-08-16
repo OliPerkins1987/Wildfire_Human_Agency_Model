@@ -70,7 +70,7 @@ parameters = {
     
     'xlen': 192, 
     'ylen': 144,
-    'AFTs': [dummy_agent],
+    'AFTs': [],
     'LS'  : [Nonex],
     'AFT_pars': dummy_pars,
     'Maps'    : Map_data,
