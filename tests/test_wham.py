@@ -6,11 +6,11 @@ Created on Wed Jun 30 10:38:02 2021
 """
 
 
+
 ### This set of test should be used to check macro-scale model outputs 
 ###  against internal logic and R-based calculations 
 ### Due to load times - run as a standalone experiment
 
-'''
 
 #### Load
 import pytest
@@ -33,9 +33,7 @@ from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, F
 
 #################################################
 
-os.chdir(r'C:\Users\Oli\Documents\PhD\wham\src')
-exec(open(r"C:\Users\Oli\Documents\PhD\wham\src\data_import\load_up.py").read())
-
+'''
 
 #################################################
 
