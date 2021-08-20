@@ -19,6 +19,10 @@ from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
+from Core_functionality.top_down_processes.specified_fire_types import arson, deforestation
+from Core_functionality.top_down_processes.fire_constraints import fuel_ct, hg_urban_ct, range_occ_ct
+from Core_functionality.top_down_processes.AFT_interaction import industrial_reduce
+
 ###################################################################
 
 ### Core model class
@@ -63,11 +67,12 @@ class WHAM(ap.Model):
             self.step()
             print(self.p.timestep)
             
-    ##############################
+            
+    ########################################################################
     
     ### AFT distribution functions
     
-    ###############################
+    ########################################################################
     
     def allocate_X_axis(self):
         
@@ -175,6 +180,28 @@ class WHAM(ap.Model):
                 
         self.AFT_scores = AFT_scores
     
+    
+    ###################################################################################
+    
+    ### Fire use functions
+    
+    ###################################################################################
+    
+    def calc_BA(self):
+        
+        self.Managed_fire = {}
+        
+        for i in self.p.Fire_types:
+            
+            self.Managed_fire[i] = sum([x[i] for x in self.agents.Fire_types if i in x.keys()])
+
+        self.Managed_fire['arson']         = arson(self)
+        self.Managed_fire['deforestation'] = deforestation(self)
+        
+
+    
+    
+    
     #####################################################################################
     
     ### scheduler, recorders, end conditions
@@ -196,10 +223,10 @@ class WHAM(ap.Model):
         self.allocate_AFT()
 
         ### Fire
-     
+        self.agents.fire_use()
+        
          
         ### update
-     
         self.update()
     
     

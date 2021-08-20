@@ -26,6 +26,13 @@ class Hunter_gatherer(AFT):
         self.ls  = 'Nonex'
         self.sub_AFT = {'exists': False}    
 
+        self.Fire_use = {'hg': {'bool': 'tree_mod', 
+                                 'ba': 'lin_mod', 
+                                 'size': 2.1300}, 
+                         'pyrome': {'bool': 'tree_mod', 
+                                    'ba': 'lin_mod', 
+                                    'size': 4.0002}}
+
 
 class Recreationalist(AFT):
     
@@ -46,6 +53,10 @@ class SLM(AFT):
         self.sub_AFT = {'exists': True, 'kind': 'Multiple', 
                         'afr': ['Intense', 'Post'], 'ls': ['Nonex', 'Nonex']} 
 
+        self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
+                                    'ba'  : 'tree_mod', 
+                                    'size': 94.57}}
+
 
 class Conservationist(AFT):
     
@@ -57,7 +68,9 @@ class Conservationist(AFT):
                          'afr': ['Trans', 'Intense', 'Post'], 
                          'ls': ['Nonex', 'Nonex', 'Nonex']} 
         
-        
+        self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
+                                    'ba'  : 'lin_mod', 
+                                    'size': 538.3}}
 
 
 

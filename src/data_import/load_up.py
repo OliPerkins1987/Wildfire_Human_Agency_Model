@@ -37,7 +37,8 @@ file_list = shpt_file_list()
 matching  = [s for s in file_list if "wham_files" in s]
 
 Core_pars = {'AFT_dist': '', 
-             'Fire_use': '',
+             'Fire_use': {},
+             'Fire_suppression':'',
              'Dist_pars': {'Thresholds': '', 
              'Probabilities': '', 
              'Weighted_thresholds':'',
@@ -100,6 +101,28 @@ for i in range(len(Core_pars_keys)):
     Core_pars['Dist_pars']['Weighted_probs'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
 
 
+###########################################################################
+
+### Get fire maps
+
+###########################################################################
+
+Core_pars['Fire_use']['bool'] = ''
+Core_pars['Fire_use']['ba']   = ''
+
+Fire_pars             = [s for s in matching if "fire_use" in s]
+bool_pars             = [s for s in Fire_pars if "bool.csv" in s]
+ba_pars               = [s for s in Fire_pars if "ba.csv" in s]
+
+
+bool_pars             = dict(zip([x[37:-9] for x in bool_pars], 
+                                 [read_shpt_data(x) for x in bool_pars]))
+
+ba_pars               = dict(zip([x[37:-7] for x in ba_pars], 
+                                 [read_shpt_data(x) for x in ba_pars]))
+
+Core_pars['Fire_use']['bool'] = bool_pars
+Core_pars['Fire_use']['ba']   = ba_pars
 
 ###########################################################################
 
@@ -126,15 +149,13 @@ Map_data['Mask'] = np.array(read_shpt_data(Mask[0])).reshape(27648)
 
 ###########################################################################
 
-### These need sorting out!!
-
 Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
 Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
 Map_data['HDI_GDP']          = np.log(Map_data['GDP'].data) * Map_data['HDI']
 Map_data['WFI']              = (1/Map_data['TRI']) * Map_data['GDP']
 
 
-### sort out missing values in processed data
+### handle missing values in processed data
 for i in range(Map_data['HDI_GDP'].shape[0]):
     
     for j in range(Map_data['HDI_GDP'].shape[1]):

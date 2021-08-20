@@ -23,9 +23,12 @@ class Swidden(AFT):
         AFT.setup(self)
         self.afr = 'Pre'
         self.ls  = 'Cropland'
-        ## needs a third mathod for multiple fractions across LFS
         self.sub_AFT = {'exists': True, 'kind': 'Addition',  
-                        'afr': 'Trans', 'ls': 'Cropland'}    ## also shares a part of transition
+                        'afr': 'Trans', 'ls': 'Cropland'}    
+
+        self.Fire_use = {'cfp': {'bool': 'tree_mod', 
+                                 'ba':   'tree_mod', 
+                                 'size': 0.8224275}}
 
 class SOSH(AFT):
     
@@ -36,6 +39,9 @@ class SOSH(AFT):
         self.sub_AFT = {'exists': True, 'kind': 'Fraction',
                          'afr': 'Trans', 'ls': 'Cropland'} 
         
+        self.Fire_use = {'crb': {'bool': {'constant':1}, 
+                                 'ba': 'tree_mod', 
+                                 'size': 0.72}}
         
 class MOSH(AFT):
     
@@ -46,6 +52,9 @@ class MOSH(AFT):
         self.sub_AFT = {'exists': True, 'kind': 'Fraction',
                          'afr': 'Trans', 'ls': 'Cropland'} 
 
+        self.Fire_use = {'crb': {'bool': {'constant':1}, 
+                                 'ba': 'tree_mod', 
+                                 'size': 1.208735}}
 
 class Intense_arable(AFT):
     
@@ -55,9 +64,7 @@ class Intense_arable(AFT):
         self.ls  = 'Cropland'
         self.sub_AFT = {'exists': False} 
 
+        self.Fire_use = {'crb': {'bool': 'tree_mod', 
+                                 'ba': {'constant':0.025}, 
+                                 'size': 29.46}}
 
-#################################################################################
-
-### Livestock AFTs
-
-#################################################################################

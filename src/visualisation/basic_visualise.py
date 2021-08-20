@@ -11,7 +11,7 @@ def map_output(data):
 
     for image in data:    
 
-        plt.imshow(image, cmap='hot')
+        plt.imshow(image, cmap='plasma')
         plt.colorbar()
         plt.show()
     

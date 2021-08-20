@@ -25,6 +25,10 @@ class Pastoralist(AFT):
         self.ls  = 'Rangeland'
         self.sub_AFT = {'exists': False}    
 
+        self.Fire_use = {'pasture': {'bool': 'tree_mod', 
+                                 'ba': 'tree_mod', 
+                                 'size': 31.136}}
+
 class Ext_LF_r(AFT):
     
     def setup(self):
@@ -33,6 +37,9 @@ class Ext_LF_r(AFT):
         self.ls  = 'Rangeland'
         self.sub_AFT = {'exists': False} 
         
+        self.Fire_use = {'pasture': {'bool': 'tree_mod', 
+                                 'ba': 'tree_mod', 
+                                 'size': 35}}
         
 class Int_LF_r(AFT):
     
@@ -41,6 +48,10 @@ class Int_LF_r(AFT):
         self.afr = 'Intense'
         self.ls  = 'Rangeland'
         self.sub_AFT = {'exists': False} 
+
+        self.Fire_use = {'pasture': {'bool': 'tree_mod', 
+                                 'ba': {'constant': 0.025}, 
+                                 'size': 16.59}}
 
 ###########################################################################################
 
@@ -55,6 +66,10 @@ class Ext_LF_p(AFT):
         self.afr = 'Trans'
         self.ls  = 'Pasture'
         self.sub_AFT = {'exists': False} 
+       
+        self.Fire_use = {'pasture': {'bool': 'tree_mod', 
+                                 'ba': 'tree_mod', 
+                                 'size': 35}}
         
         
 class Int_LF_p(AFT):
@@ -64,3 +79,11 @@ class Int_LF_p(AFT):
         self.afr = 'Intense'
         self.ls  = 'Pasture'
         self.sub_AFT = {'exists': False} 
+        
+        self.Fire_use = {'pasture': {'bool': 'tree_mod', 
+                                 'ba': {'constant': 0.025}, 
+                                 'size': 16.59}}
+        
+        
+        
+        

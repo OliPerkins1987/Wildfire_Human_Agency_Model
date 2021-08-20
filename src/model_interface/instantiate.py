@@ -22,16 +22,19 @@ from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, F
 
 #################################################
 
+all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
+             Pastoralist, Ext_LF_r, Int_LF_r, 
+             Ext_LF_p, Int_LF_p, 
+             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
+             Hunter_gatherer, Recreationalist, SLM, Conservationist]
+
 parameters = {
     
     'xlen': 192, 
     'ylen': 144,
-    'AFTs': [Swidden, SOSH, MOSH, Intense_arable, 
-             Pastoralist, Ext_LF_r, Int_LF_r, 
-             Ext_LF_p, Int_LF_p, 
-             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
-             Hunter_gatherer, Recreationalist, SLM, Conservationist],
+    'AFTs': [Swidden, SOSH, MOSH, Intense_arable],
     'LS'  : [Cropland, Rangeland, Pasture, Forestry, Urban, Nonex, Unoccupied],
+    'Fire_types': ['cfp', 'crb', 'hg', 'pasture', 'pyrome', 'arson', 'deforestation'], 
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 12,
@@ -45,6 +48,8 @@ test = WHAM(parameters)
 
 ### setup
 test.setup()
+test.agents.get_fire_pars()
+test.agents.fire_use()
 
 ### go
 test.go()

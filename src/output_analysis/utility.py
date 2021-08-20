@@ -43,3 +43,6 @@ def get_afr_vals(afr_dict):
         afr_res[afr] = sum(afr_vals)
     
     return(afr_res)
+
+
+

@@ -167,8 +167,7 @@ def update_pars(tree, thresholds, probs, method = str,
 
 def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE', 
                       na_return = 0, skip_val = -3.3999999521443642e+38):
-    
-    ### how do we deal with np.nan?
+
     
     dat['missing'] = dat.apply(lambda y: skip_val in [float(x) for x in y], axis = 1)
     
