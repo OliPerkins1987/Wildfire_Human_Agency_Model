@@ -30,4 +30,35 @@ def regression_link(X, link):
         
         print('Unrecognised link function')
         
+
+def regression_transformation(X, transformation):
+    
+    if transformation == 'identity':
         
+        return(X)
+    
+    
+    elif transformation == 'log':
+        
+        return(np.exp(X))
+    
+
+    elif transformation == 'log1p':
+        
+        return(np.exp(X)-1)
+    
+    
+    elif transformation == 'log10p':
+        
+        return(np.exp(X)-10)
+
+
+    elif transformation == 'logistic':
+        
+        return(1/(1+(np.exp(0-X))))
+    
+    else:
+        
+        print('Unrecognised regression transformation')
+        
+

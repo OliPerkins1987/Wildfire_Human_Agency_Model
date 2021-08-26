@@ -9,6 +9,7 @@ Created on Tue Jun 22 10:41:39 2021
 import agentpy as ap
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 
 from Core_functionality.AFTs.agent_class import AFT
@@ -22,6 +23,8 @@ from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, F
 from Core_functionality.top_down_processes.specified_fire_types import arson, deforestation
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, hg_urban_ct, range_occ_ct
 from Core_functionality.top_down_processes.AFT_interaction import industrial_reduce
+
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 
 ###################################################################
 
@@ -51,14 +54,42 @@ class WHAM(ap.Model):
                        [y[0] for y in [ap.AgentList(self, 1, x) for x in self.p.AFTs]])
 
 
-        ### Call land system & AFT set up
+        # Create Observers
+        self.Observers = dict(zip([x for x in self.p.Observers.keys()], 
+                                  [ap.AgentList(self, 1, y) for y in self.p.Observers.values()]))
+        
+
+        ########################################
+        ### Agent class setup
+        ########################################
+        
+        ### LS
         self.ls.setup()
         self.ls.get_pars(self.p.AFT_pars)
         self.ls.get_boot_vals(self.p.AFT_pars)
         
+        ### AFTs
         self.agents.setup()
         self.agents.get_pars(self.p.AFT_pars)
         self.agents.get_boot_vals(self.p.AFT_pars)
+        self.agents.get_fire_pars()
+    
+        ### Observers
+        for observer in self.Observers.keys():
+            
+            self.Observers[observer].setup()
+        
+        if 'background_rate' in self.Observers.keys():
+            
+            self.Observers['background_rate'].get_fire_pars()
+        
+        ### Results containers
+        self.results = {}
+        
+        for i in self.p.reporters:
+            
+            self.results[i] = []
+        
     
     def go(self):
         
@@ -189,23 +220,65 @@ class WHAM(ap.Model):
     
     def calc_BA(self):
         
+        ''' gathers deliberate fire and multiplies by AFT coverage'''
+        
+        ####################################
+        ### !NB: Needs to gather on land cover rather than fire mode
+        ####################################
+        
         self.Managed_fire = {}
         
         for i in self.p.Fire_types:
             
-            self.Managed_fire[i] = sum([x[i] for x in self.agents.Fire_types if i in x.keys()])
+                self.Managed_fire[i] = {}
+            
+                for a in self.agents:
+                    
+                    if i in a.Fire_vals.keys():
+                    
+                        self.Managed_fire[i][a] = np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen)
+                        self.Managed_fire[i][a] = self.Managed_fire[i][a] * self.AFT_scores[type(a).__name__]
+            
+                self.Managed_fire[i] = np.nansum([x for x in self.Managed_fire[i].values()], 
+                                                 axis = 0)
 
-        self.Managed_fire['arson']         = arson(self)
-        self.Managed_fire['deforestation'] = deforestation(self)
+        
+        #################################
+        ### Add deforestation fire
+        #################################
+        
+        #self.Managed_fire['deforestation'] = deforestation(self)
+        
+        ### Combine fire use types
+        self.Managed_fire['Total']  = np.nansum([x for x in self.Managed_fire.values() if type(x) != np.float64], 
+                                                 axis = 0)
+
+        
+        
+    
+    def calc_background_ignitions(self):
+        
+        ''' Accidental and arson ignitions'''
         
 
+        ### Get background rate
+        self.Background_ignitions = np.array(self.Observers['background_rate'].Fire_vals[0]).reshape(self.ylen, self.xlen)
+
+        ##############################
+        ### Get arson
+        ##############################
     
+    #!!
+    
+    def calc_escaped_fires(self):
+        
+        pass
     
     
     #####################################################################################
     
-    ### scheduler, recorders, end conditions
-
+    ### scheduler
+    
     #####################################################################################
     
     def step(self):
@@ -224,7 +297,11 @@ class WHAM(ap.Model):
 
         ### Fire
         self.agents.fire_use()
+        self.calc_BA()
         
+        ### Suppression
+        self.agents.fire_suppression()
+        self.calc_escaped_fires()
          
         ### update
         self.update()
@@ -237,12 +314,18 @@ class WHAM(ap.Model):
         self.write_out()    ### write data to disk
         
     
+    ####################################################################
+    
+    ### Reporters
+    
+    ####################################################################
+    
     def record(self):
         
         ''' choose data to stash in ram '''
         
-        pass        
-            
+        self.results['Managed_fire'].append(deepcopy(self.Managed_fire))        
+        self.results['Background_ignitions'].append(deepcopy(self.Background_ignitions))
     
     def write_out(self):
         
@@ -252,10 +335,16 @@ class WHAM(ap.Model):
         pass
     
     
+    ####################################################################
+    
+    ### End conditions
+    
+    ####################################################################
+    
     def end(self):
         
         pass
     
-    
+
     
 

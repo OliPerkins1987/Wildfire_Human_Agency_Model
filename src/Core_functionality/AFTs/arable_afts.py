@@ -65,6 +65,6 @@ class Intense_arable(AFT):
         self.sub_AFT = {'exists': False} 
 
         self.Fire_use = {'crb': {'bool': 'tree_mod', 
-                                 'ba': {'constant':0.025}, 
+                                 'ba': {'constant':0.0425}, 
                                  'size': 29.46}}
 

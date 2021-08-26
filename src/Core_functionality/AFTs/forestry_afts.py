@@ -26,6 +26,7 @@ class Agroforestry(AFT):
         self.ls  = 'Forestry'
         self.sub_AFT = {'exists': True, 'kind': 'Fraction',
                          'afr': 'Trans', 'ls': 'Forestry'} 
+
         
 
 class Logger(AFT):
@@ -36,7 +37,7 @@ class Logger(AFT):
         self.ls  = 'Forestry'
         self.sub_AFT = {'exists': True, 'kind': 'Fraction',
                          'afr': 'Trans', 'ls': 'Forestry'} 
-        
+   
         
 class Managed_forestry(AFT):
     
@@ -60,5 +61,6 @@ class Abandoned_forestry(AFT):
         self.afr = 'Post'
         self.ls  = 'Forestry'
         self.sub_AFT = {'exists': False} 
+
 
 

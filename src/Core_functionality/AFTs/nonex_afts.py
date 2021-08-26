@@ -33,7 +33,6 @@ class Hunter_gatherer(AFT):
                                     'ba': 'lin_mod', 
                                     'size': 4.0002}}
 
-
 class Recreationalist(AFT):
     
     def setup(self):
@@ -41,7 +40,8 @@ class Recreationalist(AFT):
         self.afr = 'Trans'
         self.ls  = 'Nonex'
         self.sub_AFT = {'exists': True, 'kind': 'Multiple', 
-                        'afr': ['Trans', 'Post'], 'ls': ['Nonex', 'Nonex']} 
+                        'afr': ['Trans', 'Post'], 'ls': ['Nonex', 'Nonex']}
+
 
 
 class SLM(AFT):
