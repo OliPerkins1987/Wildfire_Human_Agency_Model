@@ -132,9 +132,9 @@ Core_pars['Fire_use']['ba']   = ba_pars
 
 Mask                 = [s for s in matching if 'JULES_mask' in s]
 Maps                 = [s for s in matching if "Dynamic/Maps" in s]
-Maps                 = [s for s in matching if ".nc" in s]
+Maps                 = [s for s in Maps if ".nc" in s]
 dest_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/'
-[read_shpt_data(x, download_dir = dest_folder) for x in Maps]
+#[read_shpt_data(x, download_dir = dest_folder) for x in Maps]
 
 Map_data = dict(zip([x[34:-3] for x in Maps], 
             [nc.Dataset(dest_folder + x[34:-3] + '.nc') for x in Maps]))

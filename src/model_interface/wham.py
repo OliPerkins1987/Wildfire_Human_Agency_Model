@@ -83,6 +83,10 @@ class WHAM(ap.Model):
             
             self.Observers['background_rate'].get_fire_pars()
         
+        if 'arson' in self.Observers.keys():
+            
+            self.Observers['arson'].get_fire_pars()
+        
         ### Results containers
         self.results = {}
         
@@ -218,7 +222,7 @@ class WHAM(ap.Model):
     
     ###################################################################################
     
-    def calc_BA(self):
+    def calc_BA(self, group_by = str):
         
         ''' gathers deliberate fire and multiplies by AFT coverage'''
         
@@ -226,9 +230,11 @@ class WHAM(ap.Model):
         ### !NB: Needs to gather on land cover rather than fire mode
         ####################################
         
-        self.Managed_fire = {}
+        if group_by == 'Fire_type':
         
-        for i in self.p.Fire_types:
+            self.Managed_fire = {}
+        
+            for i in self.p.Fire_types.keys():
             
                 self.Managed_fire[i] = {}
             
@@ -241,6 +247,24 @@ class WHAM(ap.Model):
             
                 self.Managed_fire[i] = np.nansum([x for x in self.Managed_fire[i].values()], 
                                                  axis = 0)
+                
+        elif group_by == 'Land_cover':
+            
+            self.Managed_fire = {}
+            
+            for i, j in zip(self.p.Fire_types.keys(), self.p.Fire_types.values()):
+                
+                self.Managed_fire[j] = []
+                
+                for a in self.agents:
+                    
+                    if i in a.Fire_vals.keys():
+                        
+                        self.Managed_fire[j].append(np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen) * self.AFT_scores[type(a).__name__])
+
+                self.Managed_fire[j] = np.nansum([x for x in self.Managed_fire[j]], 
+                                                 axis = 0)
+                                                                    
 
         
         #################################
@@ -258,18 +282,20 @@ class WHAM(ap.Model):
     
     def calc_background_ignitions(self):
         
-        ''' Accidental and arson ignitions'''
+        ''' Accidental ignitions'''
         
-
         ### Get background rate
         self.Background_ignitions = np.array(self.Observers['background_rate'].Fire_vals[0]).reshape(self.ylen, self.xlen)
 
-        ##############################
+
+    def calc_arson(self):
+
+        ''' Arson '''        
+
         ### Get arson
-        ##############################
-    
-    #!!
-    
+        self.Arson                = np.array(self.Observers['arson'].Fire_vals[0]).reshape(self.ylen, self.xlen)
+        
+        
     def calc_escaped_fires(self):
         
         pass
@@ -295,9 +321,24 @@ class WHAM(ap.Model):
         self.agents.sub_compete()
         self.allocate_AFT()
 
-        ### Fire
+        ### Fire use
         self.agents.fire_use()
-        self.calc_BA()
+        self.calc_BA(group_by = 'Land_cover')
+        
+        #################################################
+        ### Background & arson ignitions
+        #################################################
+        
+        if 'background_rate' in self.Observers.keys():
+        
+            self.Observers['background_rate'].ignite()
+            self.calc_background_ignitions()
+                
+        if 'arson' in self.Observers.keys():
+        
+            self.Observers['arson'].ignite()
+            self.calc_arson()
+               
         
         ### Suppression
         self.agents.fire_suppression()
@@ -326,6 +367,8 @@ class WHAM(ap.Model):
         
         self.results['Managed_fire'].append(deepcopy(self.Managed_fire))        
         self.results['Background_ignitions'].append(deepcopy(self.Background_ignitions))
+        self.results['Arson'].append(deepcopy(self.Arson))
+    
     
     def write_out(self):
         

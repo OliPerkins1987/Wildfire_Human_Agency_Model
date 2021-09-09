@@ -17,17 +17,17 @@ from Core_functionality.prediction_tools.regression_families import regression_l
 
 ###########################################################################################
 
-### Forestry AFTs
+### Arson class
 
 ###########################################################################################
 
 
-class background_rate(AFT):
+class arson(AFT):
     
     def setup(self):
         AFT.setup(self)
         
-        self.Fire_use = {'background_rate':{'bool': 'tree_mod', 
+        self.Fire_use = {'arson':{'bool': 'tree_mod', 
                                    'ba': 'lin_mod', 
                                    'size': np.nan}}
         
@@ -43,12 +43,12 @@ class background_rate(AFT):
         self.Fire_dat = {}
         self.Fire_vals= {}
 
-        probs_key     = {'bool': 'yval', 
+        probs_key     = {'bool': 'yprob.TRUE', 
                          'ba'  : 'yval'} ### used for gathering final results
         
         
         ### gather numpy arrays 4 predictor variables
-        x = 'background_rate'
+        x = 'arson'
             
         for b in ['bool', 'ba']:  
           
@@ -116,11 +116,37 @@ class background_rate(AFT):
                     self.Fire_vals[x][b] = regression_transformation(regression_link(self.Fire_vals[x][b], 
                                                   link = self.Fire_use[x][b]['pars']['link'][0]), 
                                                                      transformation = self.Fire_use[x][b]['pars']['transformation'][0])
-                    ### control for negative values
-                    self.Fire_vals[x][b] = pd.Series([x if x > 0 else 0 for x in self.Fire_vals[x][b]])
+                    
+                    ### Use threshold at 0.5 - again defined empirically
+                    self.Fire_vals[x][b] = pd.Series([x if x >= 0.5 else 0 for x in self.Fire_vals[x][b]])
 
         ### calculate burned area through DT and LM combination
-        self.Fire_vals = self.Fire_vals[x]['bool'] + self.Fire_vals[x]['ba']
-         
+        self.Fire_vals = (self.Fire_vals[x]['bool'] + self.Fire_vals[x]['ba']) / 2
         
+        
+    ###############################################################
+                
+    ### Adjust arson ignitions for degree of transition phase
+                
+    ###############################################################
+    
+        afr_vals = []
+    
+        ### Assume Nonex doesn't commit arson
+        for ls in ['Cropland', 'Pasture', 'Rangeland', 'Forestry']:
+        
+            if 'Trans' in self.model.LFS[ls].keys():
+                
+                afr_vals.append(self.model.LFS[ls]['Trans'])
+        
+        ### remove agroforestry from logging contribution to arson
+        if 'Agroforestry' in self.model.AFT_scores.keys():
+            
+            afr_vals.append(0 - self.model.AFT_scores['Agroforestry'])
+        
+        afr_vals = np.nansum(afr_vals, axis = 0)        
+        afr_vals = pd.Series([x if x > 0 else 0 for x in np.array(afr_vals).reshape(self.model.p.xlen*self.model.p.ylen)])
+        
+        ### Multiply by regression of n-ignitions against Transition AFR
+        self.Fire_vals = self.Fire_vals * np.exp(-2.184 + afr_vals * 1.166) 
         
