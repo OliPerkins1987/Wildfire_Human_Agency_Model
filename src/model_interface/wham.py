@@ -20,11 +20,13 @@ from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
-from Core_functionality.top_down_processes.specified_fire_types import arson, deforestation
-from Core_functionality.top_down_processes.fire_constraints import fuel_ct, hg_urban_ct, range_occ_ct
-from Core_functionality.top_down_processes.AFT_interaction import industrial_reduce
+from Core_functionality.top_down_processes.arson import arson
+from Core_functionality.top_down_processes.background_ignitions import background_rate
+from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct, hg_urban_ct
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+
 
 ###################################################################
 
@@ -226,9 +228,6 @@ class WHAM(ap.Model):
         
         ''' gathers deliberate fire and multiplies by AFT coverage'''
         
-        ####################################
-        ### !NB: Needs to gather on land cover rather than fire mode
-        ####################################
         
         if group_by == 'Fire_type':
         
@@ -266,19 +265,48 @@ class WHAM(ap.Model):
                                                  axis = 0)
                                                                     
 
-        
         #################################
         ### Add deforestation fire
         #################################
         
         #self.Managed_fire['deforestation'] = deforestation(self)
-        
-        ### Combine fire use types
-        self.Managed_fire['Total']  = np.nansum([x for x in self.Managed_fire.values() if type(x) != np.float64], 
-                                                 axis = 0)
 
         
+        #################################
+        ### apply constraints
+        #################################
         
+        self.fire_constraints()
+
+
+        ### Total up managed fire
+
+        self.Managed_fire['Total']  = np.nansum([x for x in self.Managed_fire.values() if type(x) != np.float64], 
+                                                 axis = 0)
+        
+
+################################################################
+### Constraints on fire not captured by DAFI / AFT calculations
+################################################################
+        
+        
+    def fire_constraints(self):
+        
+        '''top down constraints on fire'''
+        
+        for c in self.Observers.values():
+            
+            if 'ct' in type(c[0]).__name__:
+                
+                c.constrain()
+        
+    
+    #######################################################################
+    
+    ### Background fire
+    
+    #######################################################################
+    
     
     def calc_background_ignitions(self):
         

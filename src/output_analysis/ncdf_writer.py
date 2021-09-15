@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\Arson_ignitions.nc'
+fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\vegetation_ba.nc'
 ds = nc.Dataset(fn, 'w', format='NETCDF4')
 
 
@@ -23,13 +23,13 @@ times = ds.createVariable('time', 'f4', ('time',))
 lats = ds.createVariable('lat', 'f4', ('lat',))
 lons = ds.createVariable('lon', 'f4', ('lon',))
 value = ds.createVariable('value', 'f4', ('time', 'lat', 'lon',))
-value.units = 'Ignitions_km2_yr'
+value.units = 'ba_fraction'
 
 
 lats[:] = np.arange(-90, 90, 1.25)
 lons[:] = np.arange(-180, 180, 1.875)
 
-value[:, :, :] = np.stack([x for x  in test.results['Arson']], 
+value[:, :, :] = np.stack([x['Vegetation'] for x  in test.results['Managed_fire']], 
                           axis= 0)
 
 ds.close()

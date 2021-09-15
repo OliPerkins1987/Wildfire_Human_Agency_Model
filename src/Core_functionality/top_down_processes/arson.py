@@ -150,3 +150,15 @@ class arson(AFT):
         ### Multiply by regression of n-ignitions against Transition AFR
         self.Fire_vals = self.Fire_vals * np.exp(-2.184 + afr_vals * 1.166) 
         
+    ################################################################
+    
+    ### Add constraints
+    
+    ################################################################
+    
+        for c in self.model.Observers.values():
+            
+            if 'ct' in type(c[0]).__name__:
+                
+                c.constrain_arson()
+        

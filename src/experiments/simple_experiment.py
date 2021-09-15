@@ -72,30 +72,5 @@ for t in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1,
     print(t)
 
 
-####################################################
-
-### output analysis
-
-####################################################
-
-res     = []
-
-for i in range(len(AFR_res.values())):
-    
-    res.append(get_afr_vals([x for x in AFR_res.values()][i]))
-    
-    print('Teg')
-    
-    for j in res[i].keys():
-        
-        print('Cunt')
-        
-        res[i][j] = np.nanmean(res[i][j])
-
-for c in range(len(['red', 'green', 'blue', 'yellow'])):
-    
-    plt.plot(afr_res.iloc[:, c],color=['red', 'green', 'blue', 'yellow'][c])
-    
-    
 
 

@@ -17,8 +17,13 @@ from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
+from Core_functionality.top_down_processes.arson import arson
 from Core_functionality.top_down_processes.background_ignitions import background_rate
-from Core_functionality.top_down_processes.background_ignitions import arson
+from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct, hg_urban_ct
+
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+
 
 #################################################
 
@@ -36,15 +41,17 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'AFTs': all_afts,
-    'LS'  : [Cropland, Rangeland, Pasture, Forestry, Urban, Nonex, Unoccupied],
+    'LS'  : [Cropland, Rangeland, Pasture, Forestry, Nonex, Unoccupied, Urban],
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
                    'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
     'Observers': {'background_rate': background_rate, 
-                  'arson': arson},
+                  'arson': arson, 
+                  'fuel_constraint': fuel_ct, 
+                  'dominant_afr_constraint': dominant_afr_ct},
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'timestep': 0,
-    'end_run' : 0,
+    'end_run' : 24,
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
     'theta'    : 0.1,
     'bootstrap': False

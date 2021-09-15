@@ -29,6 +29,7 @@ def regression_link(X, link):
     else:
         
         print('Unrecognised link function')
+        return(X)
         
 
 def regression_transformation(X, transformation):
@@ -60,5 +61,5 @@ def regression_transformation(X, transformation):
     else:
         
         print('Unrecognised regression transformation')
-        
+        return(X)
 

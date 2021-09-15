@@ -29,6 +29,15 @@ class Pastoralist(AFT):
                                  'ba': 'tree_mod', 
                                  'size': 31.136}}
 
+
+    def fire_constraints(self):
+        
+        occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
+        occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+        self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+
+
 class Ext_LF_r(AFT):
     
     def setup(self):
@@ -41,6 +50,14 @@ class Ext_LF_r(AFT):
                                  'ba': 'tree_mod', 
                                  'size': 35}}
         
+    def fire_constraints(self):
+        
+        occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
+        occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+        self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+        
+        
 class Int_LF_r(AFT):
     
     def setup(self):
@@ -52,7 +69,15 @@ class Int_LF_r(AFT):
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 
                                  'size': 16.59}}
-
+        
+    def fire_constraints(self):
+        
+        occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
+        occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+        self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+        
+        
 ###########################################################################################
 
 ### Livestock AFTs - Pasture

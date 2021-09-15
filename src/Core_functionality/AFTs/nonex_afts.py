@@ -33,6 +33,13 @@ class Hunter_gatherer(AFT):
                                     'ba': 'lin_mod', 
                                     'size': 4.0002}}
 
+    def fire_constraints(self):
+        
+        MI_constraint        = self.model.p.Maps['Market_influence'][self.model.p.timestep, :, :].data
+        self.Fire_vals['hg'] = self.Fire_vals['hg'] * (MI_constraint.reshape(self.model.p.xlen * self.model.p.ylen) < 7800)
+
+
+
 class Recreationalist(AFT):
     
     def setup(self):
