@@ -49,7 +49,9 @@ parameters = {
     'Maps'    : '',
     'timestep': 0,
     'theta'    : 0.1, 
-    'bootstrap': False
+    'bootstrap': False, 
+    'Observers': {},
+    'reporters': []
     
     }
 

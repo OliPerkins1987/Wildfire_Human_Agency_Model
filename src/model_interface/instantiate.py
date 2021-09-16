@@ -19,7 +19,7 @@ from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, F
 
 from Core_functionality.top_down_processes.arson import arson
 from Core_functionality.top_down_processes.background_ignitions import background_rate
-from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct, hg_urban_ct
+from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation

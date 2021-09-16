@@ -68,7 +68,9 @@ def test_ls_prescribed():
     'Maps'    : Map_data,
     'timestep': 0,
     'theta'    : 0.1, 
-    'bootstrap': False
+    'bootstrap': False, 
+    'Observers': {},
+    'reporters': []
     
     }
     

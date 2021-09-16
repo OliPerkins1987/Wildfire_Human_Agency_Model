@@ -150,6 +150,12 @@ class arson(AFT):
         ### Multiply by regression of n-ignitions against Transition AFR
         self.Fire_vals = self.Fire_vals * np.exp(-2.184 + afr_vals * 1.166) 
         
+        ### adjust for land area of pixel
+        self.Fire_vals = self.Fire_vals * self.model.p.Maps['Mask']
+        
+        ### !! Add ajustment for ice
+        
+        
     ################################################################
     
     ### Add constraints

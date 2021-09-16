@@ -17,7 +17,7 @@ from Core_functionality.prediction_tools.regression_families import regression_l
 
 ###########################################################################################
 
-### Forestry AFTs
+### Background rate class
 
 ###########################################################################################
 
@@ -96,9 +96,9 @@ class background_rate(AFT):
                               tree = self.Fire_use[x][b]['pars'], struct = Fire_struct, 
                                prob = probs_key[b], skip_val = -3.3999999521443642e+38, na_return = 0)
     
-                ################
-                ### Regression
-                ################
+                #############################################
+                ### Regression aginst residuals of DT
+                #############################################
                 
                 elif self.Fire_use[x][b]['type'] == 'lin_mod':
     
@@ -116,11 +116,14 @@ class background_rate(AFT):
                     self.Fire_vals[x][b] = regression_transformation(regression_link(self.Fire_vals[x][b], 
                                                   link = self.Fire_use[x][b]['pars']['link'][0]), 
                                                                      transformation = self.Fire_use[x][b]['pars']['transformation'][0])
-                    ### control for negative values
-                    self.Fire_vals[x][b] = pd.Series([x if x > 0 else 0 for x in self.Fire_vals[x][b]])
 
         ### calculate burned area through DT and LM combination
         self.Fire_vals = self.Fire_vals[x]['bool'] + self.Fire_vals[x]['ba']
-         
+        self.Fire_vals = pd.Series([y if y >= 0 else 0 for y in self.Fire_vals])
         
+        ### adjust for land area of pixel
+        self.Fire_vals = self.Fire_vals * self.model.p.Maps['Mask']
         
+        ### !! Add ajustment for ice
+        
+       

@@ -76,7 +76,9 @@ parameters = {
     'Maps'    : Map_data,
     'timestep': 0,
     'theta'    : 0.1, 
-    'bootstrap': True
+    'bootstrap': True, 
+    'Observers': {},
+    'reporters': []
     
     }
 
