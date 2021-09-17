@@ -17,7 +17,7 @@ class fuel_ct(ap.Agent):
         
         ### Calculate soil constraint
         Soil = self.model.p.Maps['Baresoil'].data
-        Soil = 1 - (Soil * (Soil> 0.5))
+        Soil = 1 - (Soil * (Soil>= 0.1325)) #mean bare soil cover
 
         
         ### multiple Soil constraint by relevant fire types
@@ -29,7 +29,7 @@ class fuel_ct(ap.Agent):
         
         ### Calculate soil constraint
         Soil = self.model.p.Maps['Baresoil'].data
-        Soil = 1 - (Soil * (Soil> 0.5))
+        Soil = 1 - (Soil * (Soil>= 0.1325)) #mean bare soil cover
         Soil = Soil.reshape(self.model.ylen * self.model.xlen)
         
         ### multiply arson by soil constraint
@@ -52,7 +52,7 @@ class dominant_afr_ct(ap.Agent):
     
             afr_vals = []
     
-            for ls in ['Rangeland', 'Pasture' ,'Forestry', 'Nonex']:
+            for ls in ['Nonex']:
         
                 if afr in self.model.LFS[ls].keys():
                 
@@ -60,15 +60,23 @@ class dominant_afr_ct(ap.Agent):
                
             afr_res[afr] = np.nansum(afr_vals, axis = 0)
         
+        ### This is interesting but needs more work
+        ### Post-industrial areas boost pyrome mgmt & traditional fire use
+        #Post    = np.nanargmax([x for x in afr_res.values()], axis = 0) == 3
+        #Post    = Post * self.model.Managed_fire['Vegetation']
+        #self.model.Managed_fire['Vegetation'] = self.model.Managed_fire['Vegetation'] + Post
         
         ### calculate impact of dominant exclusionary afr
         Intense = np.nanargmax([x for x in afr_res.values()], axis = 0)
         Intense = ((Intense==2) * (1 - afr_res['Intense'])) + (Intense!=2 * 1)
+        #Intense[np.logical_and(Intense >= 0.5, Intense < 1)] = 0.5
         
         self.model.Managed_fire = dict(zip([x for x in self.model.Managed_fire.keys()], 
                                          [y*Intense for y in self.model.Managed_fire.values()]))
 
-
+        
+        
+        
     def constrain_arson(self):
 
         afr_res = {}
@@ -77,7 +85,7 @@ class dominant_afr_ct(ap.Agent):
     
             afr_vals = []
     
-            for ls in ['Rangeland', 'Pasture' ,'Forestry', 'Nonex']:
+            for ls in ['Cropland', 'Rangeland', 'Pasture', 'Forestry', 'Nonex']:
         
                 if afr in self.model.LFS[ls].keys():
                 
@@ -90,8 +98,13 @@ class dominant_afr_ct(ap.Agent):
         Intense = np.nanargmax([x for x in afr_res.values()], axis = 0)
         Intense = ((Intense==2) * (1 - afr_res['Intense'])) + (Intense!=2 * 1)
         Intense = Intense.reshape(self.model.p.ylen * self.model.p.xlen)
+        #Intense[np.logical_and(Intense >= 0.5, Intense < 1)] = 0.5
         
         self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals*Intense
+
+        ### Impact of Unoccupied regions 
+        Unoc = np.array(1 - self.model.X_axis['Unoccupied']).reshape(self.model.p.ylen*self.model.p.xlen)
+        self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals * Unoc
 
 
     

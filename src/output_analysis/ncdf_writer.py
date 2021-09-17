@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\vegetation_ba.nc'
+fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\total_ba.nc'
 ds = nc.Dataset(fn, 'w', format='NETCDF4')
 
 
@@ -29,7 +29,7 @@ value.units = 'ba_fraction'
 lats[:] = np.arange(-90, 90, 1.25)
 lons[:] = np.arange(-180, 180, 1.875)
 
-value[:, :, :] = np.stack([x['Vegetation'] for x  in test.results['Managed_fire']], 
+value[:, :, :] = np.stack([x['Total'] for x  in test.results['Managed_fire']], 
                           axis= 0)
 
 ds.close()

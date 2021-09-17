@@ -15,8 +15,8 @@ from copy import deepcopy
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
 from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
-from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
-from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
+from Core_functionality.AFTs.forestry_afts import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
+from Core_functionality.AFTs.nonex_afts import Hunter_gatherer, Recreationalist, SLM, Conservationist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
