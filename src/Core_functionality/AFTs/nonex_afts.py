@@ -35,8 +35,9 @@ class Hunter_gatherer(AFT):
 
     def fire_constraints(self):
         
+        threshold            = self.model.p.Constraint_pars['HG_Market_constraint']
         MI_constraint        = self.model.p.Maps['Market_influence'][self.model.p.timestep, :, :].data
-        self.Fire_vals['hg'] = self.Fire_vals['hg'] * (MI_constraint.reshape(self.model.p.xlen * self.model.p.ylen) < 7800)
+        self.Fire_vals['hg'] = self.Fire_vals['hg'] * (MI_constraint.reshape(self.model.p.xlen * self.model.p.ylen) < threshold)
 
 
 

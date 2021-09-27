@@ -32,10 +32,22 @@ class Pastoralist(AFT):
 
     def fire_constraints(self):
         
-        occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
-        occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+        ### rangeland stocking constraint
+        
+        if self.model.p.Constraint_pars['Rangeland_stocking_contstraint'] == True:
+        
+            occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
+            
+            ### should stocking rates be able to increase fire?
+            if self.model.p.Constraint_pars['R_s_c_Positive'] == False:          
                 
-        self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+                occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+            self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+        
+        else:
+            
+            pass
 
 
 class Ext_LF_r(AFT):
@@ -52,10 +64,23 @@ class Ext_LF_r(AFT):
         
     def fire_constraints(self):
         
-        occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
-        occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+        ### rangeland stocking constraint
+        
+        if self.model.p.Constraint_pars['Rangeland_stocking_contstraint'] == True:
+        
+            occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
+            
+            ### should stocking rates be able to increase fire?
+            if self.model.p.Constraint_pars['R_s_c_Positive'] == False:          
                 
-        self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+                occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+            self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+        
+        else:
+            
+            pass
+        
         
         
 class Int_LF_r(AFT):
@@ -72,10 +97,22 @@ class Int_LF_r(AFT):
         
     def fire_constraints(self):
         
-        occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
-        occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+        ### rangeland stocking constraint
+        
+        if self.model.p.Constraint_pars['Rangeland_stocking_contstraint'] == True:
+        
+            occupancy = np.nansum([x.Dist_vals for x in self.model.agents if x.ls == self.ls], axis = 0)
+            
+            ### should stocking rates be able to increase fire?
+            if self.model.p.Constraint_pars['R_s_c_Positive'] == False:          
                 
-        self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+                occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+            self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+        
+        else:
+            
+            pass
         
         
 ###########################################################################################

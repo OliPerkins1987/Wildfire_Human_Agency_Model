@@ -117,8 +117,8 @@ class arson(AFT):
                                                   link = self.Fire_use[x][b]['pars']['link'][0]), 
                                                                      transformation = self.Fire_use[x][b]['pars']['transformation'][0])
                     
-                    ### Use threshold at 0.5 - again defined empirically
-                    self.Fire_vals[x][b] = pd.Series([x if x >= 0.5 else 0 for x in self.Fire_vals[x][b]])
+                    ### Use threshold, default at 0.5 - again defined empirically
+                    self.Fire_vals[x][b] = pd.Series([x if x >= self.model.p.Constraint_pars['Arson_threshold'] else 0 for x in self.Fire_vals[x][b]])
 
         ### calculate burned area through DT and LM combination
         self.Fire_vals = (self.Fire_vals[x]['bool'] + self.Fire_vals[x]['ba']) / 2

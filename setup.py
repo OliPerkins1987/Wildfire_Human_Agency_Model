@@ -12,25 +12,15 @@ import setuptools
 setuptools.setup(
     name="wham",
     author="OP",
-    #author_email="ahf.kuhnregnier@gmail.com",
-    #description="Utilities for the analysis of wildfire data.",
+    author_email="oliver.perkins@kcl.ac.uk",
+    description="WHAM!: Wildfire_Human_Agency_Model.",
     #long_description=readme,
     #long_description_content_type="text/markdown",
-    #url="https://github.com/akuhnregnier/wildfires",
+    url="https://github.com/OliPerkins1987/Wildfire_Human_Agency_Model",
     packages=setuptools.find_packages("src"),
     package_dir={"": "src"},
-    #classifiers=[
-    #    "Programming Language :: Python :: 3",
-    #    "License :: OSI Approved :: MIT License",
-    #    "Operating System :: OS Independent",
-    #],
-    #entry_points="""
-    #    [console_scripts]
-    #    valid-ports=wildfires.ports:main
-    #    general-lab=wildfires.dask_cx1.dask_utils:main
-    #    mosaic-modis-tiles=wildfires.data.mosaic_modis_tiles:main
-     # """,
-    python_requires=">=3.7",
+
+    python_requires=">=3.8",
     #setup_requires=["setuptools-scm"],
     #use_scm_version=dict(write_to="src/wildfires/_version.py"),
     #include_package_data=True,

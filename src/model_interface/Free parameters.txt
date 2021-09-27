@@ -1,0 +1,27 @@
+Theta 
+What   : zeroing out for land systems, analogous to CRAFTY's giving in
+Default: 0.1 (arbitrary - from testing)
+
+Soil threshold
+What   : Value above which bare soil constraint on fire is applied
+Default: 0.1325 (global mean)
+
+Dominant afr (intensive) threshold
+What   : Value of intensive AFR above which fire exclusionary constraint kicks in
+Default: 0.5 (arbitrary) 
+
+Rangeland stocking constraint
+What   : should rangeland fire be impacted by the degree of stocking rate
+Default: True
+
+R_s_c_Positive
+What   : should rangeland stocking also be able to increase fire (overstocking)?
+Default: False
+
+HG_Market_constraint
+What   : prevents hunter gatherers from burning in very wealth peri-urban areas
+Default: Market influence > 7800 (empirical)
+
+Arson_threshold
+What   : states at what level market access effects on arson should kick-in
+Default: 0.5 (arbitrary)

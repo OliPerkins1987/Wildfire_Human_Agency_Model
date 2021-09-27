@@ -1,0 +1,4 @@
+,var,n,dev,yval,splits.cutleft,splits.cutright,yprob.Absence,yprob.Presence
+1,Pop_dense,20,25.897866,Presence,<4.5832,>4.5832,0.5,0.5
+2,<leaf>,9,6.278978,Presence,,,0.2,0.8
+3,<leaf>,11,15.158203,Absence,,,0.6875,0.3125
