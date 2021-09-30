@@ -42,8 +42,9 @@ parameters = {
     'ylen': 144,
     'AFTs': all_afts,
     'LS'  : [Cropland, Rangeland, Pasture, Forestry, Nonex, Unoccupied, Urban],
-    'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
+    'Fire_types': {'cfp': 'Arable', 'crb': 'Arable', 'hg': 'Vegetation', 
                    'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
+    'Fire_seasonality': Seasonality,
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
@@ -57,10 +58,11 @@ parameters = {
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
     'timestep': 0,
-    'end_run' : 25,
+    'end_run' : 4,
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
     'theta'    : 0.1,
-    'bootstrap': False
+    'bootstrap': False,
+    'Seasonality': True
     
     }
 

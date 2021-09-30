@@ -224,52 +224,81 @@ class WHAM(ap.Model):
     
     ###################################################################################
     
-    def calc_BA(self, group_by = str):
+    def calc_BA(self, group_lc):
         
         ''' gathers deliberate fire and multiplies by AFT coverage'''
         
         
-        if group_by == 'Fire_type':
+        self.Managed_fire = {}
         
-            self.Managed_fire = {}
+        for i in self.p.Fire_types.keys():
+            
+            self.Managed_fire[i] = {}
+            
+            for a in self.agents:
+                    
+                if i in a.Fire_vals.keys():
+                    
+                    self.Managed_fire[i][a] = np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen)
+                    self.Managed_fire[i][a] = self.Managed_fire[i][a] * self.AFT_scores[type(a).__name__]
+            
+            self.Managed_fire[i] = np.nansum([x for x in self.Managed_fire[i].values()], 
+                                                 axis = 0)
+         
         
-            for i in self.p.Fire_types.keys():
+            ### Divide outputs by seasonality map
+            if self.p.Seasonality == True:
             
-                self.Managed_fire[i] = {}
-            
-                for a in self.agents:
-                    
-                    if i in a.Fire_vals.keys():
-                    
-                        self.Managed_fire[i][a] = np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen)
-                        self.Managed_fire[i][a] = self.Managed_fire[i][a] * self.AFT_scores[type(a).__name__]
-            
-                self.Managed_fire[i] = np.nansum([x for x in self.Managed_fire[i].values()], 
-                                                 axis = 0)
-                
-        elif group_by == 'Land_cover':
-            
-            self.Managed_fire = {}
-            
-            for i, j in zip(self.p.Fire_types.keys(), self.p.Fire_types.values()):
-                
-                self.Managed_fire[j] = []
-                
-                for a in self.agents:
-                    
-                    if i in a.Fire_vals.keys():
-                        
-                        self.Managed_fire[j].append(np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen) * self.AFT_scores[type(a).__name__])
-
-                self.Managed_fire[j] = np.nansum([x for x in self.Managed_fire[j]], 
-                                                 axis = 0)
-                                                                    
-
+                self.Managed_fire[i] = self.p.Fire_seasonality[i].data * self.Managed_fire[i]
+        
+           
         #################################
         ### Add deforestation fire
         #################################
         
         #self.Managed_fire['deforestation'] = deforestation(self)
+        
+            
+        ################################################################
+        
+        ### Group outputs beyond fire use type?
+            
+        ################################################################
+        
+        if group_lc == True:
+            
+            regrouped_fire = {}
+            
+            ### new grouping mechanism given by Fire_types dictionary
+            
+            for i in set(self.p.Fire_types.values()):
+            
+                if i not in regrouped_fire.keys():    
+            
+                    regrouped_fire[i] = []
+                
+                for j in self.Managed_fire.keys():
+                    
+                    if self.p.Fire_types[j] == i:
+                
+                        regrouped_fire[i].append(self.Managed_fire[j])
+                
+                
+                ### sum where more than one fire type grouped
+                
+                if len(regrouped_fire[i]) > 1:    
+                
+                    regrouped_fire[i] = np.nansum(np.stack(regrouped_fire[i], axis = 0), axis = 0)
+                    regrouped_fire[i] = list(regrouped_fire[i])
+                    
+                ### Else choose first object
+                
+                else:
+                    
+                    regrouped_fire[i] = regrouped_fire[i][0]
+            
+            self.Managed_fire = regrouped_fire
+
 
         
         #################################
@@ -351,7 +380,7 @@ class WHAM(ap.Model):
 
         ### Fire use
         self.agents.fire_use()
-        self.calc_BA(group_by = 'Land_cover')
+        self.calc_BA(group_lc = True)
         
         #################################################
         ### Background & arson ignitions

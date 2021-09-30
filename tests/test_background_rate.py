@@ -19,7 +19,8 @@ os.chdir(real_dat_path)
 exec(open("local_load_up.py").read())
 
 os.chdir(str(test_dat_path) + '\R_outputs')
-R_results = pd.read_csv('Background_rate.csv')
+R_results          = pd.read_csv('Background_rate_1990.csv')
+R_results['value'] = R_results['value'] * Map_data['Mask']
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -62,11 +63,11 @@ def test_backgroundrate_fundamentals():
     summary= mod.Observers['background_rate'][0].Fire_vals.describe()
     
     
-    if not mod.Observers['background_rate'].Fire_vals[0].iloc[0] == 0.0:
+    if not mod.Observers['background_rate'].Fire_vals[0].isnull().iloc[0] == True:
         
         errors.append("Incorrect ordering of background rate predictions")
     
-    if not np.nanmedian(mod.Observers['background_rate'].Fire_vals[0]) == 0.0:
+    if not np.nanmedian(mod.Observers['background_rate'].Fire_vals[0]) == pytest.approx(0.0008, 0.1):
         
         errors.append("Incorrect background_rate predictions")
     
@@ -81,24 +82,24 @@ def test_backgroundrate_fundamentals():
 
     errors = []
     R_results['Test_1990']     = mod.Observers['background_rate'].Fire_vals[0]
-    R_results['Test_1990']     = [x if y >= 0 else np.nan for x, y in zip(R_results['Test_1990'], R_results['Year_1990'])]
-    R_results['Delta']         = R_results.Test_1990 - R_results.Year_1990
+    R_results['Test_1990']     = [x if y >= 0 else np.nan for x, y in zip(R_results['Test_1990'], R_results['value'])]
+    R_results['Delta']         = R_results.Test_1990 - R_results.value
     
     ### add anciliary variables
     R_results['NPP']           = Map_data['NPP'][0, :, :].data.reshape(27648)
     R_results['Market_access'] = Map_data['Market_access'][0, :, :].data.reshape(27648)
 
-    Wrong = R_results[np.abs(R_results.Delta) > 0.01]    
+    Wrong = R_results[np.logical_and(np.abs(R_results.Delta) > 0.001, R_results.Market_access >= 0)]    
     
-    if not Wrong.shape[0] < 400:
+    if not Wrong.shape[0] == 0:
         
         errors.append("Python predictions do not match R calculations")
     
-    if not np.abs(np.nanmax(R_results.Test_1990) - np.nanmax(R_results.Year_1990)) < 0.001:
+    if not np.abs(np.nanmax(R_results.Test_1990) - np.nanmax(R_results.value)) < 0.001:
         
         errors.append("Python predictions do not match R calculations")
 
-    if not np.abs(np.nanmean(R_results.Test_1990) - np.nanmean(R_results.Year_1990)) < 0.002:
+    if not np.abs(np.nanmean(R_results.Test_1990) - np.nanmean(R_results.value)) < 0.00125:
         
         errors.append("Python predictions do not match R calculations")
 

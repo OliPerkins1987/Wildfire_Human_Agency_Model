@@ -71,7 +71,8 @@ parameters = {
     'end_run' : 13,
     'reporters': ['Managed_fire', 'Background_ignitions','Arson'],
     'theta'    : 0.1,
-    'bootstrap': False
+    'bootstrap': False, 
+    'Seasonality': False
     
     }
 
@@ -156,21 +157,21 @@ def test_regression():
 
     errors = []
     
-    if not all(reg.describe()[3:6] == 0):
+    if not all(pd.Series(reg).describe()[3:6] == 0):
         
         errors.append("Errors in regression prediction values")
 
-    if not np.nanmax(reg <= 1):
+    if not np.nanmax(pd.Series(reg) <= 1):
         
         errors.append("Errors in regression prediction values")
-
-    reg = [x if x >= 0.5 else 0 for x in reg]
 
     if not np.nanmean(reg) < reg_m:
         
         errors.append("Errors in regression prediction values")
+    
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
         
-        
+    
 def test_combined_mod():   
     
     assert(np.nanmin(combo)  == 0 and np.nanmax(combo)  <= 1)
@@ -199,3 +200,6 @@ def test_arson_output():
     if not (np.nanquantile(igs_r, 0.75) == pytest.approx(np.nanquantile(R_results.iloc[:, 0], 0.75), 0.1)):
         
         errors.append("Arson outputs don't match baseline calculations")
+
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+

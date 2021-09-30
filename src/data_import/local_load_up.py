@@ -186,9 +186,25 @@ for key in Core_pars['Dist_pars']['Thresholds'].keys():
                                                                   Core_pars['Dist_pars']['Weighted_probs'][key][j]])
 
 
-import gc
-gc.collect()
+###########################################################################
 
+### Seasonality of fire use
 
 ###########################################################################
 
+Seasonality = [x for x in file_list if 'seasonality' in x]
+Seasonality = [x.replace('\\', '/') for x in Seasonality if '.nc' in x]
+
+Season_Map = dict(zip([x[36:-3] for x in Seasonality], 
+            [nc.Dataset(x) for x in Seasonality]))
+
+var_key  = zip([x for x in Season_Map.values()], 
+               [[x for x in y.variables.keys()][len(y.variables.keys()) -1 ] for y in Season_Map.values()])
+
+Seasonality = dict(zip([x for x in Season_Map.keys()], 
+            [x[y][:] for x, y in var_key]))
+
+
+
+import gc
+gc.collect()
