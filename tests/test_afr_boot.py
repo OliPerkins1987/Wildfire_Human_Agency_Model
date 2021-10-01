@@ -12,6 +12,7 @@ from scipy import stats
 import netCDF4 as nc
 import os
 import random
+from dask.distributed import Client
 
 random.seed(1987)
 
@@ -90,6 +91,8 @@ parameters = {
 
 def test_AFR_boot():
     
+    client = Client(n_workers=2)
+    
     errors = []
     
     mod = WHAM(parameters)
@@ -110,6 +113,8 @@ def test_AFR_boot():
     if not gt_thresh_1 == len(np.where(mod.agents[0].Dist_vals != stats.mode(np.array(mod.agents[0].Dist_vals))[0][0])[0]):
     
         errors.append("Bootstrapped prediction error")
+    
+    client.close()
     
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     

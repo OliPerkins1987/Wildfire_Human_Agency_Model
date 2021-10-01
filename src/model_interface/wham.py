@@ -10,6 +10,7 @@ import agentpy as ap
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+from dask.distributed import Client
 
 
 from Core_functionality.AFTs.agent_class import AFT
@@ -38,7 +39,12 @@ from Core_functionality.prediction_tools.regression_families import regression_l
 class WHAM(ap.Model):
 
     def setup(self):
-
+        
+        ### Multi-processor
+        if self.p.bootstrap == True:
+            
+            self.client = Client(n_workers=4)
+        
         # Parameters
         self.xlen = self.p.xlen
         self.ylen = self.p.ylen
@@ -103,7 +109,11 @@ class WHAM(ap.Model):
     
             self.step()
             print(self.p.timestep)
+        
+        if self.p.bootstrap == True:
             
+            self.client.close()
+        
             
     ########################################################################
     
@@ -122,13 +132,13 @@ class WHAM(ap.Model):
         #################################################
         
         ### Forestry
-        ls_scores['Forestry'] =  ls_scores['Forestry'] * (1 - ls_scores['Nonex']['Forest']) * (1 - ls_scores['Unoccupied'])
+        ls_scores['Forestry'] =  ls_scores['Forestry'] * (1 - np.array(ls_scores['Nonex']['Forest'])) * (1 - np.array(ls_scores['Unoccupied']))
         
         ### Non-ex & Unoccupied
         Open_vegetation                =  self.p.Maps['Mask'] - ls_scores['Cropland'] - ls_scores['Pasture'] - ls_scores['Rangeland'] - ls_scores['Forestry'] - ls_scores['Urban']
         Open_vegetation                =  np.array([x if x >=0 else 0 for x in Open_vegetation])
-        ls_scores['Nonex']['Combined'] =  Open_vegetation * (ls_scores['Nonex']['Other'] / (ls_scores['Nonex']['Other'] + ls_scores['Unoccupied']))
-        ls_scores['Unoccupied']        =  Open_vegetation * (ls_scores['Unoccupied'] / (ls_scores['Nonex']['Other'] + ls_scores['Unoccupied']))
+        ls_scores['Nonex']['Combined'] =  Open_vegetation * (np.array(ls_scores['Nonex']['Other']) / (np.array(ls_scores['Nonex']['Other']) + np.array(ls_scores['Unoccupied'])))
+        ls_scores['Unoccupied']        =  Open_vegetation * (np.array(ls_scores['Unoccupied']) / (np.array(ls_scores['Nonex']['Other']) + np.array(ls_scores['Unoccupied'])))
         ls_scores['Nonex']             =  ls_scores['Nonex']['Combined']
         
         ### There is an issue with alignment of data sets giving LC > land mask (see forestry)

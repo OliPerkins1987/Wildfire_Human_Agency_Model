@@ -12,7 +12,7 @@ from copy import deepcopy
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
-
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 
 class AFT(ap.Agent):
@@ -232,24 +232,10 @@ class AFT(ap.Agent):
             self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
                               [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
         
-            
-            for i in range(self.boot_Dist_pars['Thresholds'][0].shape[0]):
-                
-                self.Dist_frame = update_pars(self.Dist_frame, self.boot_Dist_pars['Thresholds'], 
-                                    self.boot_Dist_pars['Probs'], method = 'bootstrapped', 
-                                    target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
-           
-                ### do prediction
-                d         = deepcopy(self.Dist_dat)
-                
-                Dist_vals = predict_from_tree_fast(dat = d, 
-                              tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
-        
-                ### apply theta zero-ing out constraint
-                self.Dist_vals.append([0 if x <= self.p.theta else x for x in Dist_vals])
-            
-            self.Dist_vals = pd.DataFrame(np.column_stack(self.Dist_vals)).mean(axis = 1).to_list()
+            ### Parallel prediction
+            boot_frame     = make_boot_frame(self)
+            self.Dist_vals = parallel_predict(boot_frame, self.model.client)
+            self.Dist_vals = combine_bootstrap(self)
             
         
     def sub_compete(self):

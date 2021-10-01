@@ -215,7 +215,10 @@ def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE',
                
     dat.loc[dat['missing'] == True, 'Probability_out'] = na_return
     
-    return(dat.loc[:, 'Probability_out'])
+    res = dat.loc[:, 'Probability_out']
+    dat = dat.iloc[:, 0:(ncol+1)]
+    
+    return(res)
         
 
 

@@ -20,7 +20,11 @@ from copy import deepcopy
 
 ##########################################################################
 
-root = r'F:/PhD/Model files'
+### Set these to your local directories!
+
+root       = r'F:/PhD/Model files'
+Map_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/'
+
 file_list = []
 
 for path, subdirs, files in os.walk(root):
@@ -122,7 +126,6 @@ Core_pars['Fire_use']['ba']   = ba_pars
 
 ###########################################################################
 
-Map_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/'
 Map_list = []
 
 for path, subdirs, files in os.walk(Map_folder):
@@ -177,13 +180,13 @@ for key in Core_pars['Dist_pars']['Thresholds'].keys():
     
     for j in range(len(Core_pars['Dist_pars']['Thresholds'][key])):
         
-        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j] , 
-                                                                  Core_pars['Dist_pars']['Weighted_thresholds'][key][j]])
+        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j][0:50] , 
+                                                        Core_pars['Dist_pars']['Weighted_thresholds'][key][j][0:50]])
         
     for j in range(len(Core_pars['Dist_pars']['Probs'][key])):
 
-        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j] , 
-                                                                  Core_pars['Dist_pars']['Weighted_probs'][key][j]])
+        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j][0:50], 
+                                                    Core_pars['Dist_pars']['Weighted_probs'][key][j][0:50]])
 
 
 ###########################################################################
