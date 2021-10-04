@@ -38,7 +38,46 @@ def make_boot_frame(a):
     return(boot_pred)
 
 
-def parallel_predict(x, c):
+
+def make_boot_frame_AFT(a, par_set = 'none'):
+    
+    ''' creates list of tree frames from bootstrapped parameters
+    par_set = none for sub-compete type != multiple, 
+    for multiple AFT sub-competition, par_set = int'''
+    
+    if par_set == 'none':
+    
+        boot_pred = {'df':[], 'ds': deepcopy(a.AFT_struct), 
+             'dd': deepcopy(a.AFT_dat)}
+    
+        for t in range(a.boot_AFT_pars['Thresholds'][0].shape[0]):
+            
+            boot_pred['df'].append(deepcopy(update_pars(a.AFT_frame, a.boot_AFT_pars['Thresholds'], 
+                                    a.boot_AFT_pars['Probs'], method = 'bootstrapped', 
+                                    target = type(a).__name__, source = type(a).__name__, boot_int = t)))
+            
+    elif par_set != 'none':
+        
+        boot_pred = {'df':[], 'ds': deepcopy(a.AFT_struct[par_set]), 
+             'dd': deepcopy(a.AFT_dat)}
+        
+        for t in range(a.boot_AFT_pars[par_set]['Thresholds'][0].shape[0]):
+        
+            boot_pred['df'].append(deepcopy(update_pars(a.AFT_frame[par_set], a.boot_AFT_pars[par_set]['Thresholds'], 
+                                    a.boot_AFT_pars[par_set]['Probs'], method = 'bootstrapped', 
+                                    target = type(a).__name__, source = type(a).__name__, boot_int = t)))
+
+    return(boot_pred)
+
+
+##########################################
+
+### Uses boot_pred object to run parallel prediction
+
+########################################## 
+
+
+def parallel_predict(x, c, p):
     
     '''run a parallel prediction'''
     
@@ -48,7 +87,7 @@ def parallel_predict(x, c):
         
         future = c.submit(predict_from_tree_fast, dat = x['dd'], 
                               tree = x['df'][i], struct = x['ds'], 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                               prob = p, skip_val = -3.3999999521443642e+38, na_return = 0)
         
         
         futures.append(future)

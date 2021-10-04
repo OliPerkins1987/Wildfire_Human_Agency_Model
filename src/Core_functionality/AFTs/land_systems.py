@@ -11,6 +11,8 @@ import numpy as np
 
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+
 from copy import deepcopy
 
 ###########################################################################################
@@ -160,21 +162,19 @@ class Nonex(land_system):
                                  [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
         
         
+                ### Parallel prediction
+                boot_pred = {'df':[], 'ds': deepcopy(self.Dist_struct[k]), 
+                    'dd': deepcopy(self.Dist_dat)}
+ 
                 for i in range(self.boot_Dist_pars[k]['Thresholds'][0].shape[0]):
-                
-                    self.Dist_frame[k] = update_pars(self.Dist_frame[k], self.boot_Dist_pars[k]['Thresholds'], 
+
+                    boot_pred['df'].append(deepcopy(update_pars(self.Dist_frame[k], self.boot_Dist_pars[k]['Thresholds'], 
                                     self.boot_Dist_pars[k]['Probs'], method = 'bootstrapped', 
-                                    target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+                                    target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)))
                 
-                    d         = deepcopy(self.Dist_dat)
-                
-                    Dist_vals = predict_from_tree_fast(dat = d, 
-                                     tree = self.Dist_frame[k], struct = self.Dist_struct[k], 
-                                      prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                ### Gather & Combine, NB: Theta not applied to ls classes
+                dv                = parallel_predict(boot_pred, self.model.client, 'yprob.TRUE')
+                self.Dist_vals[k] = pd.DataFrame(np.column_stack(dv)).mean(axis = 1).to_list()
                 
                 
-                    ### Theta not applied to ls classes
-                    self.Dist_vals[k].append([x for x in Dist_vals])
-                
-                
-                self.Dist_vals[k] = pd.DataFrame(np.column_stack(self.Dist_vals[k])).mean(axis = 1).to_list()
+        

@@ -129,7 +129,7 @@ def test_ls_compete():
     mod.ls.get_vals()
 
 
-    if not len([x for x in mod.ls.Dist_vals[0] if x == 0]) == 21476:
+    if not len([x for x in mod.ls.Dist_vals[0] if x == 0]) == 19092:
         errors.append("LS competition test 1 failed")
     
     if not len([x for x in mod.ls.Dist_vals[0] if x == 0.18451178]) == 474:

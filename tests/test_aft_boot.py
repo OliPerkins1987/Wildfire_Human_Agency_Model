@@ -107,9 +107,6 @@ def test_AFT_boot():
     
     mod = WHAM(parameters)
     mod.setup()
-    mod.agents.setup()
-    mod.agents.get_pars(mod.p.AFT_pars)
-    mod.agents.get_boot_vals(mod.p.AFT_pars)
     mod.agents.sub_compete()
     
     probs = mod.agents[0].AFT_frame[1]['multiple_agent'][mod.agents[0].AFT_frame[1]['var'] == '<leaf>'].to_list()

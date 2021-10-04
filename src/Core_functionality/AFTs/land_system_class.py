@@ -10,6 +10,8 @@ import pandas as pd
 import numpy as np
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+
 from copy import deepcopy
 
 class land_system(ap.Agent):
@@ -99,14 +101,11 @@ class land_system(ap.Agent):
             self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
                               [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
         
-            ### do prediction
+            ### do prediction - NB zeroing out not applied for ls
             self.Dist_vals = np.array(predict_from_tree_fast(dat = self.Dist_dat, 
                               tree = self.Dist_frame, struct = self.Dist_struct, 
                                prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
             
-            ### apply theta zero-ing out constraint
-            self.Dist_vals = np.array([0 if x <= self.p.theta else x for x in self.Dist_vals])
-
 
         elif self.dist_method == 'Competition' and self.model.p.bootstrap == True:
             
@@ -120,23 +119,10 @@ class land_system(ap.Agent):
             self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
                               [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
             
-            ### bootstrapped prediction
-            for i in range(self.boot_Dist_pars['Thresholds'][0].shape[0]):
-                
-                self.Dist_frame = update_pars(self.Dist_frame, self.boot_Dist_pars['Thresholds'], 
-                                    self.boot_Dist_pars['Probs'], method = 'bootstrapped', 
-                                    target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
-                
-                d         = deepcopy(self.Dist_dat)
-                
-                Dist_vals = predict_from_tree_fast(dat = d, 
-                              tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
-                
-                ### Theta not applied to ls classes
-                self.Dist_vals.append([0 if x <= self.p.theta else x for x in Dist_vals])
-                
-            self.Dist_vals = pd.DataFrame(np.column_stack(self.Dist_vals)).mean(axis = 1).to_list()
+            ### Parallel prediction - no zeroing out for ls
+            boot_frame     = make_boot_frame(self)
+            dv             = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE')
+            self.Dist_vals = np.array(pd.DataFrame(np.column_stack(dv)).mean(axis = 1))
             
             
         elif self.dist_method == 'Prescribed':
@@ -150,5 +136,5 @@ class land_system(ap.Agent):
             ### method for establishing competitiveness score specified in individual ls sub_class            
             pass
 
-    
+  
 

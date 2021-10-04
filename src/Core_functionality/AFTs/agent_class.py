@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jun 22 10:41:39 2021
@@ -12,7 +13,7 @@ from copy import deepcopy
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
-from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
 
 class AFT(ap.Agent):
@@ -122,9 +123,7 @@ class AFT(ap.Agent):
             
                     self.boot_AFT_pars  = 'None'
         
-        
-        
-        
+
         
     ### Fire use parameters
     def get_fire_pars(self):
@@ -234,7 +233,7 @@ class AFT(ap.Agent):
         
             ### Parallel prediction
             boot_frame     = make_boot_frame(self)
-            self.Dist_vals = parallel_predict(boot_frame, self.model.client)
+            self.Dist_vals = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE')
             self.Dist_vals = combine_bootstrap(self)
             
         
@@ -295,62 +294,33 @@ class AFT(ap.Agent):
                 self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 
                                   [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
             
-            
-                ### run through bootstrapped parameter values
-                self.AFT_vals  = []
-            
-                for i in range(self.boot_AFT_pars['Thresholds'][0].shape[0]):
-                    
-                    ### update tree frame with bootstrapped parameters
-                    self.AFT_frame = update_pars(self.AFT_frame, self.boot_AFT_pars['Thresholds'], 
-                                    self.boot_AFT_pars['Probs'], method = 'bootstrapped', 
-                                    target = type(self).__name__, source = type(self).__name__, boot_int = i)
-           
-                    ### do prediction
-                    a = deepcopy(self.AFT_dat)
-                    
-                    self.AFT_vals.append(predict_from_tree_fast(a, tree = self.AFT_frame, 
-                                 struct = self.AFT_struct, prob = type(self).__name__, 
-                                  skip_val = -3.3999999521443642e+38, na_return = 0))
-                                     
-            
-                self.AFT_vals = pd.DataFrame(np.column_stack(self.AFT_vals)).mean(axis = 1).to_list()
-        
+                ### Parallel prediction, no theta threshold for sub-splits           
+                boot_frame      = make_boot_frame_AFT(self)
+                av              = parallel_predict(boot_frame, self.model.client, type(self).__name__)
+                self.AFT_vals   = pd.DataFrame(np.column_stack(av)).mean(axis = 1).to_list()
+                       
         
             elif self.sub_AFT['kind'] == 'Multiple':
         
                 self.AFT_dat  = []
                 self.AFT_vals = []
                 
-                for i in range(len(self.sub_AFT['afr'])): 
+                for z in range(len(self.sub_AFT['afr'])): 
             
                     self.AFT_vals.append([])
                                     
                     ### gather correct numpy arrays 4 predictor variables
-                    self.AFT_dat.append([self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[i]])
+                    self.AFT_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[z]]
         
                     ### combine numpy arrays to single pandas       
-                    self.AFT_dat[i]   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[i], 
-                                         [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat[i]])))
-            
+                    self.AFT_dat  = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[z], 
+                                         [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
                     
-                    for j in range(self.boot_AFT_pars[i]['Thresholds'][0].shape[0]):
-                
-                        ### update tree frame with bootstrapped parameters        
-                        self.AFT_frame[i] = update_pars(self.AFT_frame[i], self.boot_AFT_pars[i]['Thresholds'], 
-                                    self.boot_AFT_pars[i]['Probs'], method = 'bootstrapped', 
-                                    target = type(self).__name__, source = type(self).__name__, boot_int = j)
-           
-                        ### do prediction
-                        a = deepcopy(self.AFT_dat[i])
-                        
-                        self.AFT_vals[i].append(predict_from_tree_fast(a, tree = self.AFT_frame[i], 
-                                 struct = self.AFT_struct[i], prob = type(self).__name__, 
-                                  skip_val = -3.3999999521443642e+38, na_return = 0))
-
-            
-                    self.AFT_vals[i] = pd.DataFrame(np.column_stack(self.AFT_vals[i])).mean(axis = 1).to_list()
-            
+                    ### do parallel prediction
+                    boot_frame      = make_boot_frame_AFT(self, par_set = z)
+                    av              = parallel_predict(boot_frame, self.model.client, type(self).__name__)
+                    self.AFT_vals[z]= pd.DataFrame(np.column_stack(av)).mean(axis = 1).to_list()
+                    
         else:
             
             self.AFT_vals  = 'None'
@@ -392,7 +362,7 @@ class AFT(ap.Agent):
                 if b in self.Fire_vars[x].keys(): 
            
             
-                ### containers for fire outputs
+                    ### containers for fire outputs
                     self.Fire_dat[x]       = {} if not x in self.Fire_dat.keys() else self.Fire_dat[x]  
                     self.Fire_dat[x][b]    = []
                     self.Fire_vals[x]      = {} if not x in self.Fire_vals.keys() else self.Fire_vals[x]  
@@ -401,14 +371,14 @@ class AFT(ap.Agent):
                     temp_key = self.Fire_vars[x][b]
     
     
-                ### Gather relevant map data
+                    ### Gather relevant map data
                     for y in range(len(temp_key)):
             
                         temp_val = self.model.p.Maps[temp_key[y]][self.model.p.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
             
                         self.Fire_dat[x][b].append(temp_val)
 
-                ### combine predictor numpy arrays to a single pandas       
+                    ### combine predictor numpy arrays to a single pandas       
                     self.Fire_dat[x][b]  = pd.DataFrame.from_dict(dict(zip(self.Fire_vars[x][b], 
                            [z.reshape(self.model.p.xlen*self.model.p.ylen).data for z in self.Fire_dat[x][b]])))
         
@@ -440,19 +410,19 @@ class AFT(ap.Agent):
     
                         self.Fire_vals[x][b] = deepcopy(self.Fire_dat[x][b])
                     
-                    ### Mulitply data by regression coefs
+                        ### Mulitply data by regression coefs
                         for coef in self.Fire_vars[x][b]:
                         
                             self.Fire_vals[x][b][coef] = self.Fire_vals[x][b][coef] * self.Fire_use[x][b]['pars']['coef'].iloc[np.where(self.Fire_use[x][b]['pars']['var'] == coef)[0][0]]
                     
-                    ### Add intercept
+                        ### Add intercept
                         self.Fire_vals[x][b] = self.Fire_vals[x][b].sum(axis = 1) + self.Fire_use[x][b]['pars']['coef'].iloc[np.where(self.Fire_use[x][b]['pars']['var'] == 'Intercept')[0][0]]
                     
-                    ### Link function
+                        ### Link function
                         self.Fire_vals[x][b] = regression_transformation(regression_link(self.Fire_vals[x][b], 
                                                   link = self.Fire_use[x][b]['pars']['link'][0]), 
                                                                      transformation = self.Fire_use[x][b]['pars']['transformation'][0])
-                    ### control for negative values
+                        ### control for negative values
                         self.Fire_vals[x][b] = pd.Series([x if x > 0 else 0 for x in self.Fire_vals[x][b]])
                         
                 #################################
@@ -475,7 +445,10 @@ class AFT(ap.Agent):
             ### Adjust for AFT specific constraints
             self.fire_constraints()
     
+    
     def fire_constraints(self):
+        
+        ''' container for agent-specific fire constraints'''
         
         pass
     

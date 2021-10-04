@@ -23,7 +23,7 @@ from Core_functionality.top_down_processes.fire_constraints import fuel_ct, domi
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
-from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
 from dask.distributed import Client
 from copy import deepcopy
@@ -45,7 +45,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'AFTs': all_afts,
-    'LS'  : [Cropland, Rangeland, Pasture, Forestry, Nonex, Unoccupied, Urban],
+    'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
@@ -53,7 +53,7 @@ parameters = {
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     'Fire_seasonality': Seasonality,
-    'Fire_types': {'cfp': 'Arable', 'crb': 'Arable', 'hg': 'Vegetation', 
+    'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
                    'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
     'Constraint_pars': {'Soil_threshold': 0.1325, 
                         'Dominant_afr_threshold': 0.5, 
@@ -62,11 +62,11 @@ parameters = {
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
     'timestep': 0,
-    'end_run' : 0,
+    'end_run' : 1,
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
     'theta'    : 0.1,
-    'bootstrap': True,
-    'Seasonality': True
+    'bootstrap': False,
+    'Seasonality': False
     
     }
     
