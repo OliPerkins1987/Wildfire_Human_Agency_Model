@@ -35,7 +35,7 @@ from model_interface.wham import WHAM
 
 
 
-os.chdir(str(test_dat_path) + '\AFTs')
+os.chdir((str(os.getcwd()) + '/test_data/AFTs').replace('\\', '/'))
 Dummy_frame   = pd.read_csv('Dummy_pars.csv')
 Dummy_dat     = nc.Dataset('Test.nc')
 Dummy_dat     = Dummy_dat['Forest_frac'][:]

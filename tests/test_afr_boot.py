@@ -17,7 +17,7 @@ from dask.distributed import Client
 random.seed(1987)
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
+wd = os.getcwd().replace('\\', '/')
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
 from Core_functionality.AFTs.agent_class import AFT
@@ -43,7 +43,7 @@ class dummy_agent(AFT):
 
 
 
-os.chdir(str(test_dat_path) + '\AFTs')
+os.chdir(str(wd + '/test_data/AFTs').replace('\\', '/'))
 Dummy_frame   = pd.read_csv('Dummy_pars.csv')
 Dummy_dat     = nc.Dataset('Test.nc')
 Dummy_dat     = Dummy_dat['Forest_frac'][:]

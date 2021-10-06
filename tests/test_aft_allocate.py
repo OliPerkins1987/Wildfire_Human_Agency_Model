@@ -12,6 +12,7 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 exec(open("test_setup.py").read())
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
@@ -25,7 +26,7 @@ from model_interface.wham import WHAM
 
 #########################################################################
 
-os.chdir(str(test_dat_path) + '\AFTs')
+os.chdir(str(wd + '/test_data/AFTs').replace('\\', '/'))
 Dummy_frame   = pd.read_csv('Dummy_pars.csv')
 Dummy_frame2  = pd.read_csv('Dummy_AFT_pars.csv')
 Dummy_dat     = nc.Dataset('Test.nc')

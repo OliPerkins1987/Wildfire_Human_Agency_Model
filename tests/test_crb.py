@@ -12,9 +12,11 @@ import pytest
 import agentpy
 
 
-os.chdir(r'C:\Users\Oli\Documents\PhD\wham\tests\Test_data\Fire')
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 
 
+os.chdir(str(wd + '/test_data/Fire').replace('\\', '/'))
 SOSH    = pd.read_csv('SOSH.csv')
 MOSH    = pd.read_csv('MOSH.csv')
 Intense = pd.read_csv('Intense_arable.csv')

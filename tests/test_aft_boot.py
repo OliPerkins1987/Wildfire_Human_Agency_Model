@@ -17,6 +17,7 @@ from copy import deepcopy
 random.seed(1987)
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 exec(open("test_setup.py").read())
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
@@ -44,7 +45,7 @@ class multiple_agent(AFT):
 
 
 
-os.chdir(str(test_dat_path) + '\AFTs')
+os.chdir(str(wd + '/test_data/AFTs').replace('\\', '/'))
 Dummy_frame   = pd.read_csv('Dummy_pars.csv')
 Dummy_dat     = nc.Dataset('Test.nc')
 Dummy_dat     = Dummy_dat['Forest_frac'][:]
