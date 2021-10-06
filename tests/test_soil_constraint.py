@@ -13,11 +13,11 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
+wd = os.getcwd().replace('\\', '/')
 
 dat = np.arange(27648).reshape(144, 192)
 
-os.chdir(r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/')
+os.chdir(str(wd + '/test_data/Fire').replace('\\', '/'))
 Soil= nc.Dataset('Baresoil.nc')
 Soil= Soil['Soil'][:]
 

@@ -22,8 +22,11 @@ from copy import deepcopy
 
 ### Set these to your local directories!
 
-root       = r'F:/PhD/Model files'
+root       = r'F:/PhD/Model files/'
 Map_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/'
+
+Rlen       = len(root)
+Mlen       = len(Map_folder)
 
 file_list = []
 
@@ -51,7 +54,7 @@ Core_pars = {'AFT_dist': '',
 AFT_dist              = [s.replace('\\', '/') for s in file_list if "Distribution\Trees" in s]
 Core_pars['AFT_dist'] = [s for s in AFT_dist if "Tree_frame.csv" in s]
 
-Core_pars_keys        = [x[38:-15] for x in Core_pars['AFT_dist']]
+Core_pars_keys        = [x[(Rlen+19):-15] for x in Core_pars['AFT_dist']]
 Core_pars_vals        = [pd.read_csv(x) for x in Core_pars['AFT_dist']]
 Core_pars['AFT_dist'] = dict(zip(Core_pars_keys, Core_pars_vals))
 
@@ -59,7 +62,7 @@ Core_pars['AFT_dist'] = dict(zip(Core_pars_keys, Core_pars_vals))
 Core_pars['Dist_pars']['Thresholds']           = [s for s in AFT_dist if "Thresholds" in s]
 Core_pars['Dist_pars']['Weighted_thresholds']  = [s for s in AFT_dist if "Weighted_thresholds" in s]
 
-Core_pars_keys                       = [x[38:-17] for x in Core_pars['Dist_pars']['Thresholds']]
+Core_pars_keys                       = [x[(Rlen+19):-17] for x in Core_pars['Dist_pars']['Thresholds']]
 Core_pars_vals                       = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Thresholds']]
 Core_pars['Dist_pars']['Thresholds'] = {}
 
@@ -67,7 +70,7 @@ for i in range(len(Core_pars_keys)):
     
     Core_pars['Dist_pars']['Thresholds'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
 
-Core_pars_keys                                 = [x[38:-26] for x in Core_pars['Dist_pars']['Weighted_thresholds']]
+Core_pars_keys                                 = [x[(Rlen+19):-26] for x in Core_pars['Dist_pars']['Weighted_thresholds']]
 Core_pars_vals                                 = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Weighted_thresholds']]
 Core_pars['Dist_pars']['Weighted_thresholds']  = {}
 
@@ -80,7 +83,7 @@ for i in range(len(Core_pars_keys)):
 Core_pars['Dist_pars']['Probs']           = [s for s in AFT_dist if "Probs" in s]
 Core_pars['Dist_pars']['Weighted_probs']  = [s for s in AFT_dist if "Weighted_probs" in s]
 
-Core_pars_keys                            = [x[38:-12] for x in Core_pars['Dist_pars']['Probs']]
+Core_pars_keys                            = [x[(Rlen+19):-12] for x in Core_pars['Dist_pars']['Probs']]
 Core_pars_vals                            = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Probs']]
 Core_pars['Dist_pars']['Probs']           = {}
 
@@ -88,7 +91,7 @@ for i in range(len(Core_pars_keys)):
     
     Core_pars['Dist_pars']['Probs'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
 
-Core_pars_keys                            = [x[38:-21] for x in Core_pars['Dist_pars']['Weighted_probs']]
+Core_pars_keys                            = [x[(Rlen+19):-21] for x in Core_pars['Dist_pars']['Weighted_probs']]
 Core_pars_vals                            = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Weighted_probs']]
 Core_pars['Dist_pars']['Weighted_probs']  = {}
 
@@ -111,10 +114,10 @@ bool_pars             = [s for s in Fire_pars if "bool.csv" in s]
 ba_pars               = [s for s in Fire_pars if "ba.csv" in s]
 
 
-bool_pars             = dict(zip([x[28:-9] for x in bool_pars], 
+bool_pars             = dict(zip([x[(Rlen+9):-9] for x in bool_pars], 
                                  [pd.read_csv(x) for x in bool_pars]))
 
-ba_pars               = dict(zip([x[28:-7] for x in ba_pars], 
+ba_pars               = dict(zip([x[(Rlen+9):-7] for x in ba_pars], 
                                  [pd.read_csv(x) for x in ba_pars]))
 
 Core_pars['Fire_use']['bool'] = bool_pars
@@ -135,8 +138,8 @@ for path, subdirs, files in os.walk(Map_folder):
 Maps       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
 Mask       = [s.replace('\\', '/') for s in Map_list if "mask.csv" in s]
 
-Map_data = dict(zip([x[63:-3] for x in Maps], 
-            [nc.Dataset(Map_folder + x[63:-3] + '.nc') for x in Maps]))
+Map_data = dict(zip([x[Mlen:-3] for x in Maps], 
+            [nc.Dataset(Map_folder + x[Mlen:-3] + '.nc') for x in Maps]))
 
 var_key  = zip([x for x in Map_data.values()], 
                [[x for x in y.variables.keys()][len(y.variables.keys()) -1 ] for y in Map_data.values()])
@@ -198,7 +201,7 @@ for key in Core_pars['Dist_pars']['Thresholds'].keys():
 Seasonality = [x for x in file_list if 'seasonality' in x]
 Seasonality = [x.replace('\\', '/') for x in Seasonality if '.nc' in x]
 
-Season_Map = dict(zip([x[36:-3] for x in Seasonality], 
+Season_Map = dict(zip([x[(Rlen+17):-3] for x in Seasonality], 
             [nc.Dataset(x) for x in Seasonality]))
 
 var_key  = zip([x for x in Season_Map.values()], 

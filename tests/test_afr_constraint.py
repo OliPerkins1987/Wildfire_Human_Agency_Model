@@ -5,7 +5,7 @@ Created on Wed Sep 29 12:05:09 2021
 @author: Oli
 """
 
-### I am satisfied this is working, just not sure how to test?
+### I am satisfied this is working, just not sure how best to test?
 
 import pytest 
 import pandas as pd
@@ -14,12 +14,12 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
+wd = os.getcwd().replace('\\', '/')
 
-os.chdir(real_dat_path)
+os.chdir((wd[0:-6] + '/src/data_import'))
 exec(open("local_load_up.py").read())
 
-os.chdir(str(test_dat_path) + '\R_outputs')
+os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 R_fire = pd.read_csv('Fire_1990.csv')
 R_afr  = pd.read_csv('afr_constraint_1990.csv')
 R_afr['fire']     = R_fire['value']

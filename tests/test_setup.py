@@ -7,5 +7,9 @@ Contains constants for setup of test runs
 @author: Oli
 """
 
+import os
+
+fp = os.path.dirname(os.path.realpath(__file__))
+
 real_dat_path   = r'C:\Users\Oli\Documents\PhD\wham\src\data_import'
 test_dat_path   = r'C:\Users\Oli\Documents\PhD\wham\tests\test_data'

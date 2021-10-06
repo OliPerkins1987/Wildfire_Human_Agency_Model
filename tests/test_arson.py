@@ -12,12 +12,13 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 exec(open("test_setup.py").read())
 
-os.chdir(real_dat_path)
+os.chdir((wd[0:-6] + '/src/data_import'))
 exec(open("local_load_up.py").read())
 
-os.chdir(str(test_dat_path) + '\R_outputs')
+os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 R_results = pd.read_csv('Arson_2002.csv')
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast

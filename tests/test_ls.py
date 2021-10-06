@@ -13,7 +13,6 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
 from Core_functionality.AFTs.land_system_class import land_system
@@ -28,7 +27,7 @@ from model_interface.wham import WHAM
 
 #########################################################################
 
-os.chdir(str(test_dat_path) + '\AFTs')
+os.chdir((str(os.getcwd()) + '/test_data/AFTs').replace('\\', '/'))
 Dummy_dat     = nc.Dataset('Cropland.nc')
 Dummy_dat     = Dummy_dat['Crop_frac']
 Nonex_frame   = pd.read_csv('Nonex_pars.csv')    

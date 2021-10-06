@@ -11,7 +11,9 @@ import numpy as np
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 exec(open("test_setup.py").read())
+
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
 from Core_functionality.AFTs.agent_class import AFT
@@ -25,7 +27,7 @@ from model_interface.wham import WHAM
 
 #########################################################################
 
-os.chdir(str(test_dat_path) + '\AFTs')
+os.chdir(str(wd + '/test_data/AFTs').replace('\\', '/'))
 Trans_frame   = pd.read_csv('Trans_pars.csv')
 Intense_frame = pd.read_csv('Intense_arable_pars.csv')
 SOSH_frame    = pd.read_csv('SOSH_pars.csv')

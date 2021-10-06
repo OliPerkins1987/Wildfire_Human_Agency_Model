@@ -12,9 +12,10 @@ import sys
 
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, predict_from_tree_fast
-exec(open("test_setup.py").read())
+
 
 ###############
 
@@ -22,7 +23,7 @@ exec(open("test_setup.py").read())
 
 ###############
 
-os.chdir(str(test_dat_path) + '\Trees')
+os.chdir(str(wd + '/test_data/Trees').replace('\\', '/'))
 
 tree_frame = pd.read_csv('Swidden_tree.csv')
 tree_dat   = pd.read_csv('Swidden_dat.csv')

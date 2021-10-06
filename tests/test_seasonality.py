@@ -13,9 +13,10 @@ import os
 from copy import deepcopy
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 exec(open("test_setup.py").read())
 
-os.chdir(real_dat_path)
+os.chdir((wd[0:-6] + '/src/data_import'))
 exec(open("local_load_up.py").read())
 
 
