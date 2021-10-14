@@ -20,8 +20,8 @@ class fuel_ct(ap.Agent):
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold'])) #defaults mean bare soil cover
 
         
-        ### multiple Soil constraint by relevant fire types
-        self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
+        ### multiple Soil constraint by relevant fire types ??Pasture
+        #self.model.Managed_fire['Pasture']    = self.model.Managed_fire['Pasture'] * Soil
         self.model.Managed_fire['Vegetation']  = self.model.Managed_fire['Vegetation'] * Soil
 
 

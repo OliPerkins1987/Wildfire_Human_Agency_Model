@@ -137,6 +137,7 @@ for path, subdirs, files in os.walk(Map_folder):
 
 Maps       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
 Mask       = [s.replace('\\', '/') for s in Map_list if "mask.csv" in s]
+Area       = [s.replace('\\', '/') for s in Map_list if "Area.csv" in s]
 
 Map_data = dict(zip([x[Mlen:-3] for x in Maps], 
             [nc.Dataset(Map_folder + x[Mlen:-3] + '.nc') for x in Maps]))
@@ -148,6 +149,7 @@ Map_data = dict(zip([x for x in Map_data.keys()],
             [x[y][:] for x, y in var_key]))
 
 Map_data['Mask'] = np.array(pd.read_csv(Mask[0])).reshape(27648)
+Map_data['Area'] = np.array(pd.read_csv(Area[0])).reshape(27648)
 
 ###########################################################################
 

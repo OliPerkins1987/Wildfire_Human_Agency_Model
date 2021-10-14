@@ -45,4 +45,18 @@ def get_afr_vals(afr_dict):
     return(afr_res)
 
 
+def get_fire_maps(model):
+        
+    fout = {}
+        
+    for a in model.agents:
+            
+        fout[type(a).__name__] = a.Fire_vals
+    
+    fout = pd.DataFrame.from_dict(fout)
+    
+    return(fout)
+        
+            
+            
 

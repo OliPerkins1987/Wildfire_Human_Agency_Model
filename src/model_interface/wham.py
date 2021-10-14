@@ -51,7 +51,7 @@ class WHAM(ap.Model):
 
         # Create grid
         self.grid = ap.Grid(self, (self.xlen, self.ylen), track_empty=False)
-        
+        self.Area = np.array(self.p.Maps['Area']).reshape(self.p.ylen, self.p.xlen)
         
         # Create land systems
         self.ls     = ap.AgentList(self, 
@@ -240,10 +240,12 @@ class WHAM(ap.Model):
         
         
         self.Managed_fire = {}
+        self.Managed_igs  = {}
         
         for i in self.p.Fire_types.keys():
             
             self.Managed_fire[i] = {}
+            self.Managed_igs[i]  = {}
             
             for a in self.agents:
                     
@@ -251,16 +253,21 @@ class WHAM(ap.Model):
                     
                     self.Managed_fire[i][a] = np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen)
                     self.Managed_fire[i][a] = self.Managed_fire[i][a] * self.AFT_scores[type(a).__name__]
+                    self.Managed_igs[i][a]  = (self.Managed_fire[i][a] * self.Area) / (a.Fire_use[i]['size'] / 100) ##size(ha) -> size(km2)
+            
             
             self.Managed_fire[i] = np.nansum([x for x in self.Managed_fire[i].values()], 
                                                  axis = 0)
-         
+            
+            self.Managed_igs[i]  = np.nansum([x for x in self.Managed_igs[i].values()], 
+                                                 axis = 0)
+            
         
             ### Divide outputs by seasonality map
             if self.p.Seasonality == True:
             
                 self.Managed_fire[i] = self.p.Fire_seasonality[i].data * self.Managed_fire[i]
-        
+                self.Managed_igs[i]  = self.p.Fire_seasonality[i].data * self.Managed_igs[i]
            
         #################################
         ### Add deforestation fire

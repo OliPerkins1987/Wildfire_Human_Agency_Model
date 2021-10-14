@@ -1,0 +1,7 @@
+WHAM-MODIS disagreements:
+
+Eastern Sahel (~ South Sudan), cells 12594, 12783, 12784
+
+JULES bare soil fraction is sometimes 0.99999, 
+whilst MODIS has ~0.8 ba fraction - must be an alignment issue
+
