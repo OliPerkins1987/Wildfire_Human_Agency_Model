@@ -34,10 +34,13 @@ for path, subdirs, files in os.walk(root):
     for name in files:
         file_list.append(os.path.join(path, name))
 
+file_list = [s.replace('\\', '/') for s in file_list]
+
 #empty dict to house files
 Core_pars = {'AFT_dist': '', 
              'Fire_use': {},
              'Fire_suppression':'',
+             'Fire_escape': {},
              'Dist_pars': {'Thresholds': '', 
              'Probabilities': '', 
              'Weighted_thresholds':'',
@@ -51,7 +54,7 @@ Core_pars = {'AFT_dist': '',
 
 ### Tree structures
 
-AFT_dist              = [s.replace('\\', '/') for s in file_list if "Distribution\Trees" in s]
+AFT_dist              = [s.replace('\\', '/') for s in file_list if "Distribution/Trees" in s]
 Core_pars['AFT_dist'] = [s for s in AFT_dist if "Tree_frame.csv" in s]
 
 Core_pars_keys        = [x[(Rlen+19):-15] for x in Core_pars['AFT_dist']]
@@ -123,6 +126,16 @@ ba_pars               = dict(zip([x[(Rlen+9):-7] for x in ba_pars],
 Core_pars['Fire_use']['bool'] = bool_pars
 Core_pars['Fire_use']['ba']   = ba_pars
 
+
+### Fire escape
+escape_pars             = [s.replace('\\', '/') for s in file_list if "Fire escape" in s]
+escape_pars             = dict(zip([x[(Rlen+12):-16] for x in escape_pars], 
+                                 [pd.read_csv(x) for x in escape_pars]))
+
+
+Core_pars['Fire_escape'] = escape_pars
+
+
 ###########################################################################
 
 ### Get maps
@@ -185,13 +198,13 @@ for key in Core_pars['Dist_pars']['Thresholds'].keys():
     
     for j in range(len(Core_pars['Dist_pars']['Thresholds'][key])):
         
-        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j][0:50] , 
-                                                        Core_pars['Dist_pars']['Weighted_thresholds'][key][j][0:50]])
+        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j][0:10] , 
+                                                        Core_pars['Dist_pars']['Thresholds'][key][j][11:20]])
         
     for j in range(len(Core_pars['Dist_pars']['Probs'][key])):
 
-        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j][0:50], 
-                                                    Core_pars['Dist_pars']['Weighted_probs'][key][j][0:50]])
+        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j][0:10], 
+                                                    Core_pars['Dist_pars']['Probs'][key][j][11:20]])
 
 
 ###########################################################################

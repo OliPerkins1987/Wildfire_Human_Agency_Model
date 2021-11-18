@@ -21,7 +21,7 @@ class fuel_ct(ap.Agent):
 
         
         ### multiple Soil constraint by relevant fire types ??Pasture
-        #self.model.Managed_fire['Pasture']    = self.model.Managed_fire['Pasture'] * Soil
+        self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
         self.model.Managed_fire['Vegetation']  = self.model.Managed_fire['Vegetation'] * Soil
 
 
@@ -63,11 +63,6 @@ class dominant_afr_ct(ap.Agent):
             ### divide by nonex fraction
             afr_res[afr] = afr_res[afr] / self.model.X_axis['Nonex']
         
-        ### This is interesting but needs more work
-        ### Post-industrial areas boost pyrome mgmt & traditional fire use
-        #Post    = np.nanargmax([x for x in afr_res.values()], axis = 0) == 3
-        #Post    = Post * self.model.Managed_fire['Vegetation']
-        #self.model.Managed_fire['Vegetation'] = self.model.Managed_fire['Vegetation'] + Post
         
         ### Zero intensive cases below dominance threshold
         afr_res['Intense'] = np.select([afr_res['Intense'] >= self.model.p.Constraint_pars['Dominant_afr_threshold']], 

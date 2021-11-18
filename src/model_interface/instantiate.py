@@ -49,27 +49,37 @@ parameters = {
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
-                  'dominant_afr_constraint': dominant_afr_ct},    
+                  'dominant_afr_constraint': dominant_afr_ct, 
+                  'fire_control_measures': fire_control_measures},    
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
+    
     'Fire_seasonality': Seasonality,
+    
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
                    'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
+    
+    'Fire_escape_rates':{'cfp': 0.0006, 'crb': 0.0001, 'hg': 0.011, 
+                   'pasture': 0.051, 'pyrome': 0.0006, 'defor': 0.0095},
+    
     'Constraint_pars': {'Soil_threshold': 0.1325, 
                         'Dominant_afr_threshold': 0.5, 
                         'Rangeland_stocking_contstraint': True, 
                         'R_s_c_Positive' : False, 
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
-    'timestep': 0,
-    'end_run' : 0,
+    'timestep': 24,
+    'end_run' : 24,
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
     'theta'    : 0.1,
-    'bootstrap': False,
-    'Seasonality': False
+    
+    'bootstrap': True,
+    'Seasonality': False, 
+    'escaped_fire': True
     
     }
-    
+
+
 ### instantiate
 test = WHAM(parameters)
 

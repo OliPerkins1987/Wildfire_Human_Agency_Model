@@ -95,6 +95,7 @@ class WHAM(ap.Model):
             
             self.Observers['arson'].get_fire_pars()
         
+        
         ### Results containers
         self.results = {}
         
@@ -253,7 +254,7 @@ class WHAM(ap.Model):
                     
                     self.Managed_fire[i][a] = np.array(a.Fire_vals[i]).reshape(self.p.ylen, self.p.xlen)
                     self.Managed_fire[i][a] = self.Managed_fire[i][a] * self.AFT_scores[type(a).__name__]
-                    self.Managed_igs[i][a]  = (self.Managed_fire[i][a] * self.Area) / (a.Fire_use[i]['size'] / 100) ##size(ha) -> size(km2)
+                    self.Managed_igs[i][a]  = self.Managed_fire[i][a] / (a.Fire_use[i]['size'] / 100) ##size(ha) -> size(km2)
             
             
             self.Managed_fire[i] = np.nansum([x for x in self.Managed_fire[i].values()], 
@@ -269,6 +270,7 @@ class WHAM(ap.Model):
                 self.Managed_fire[i] = self.p.Fire_seasonality[i].data * self.Managed_fire[i]
                 self.Managed_igs[i]  = self.p.Fire_seasonality[i].data * self.Managed_igs[i]
            
+            
         #################################
         ### Add deforestation fire
         #################################
@@ -372,7 +374,19 @@ class WHAM(ap.Model):
         
     def calc_escaped_fires(self):
         
-        pass
+        if self.p['escaped_fire'] == True:
+        
+            ### calculate base escaped rates by fire type
+        
+            self.escaped_fire = {}
+        
+            for i in self.Managed_igs.keys():
+            
+                self.escaped_fire[i] = self.Managed_igs[i] * self.p.Fire_escape_rates[i]         
+    
+            ### calc fire control measures
+            self.Observers['fire_control_measures'].control()
+        
     
     
     #####################################################################################
@@ -425,8 +439,8 @@ class WHAM(ap.Model):
     def update(self):
         
         self.p.timestep += 1
-        self.record()       ### store data in model object
-        self.write_out()    ### write data to disk
+        self.record()        ### store data in model object
+        self.write_out()     ### write data to disk
         
     
     ####################################################################
