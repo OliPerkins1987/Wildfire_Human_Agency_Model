@@ -51,7 +51,7 @@ class Managed_forestry(AFT):
 
         self.Fire_use = {'pyrome':{'bool': 'tree_mod', 
                                    'ba': {'constant': 0.01}, 
-                                   'size': 18.5}}
+                                   'size': 7.5}}
 
 
 class Abandoned_forestry(AFT):

@@ -94,7 +94,7 @@ class land_system(ap.Agent):
                 
         
             ### gather correct numpy arrays 4 predictor variables
-            self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
+            self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
 
             ### combine numpy arrays to single pandas       
@@ -112,7 +112,7 @@ class land_system(ap.Agent):
             self.Dist_vals = []
             
             ### gather correct numpy arrays 4 predictor variables
-            self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
+            self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
 
             ### combine numpy arrays to single pandas       
@@ -128,7 +128,7 @@ class land_system(ap.Agent):
         elif self.dist_method == 'Prescribed':
         
             ### NB uses agent class name to identify map - second line removes missing
-            self.Dist_vals  = self.model.p.Maps[type(self).__name__][self.model.p.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
+            self.Dist_vals  = self.model.p.Maps[type(self).__name__][self.model.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
             self.Dist_vals  = np.array([x if x >= 0 else 0 for x in self.Dist_vals])
         
         elif self.dist_method == 'Specified':

@@ -74,7 +74,7 @@ parameters = {
     'LS'  : [Nonex],
     'AFT_pars': dummy_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
+    'start_run': 0,
     'theta'    : 0.1, 
     'bootstrap': True, 
     'Observers': {},

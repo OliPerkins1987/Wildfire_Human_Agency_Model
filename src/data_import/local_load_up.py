@@ -128,12 +128,17 @@ Core_pars['Fire_use']['ba']   = ba_pars
 
 
 ### Fire escape
-escape_pars             = [s.replace('\\', '/') for s in file_list if "Fire escape" in s]
-escape_pars             = dict(zip([x[(Rlen+12):-16] for x in escape_pars], 
+escape_pars                = [s.replace('\\', '/') for s in file_list if "Fire escape" in s]
+escape_rate                = [pd.read_csv(s) for s in escape_pars if "pars" in s]
+escape_pars                = [s for s in escape_pars if "tree" in s]
+
+
+escape_dict                = {'Overall': escape_rate[0]}
+escape_dict['fire_types']  = dict(zip([x[(Rlen+12):-16] for x in escape_pars], 
                                  [pd.read_csv(x) for x in escape_pars]))
 
 
-Core_pars['Fire_escape'] = escape_pars
+Core_pars['Fire_escape'] = escape_dict
 
 
 ###########################################################################

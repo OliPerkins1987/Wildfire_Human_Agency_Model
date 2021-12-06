@@ -58,5 +58,17 @@ def get_fire_maps(model):
     return(fout)
         
             
-            
+def get_escape_fire(model):
+    
+    res = []
+    
+    for year in model.results['Escaped_fire']:
+    
+        res.append(pd.DataFrame.from_dict(dict(zip(year.keys(), 
+        [x.reshape(27648) for x in year.values()]))))
+    
+    res = [np.array(x.sum(1)).reshape(144, 192) for x in res]
+    
+    return(res)
+
 

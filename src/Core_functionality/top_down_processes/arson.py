@@ -68,7 +68,7 @@ class arson(AFT):
                 ### Gather relevant map data
                 for y in range(len(temp_key)):
             
-                    temp_val = self.model.p.Maps[temp_key[y]][self.model.p.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
+                    temp_val = self.model.p.Maps[temp_key[y]][self.model.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
             
                     self.Fire_dat[x][b].append(temp_val)
 

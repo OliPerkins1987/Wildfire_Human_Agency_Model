@@ -21,7 +21,7 @@ class fire_control_measures(AFT):
     
     def setup(self):
         
-        self.control_pars = self.model.p.AFT_pars['Fire_escape']
+        self.control_pars = self.model.p.AFT_pars['Fire_escape']['fire_types']
         
         
     def get_afr(self):
@@ -38,7 +38,7 @@ class fire_control_measures(AFT):
                 
                     afr_vals.append(self.model.LFS[ls][afr])
                
-            afr_res[afr] = np.nansum(afr_vals, axis = 0).reshape(self.model.p.xlen*self.model.p.ylen)
+            afr_res[afr] = np.sum(afr_vals, axis = 0).reshape(self.model.p.xlen*self.model.p.ylen)
     
         self.Control_dat = pd.DataFrame(afr_res)
             
@@ -47,6 +47,7 @@ class fire_control_measures(AFT):
         
         self.get_afr()
         self.Control_vals    = {}
+        n_col                = self.Control_dat.shape[1]
         
         for f in self.control_pars.keys():
         
@@ -56,6 +57,10 @@ class fire_control_measures(AFT):
                                     tree = self.control_pars[f], struct = Control_struct, 
                                      prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
         
-            self.Control_dat     = self.Control_dat.iloc[:, 0:4]
+            self.Control_dat     = self.Control_dat.iloc[:, 0:(n_col+1)]
         
+       
         
+       
+        
+       

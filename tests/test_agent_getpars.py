@@ -49,7 +49,7 @@ parameters = {
     'LS'  : [],
     'AFT_pars': Core_pars,
     'Maps'    : '',
-    'timestep': 0,
+    'start_run': 0,
     'theta'    : 0.1, 
     'bootstrap': False, 
     'Observers': {},

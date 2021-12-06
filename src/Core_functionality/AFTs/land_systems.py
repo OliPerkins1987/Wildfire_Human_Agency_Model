@@ -82,7 +82,7 @@ class Forestry(land_system):
         self.dist_method = 'Specified'
         
     def get_vals(self):
-        self.Dist_vals  = self.model.p.Maps['Forest'][self.model.p.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
+        self.Dist_vals  = self.model.p.Maps['Forest'][self.model.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
         self.Dist_vals  = np.array([x if x >= 0 else 0 for x in self.Dist_vals])
 
 
@@ -133,7 +133,7 @@ class Nonex(land_system):
         
             for k in self.pars_key.keys():  
         
-                self.Dist_dat     = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars[k]]
+                self.Dist_dat     = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars[k]]
 
 
                 ### combine numpy arrays to single pandas       
@@ -154,7 +154,7 @@ class Nonex(land_system):
             
                 self.Dist_vals[k] = []            
         
-                self.Dist_dat     = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars[k]]
+                self.Dist_dat     = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars[k]]
 
 
                 ### combine numpy arrays to single pandas       

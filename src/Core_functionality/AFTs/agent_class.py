@@ -202,7 +202,7 @@ class AFT(ap.Agent):
         if self.p.bootstrap != True:
         
             ### gather correct numpy arrays 4 predictor variables
-            self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
+            self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
 
             ### combine numpy arrays to single pandas       
@@ -225,7 +225,7 @@ class AFT(ap.Agent):
             self.Dist_vals = []
             
             ### gather correct numpy arrays 4 predictor variables
-            self.Dist_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
+            self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
             ### combine numpy arrays to single pandas       
             self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
@@ -248,7 +248,7 @@ class AFT(ap.Agent):
             if self.sub_AFT['kind'] != 'Multiple':    
         
                 ### gather correct numpy arrays 4 predictor variables
-                self.AFT_dat   = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
+                self.AFT_dat   = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
         
                 ### combine numpy arrays to single pandas       
                 self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 
@@ -268,7 +268,7 @@ class AFT(ap.Agent):
                 for i in range(len(self.sub_AFT['afr'])): 
             
                     ### gather correct numpy arrays 4 predictor variables
-                    self.AFT_dat.append([self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[i]])
+                    self.AFT_dat.append([self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[i]])
         
                     ### combine numpy arrays to single pandas       
                     self.AFT_dat[i]   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[i], 
@@ -288,7 +288,7 @@ class AFT(ap.Agent):
             if self.sub_AFT['kind'] != 'Multiple':    
         
                 ### gather correct numpy arrays 4 predictor variables
-                self.AFT_dat   = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
+                self.AFT_dat   = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
         
                 ### combine numpy arrays to single pandas       
                 self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 
@@ -310,7 +310,7 @@ class AFT(ap.Agent):
                     self.AFT_vals.append([])
                                     
                     ### gather correct numpy arrays 4 predictor variables
-                    self.AFT_dat  = [self.model.p.Maps[x][self.model.p.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[z]]
+                    self.AFT_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[z]]
         
                     ### combine numpy arrays to single pandas       
                     self.AFT_dat  = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[z], 
@@ -374,7 +374,7 @@ class AFT(ap.Agent):
                     ### Gather relevant map data
                     for y in range(len(temp_key)):
             
-                        temp_val = self.model.p.Maps[temp_key[y]][self.model.p.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
+                        temp_val = self.model.p.Maps[temp_key[y]][self.model.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
             
                         self.Fire_dat[x][b].append(temp_val)
 

@@ -28,7 +28,7 @@ class Swidden(AFT):
 
         self.Fire_use = {'cfp': {'bool': 'tree_mod', 
                                  'ba':   'tree_mod', 
-                                 'size': 0.8224275}}
+                                 'size': 0.728455277}}
 
 class SOSH(AFT):
     
@@ -41,7 +41,7 @@ class SOSH(AFT):
         
         self.Fire_use = {'crb': {'bool': {'constant':1}, 
                                  'ba': 'tree_mod', 
-                                 'size': 0.72}}
+                                 'size': 0.666666667}}
         
 class MOSH(AFT):
     
@@ -54,7 +54,7 @@ class MOSH(AFT):
 
         self.Fire_use = {'crb': {'bool': {'constant':1}, 
                                  'ba': 'tree_mod', 
-                                 'size': 1.208735}}
+                                 'size': 0.9920635}}
 
 class Intense_arable(AFT):
     
@@ -66,5 +66,5 @@ class Intense_arable(AFT):
 
         self.Fire_use = {'crb': {'bool': 'tree_mod', 
                                  'ba': {'constant':0.0425}, 
-                                 'size': 29.46}}
+                                 'size': 33.75}}
 

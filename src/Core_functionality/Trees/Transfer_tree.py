@@ -210,7 +210,7 @@ def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE',
         ### update Next node
         Node_update                                            = [ncol+x for x, y in zip(dat['Destination'], dat['Probability_out']) if np.isnan(y)]
         Node_update_key                                        = [x for x in np.where(np.isnan(dat['Probability_out']))[0]]
-        dat.loc[np.isnan(dat['Probability_out']), 'Next_node'] = [dat.iloc[x, y] for x, y in zip(Node_update_key, Node_update)]
+        dat.loc[np.isnan(dat['Probability_out']), 'Next_node'] = [dat.iloc[int(x), int(y)] for x, y in zip(Node_update_key, Node_update)]
         
                
     dat.loc[dat['missing'] == True, 'Probability_out'] = na_return

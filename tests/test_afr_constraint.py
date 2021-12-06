@@ -73,7 +73,7 @@ parameters = {
                         'R_s_c_Positive' : False, 
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
-    'timestep': 0,
+    'start_run': 0,
     'end_run' : 0,
     'reporters': ['Managed_fire', 'Background_ignitions','Arson'],
     'theta'    : 0.1,

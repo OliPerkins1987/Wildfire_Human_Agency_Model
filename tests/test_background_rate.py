@@ -40,7 +40,7 @@ parameters = {
     'Observers': {'background_rate': background_rate},
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
+    'start_run': 0,
     'end_run' : 0,
     'reporters': [],
     'theta'    : 0.1,
@@ -58,7 +58,7 @@ mod.setup()
 mod.Observers['background_rate'].ignite()
 
 
-def test_backgroundrate_fundamentals():
+def test_backgroundrate_fundamentals1():
     
     errors = []
     summary= mod.Observers['background_rate'][0].Fire_vals.describe()
@@ -79,7 +79,7 @@ def test_backgroundrate_fundamentals():
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
 
-def test_backgroundrate_fundamentals():
+def test_backgroundrate_fundamentals2():
 
     errors = []
     R_results['Test_1990']     = mod.Observers['background_rate'].Fire_vals[0]

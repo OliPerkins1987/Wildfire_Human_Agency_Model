@@ -1,11 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 30 10:38:02 2021
+Created on Mon Jun 21 11:15:26 2021
+
+Contains constants for setup of test runs
 
 @author: Oli
 """
 
-#### Load model
+import os
+
+fp = os.path.dirname(os.path.realpath(__file__))
+
+real_dat_path   = r'C:\Users\Oli\Documents\PhD\wham\src\data_import'
+test_dat_path   = r'C:\Users\Oli\Documents\PhD\wham\tests\test_data'
+
+
+
+#### Load
 from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
@@ -26,23 +37,8 @@ from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_fr
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
-### Load data
-import os
 from dask.distributed import Client
 from copy import deepcopy
-
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-os.chdir((wd[0:-16] + '/data_import'))
-
-exec(open("local_load_up.py").read())
-
-
-#################################################
-
-### setup parameters
-
-#################################################
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
             Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
@@ -51,30 +47,20 @@ all_afts = [Swidden, SOSH, MOSH, Intense_arable,
 
 parameters = {
     
-    ### Model run limits
     'xlen': 192, 
     'ylen': 144,
-    'start_run': 0,
-    'end_run' : 24,
-    
-    ### Agents
     'AFTs': all_afts,
-    
     'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
-    
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures},    
-    
-    'Fire_seasonality': Seasonality,
-    
-    ### data
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
     
-    ### Fire parameters
+    'Fire_seasonality': Seasonality,
+    
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
                    'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
 
@@ -84,39 +70,18 @@ parameters = {
                         'R_s_c_Positive' : False, 
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
+    'start_run': 0,
+    'end_run' : 0,
+    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Escaped_fire'],
+    'theta'    : 0.1,
     
     'Seasonality': False, 
     'escaped_fire': True,
-    'theta'    : 0.1,
-
-    ### reporters
-    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Escaped_fire'],
     
-    ### house keeping
     'bootstrap': False,
-    'n_cores'  : 4,
-        
-    'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
-        
+    'n_cores'  : 4 
+    
+    
     }
-
-
-#####################################################
-
-### Run model
-
-#####################################################
-
-if __name__ == "__main__":
-
-    ### instantiate
-    mod = WHAM(parameters)
-
-    ### setup
-    mod.setup()
-
-    ### go
-    mod.go()
 
 

@@ -28,6 +28,7 @@ from Core_functionality.top_down_processes.fire_constraints import fuel_ct, domi
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
+from output_analysis.ncdf_write_func import write_nc
 
 ###################################################################
 
@@ -43,11 +44,12 @@ class WHAM(ap.Model):
         ### Multi-processor
         if self.p.bootstrap == True:
             
-            self.client = Client(n_workers=4)
+            self.client = Client(n_workers=self.p.n_cores)
         
-        # Parameters
-        self.xlen = self.p.xlen
-        self.ylen = self.p.ylen
+        # Spatio-temporal boundaries
+        self.xlen     = self.p.xlen
+        self.ylen     = self.p.ylen
+        self.timestep = self.p.start_run
 
         # Create grid
         self.grid = ap.Grid(self, (self.xlen, self.ylen), track_empty=False)
@@ -106,10 +108,11 @@ class WHAM(ap.Model):
     
     def go(self):
         
-        while self.p.timestep <= self.p.end_run:
+        while self.timestep <= self.p.end_run:
     
             self.step()
-            print(self.p.timestep)
+            print(self.timestep)
+            self.timestep += 1
         
         if self.p.bootstrap == True:
             
@@ -376,17 +379,56 @@ class WHAM(ap.Model):
         
         if self.p['escaped_fire'] == True:
         
-            ### calculate base escaped rates by fire type
+            ####################################################
+            ### 1) calculate base escaped rates by fire type
+            ####################################################
+        
         
             self.escaped_fire = {}
+            base = self.model.p.AFT_pars['Fire_escape']['Overall']
+        
         
             for i in self.Managed_igs.keys():
-            
-                self.escaped_fire[i] = self.Managed_igs[i] * self.p.Fire_escape_rates[i]         
+                
+                base_rate            = base.loc[base['Intention'] == i,'Base_escape_rate'].iloc[0]
+                self.escaped_fire[i] = self.Managed_igs[i] * base_rate         
     
-            ### calc fire control measures
+    
+            ####################################################
+            ### 2) caculate impact of fire control
+            ####################################################
+            
+            ### fire control distribution
             self.Observers['fire_control_measures'].control()
         
+            ##############################
+            ### impact of fire control
+            ##############################
+            
+            control_impact = self.model.p.AFT_pars['Fire_escape']['Overall']
+            control_weights= {}
+            
+            for a in self.Observers['fire_control_measures']:
+                
+                for f in a.Control_vals.keys():
+                    
+                    # filt data for fire
+                    ctl_filt = control_impact.loc[control_impact['Intention'] == f,:]
+                    
+                    # combine impact of controlled & uncontrolled
+                    controlled = a.Control_vals[f] *  ctl_filt.loc[ctl_filt['Controlled'] == True, 'Escape_weight'].iloc[0]
+                    no_control = (1-a.Control_vals[f]) *  ctl_filt.loc[ ctl_filt['Controlled'] == False, 'Escape_weight'].iloc[0]
+                    
+                    # sum and stash
+                    ctl_w              = controlled+no_control
+                    control_weights[f] = np.array(ctl_w).reshape(self.p.ylen, self.p.xlen)
+                    
+            ####################################################
+            ### 3) Combine
+            ####################################################
+            for f in self.escaped_fire.keys():
+                
+                self.escaped_fire[f] = self.escaped_fire[f] * control_weights[f]
     
     
     #####################################################################################
@@ -438,7 +480,6 @@ class WHAM(ap.Model):
     
     def update(self):
         
-        self.p.timestep += 1
         self.record()        ### store data in model object
         self.write_out()     ### write data to disk
         
@@ -456,14 +497,39 @@ class WHAM(ap.Model):
         self.results['Managed_fire'].append(deepcopy(self.Managed_fire))        
         self.results['Background_ignitions'].append(deepcopy(self.Background_ignitions))
         self.results['Arson'].append(deepcopy(self.Arson))
-    
+        self.results['Escaped_fire'].append(deepcopy(self.escaped_fire))
     
     def write_out(self):
         
         '''choose data to write'''
                 
+        if self.p.write_annual == True:
+            
+            for i in self.results.keys():
+    
+                if type(self.results[i][self.timestep])  == dict:
+    
+                    for file in self.results[i][self.timestep].keys():
+            
+                        ### compile data
+                        path = self.p.write_fp + '\\' + i + '_' + file + '_' + str(self.timestep) + '.nc'
+                        data = self.results[i][self.timestep][file]
         
-        pass
+                        ### write out
+                        write_nc(fn = path, annual = True,
+                                 vals = data, mod = self)
+            
+            
+                elif type(self.results[i][self.timestep]) == np.ndarray:
+        
+                    ### compile data
+                    path = self.p.write_fp + '\\' + i + '_' + str(self.timestep) + '.nc'
+                    data = self.results[i][self.timestep]
+        
+                    ### write out
+                    write_nc(fn = path, annual = True,
+                      vals = data, mod = self)
+    
     
     
     ####################################################################

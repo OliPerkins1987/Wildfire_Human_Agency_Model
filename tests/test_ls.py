@@ -65,7 +65,7 @@ def test_ls_prescribed():
     'LS'  : [Cropland],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
+    'start_run': 0,
     'theta'    : 0.1, 
     'bootstrap': False, 
     'Observers': {},
