@@ -23,10 +23,19 @@ exec(open("setup_full.py").read())
 os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 R_results = pd.read_csv('Arson_2002.csv')
 
-parameters['start_run'] = 12
-parameters['end_run']   = 12
+### bespoke parameters
+parameters['start_run'] = 13
+parameters['end_run']   = 13
+parameters['Observers'] = {'arson': arson, 
+                           'background_rate': background_rate, 
+                           'deforestation'  : deforestation}
+parameters['escaped_fire'] = False
+parameters['write_annual'] = False
+parameters['reporters']    = ['Managed_fire', 'Background_ignitions', 'Arson']
+
 
 mod = WHAM(parameters)
+mod.record = lambda: 2*2
 
 ### setup
 mod.setup()
@@ -110,7 +119,7 @@ def test_regression():
         
         errors.append("Errors in regression prediction values")
 
-    if not np.nanmax(pd.Series(reg) <= 1):
+    if not np.nanmax(pd.Series(reg))  <= 1:
         
         errors.append("Errors in regression prediction values")
 
