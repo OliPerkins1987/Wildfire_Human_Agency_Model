@@ -25,6 +25,8 @@ exec(open("setup_full.py").read())
 ### Run annual model
 ######################
 
+parameters['Seasonality'] = False
+
 mod = WHAM(parameters)
 
 ### setup

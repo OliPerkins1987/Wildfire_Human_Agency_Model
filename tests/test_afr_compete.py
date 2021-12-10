@@ -39,6 +39,7 @@ Core_pars = {'AFT_dist': {},
 
 Core_pars['AFT_dist']['Test/Test']          = Dummy_frame
 Core_pars['AFT_dist']['Sub_AFTs/Test_Test'] = Dummy_frame
+Map_data['Area'] = np.array([1]*27648)
 
 ### Mock model
 parameters = {

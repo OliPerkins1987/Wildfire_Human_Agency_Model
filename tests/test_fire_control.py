@@ -38,15 +38,15 @@ def test_control_fundamentals():
     summary = mod.Observers['fire_control_measures'][0].Control_vals['crb'].value_counts()
     summary2= mod.Observers['fire_control_measures'][0].Control_vals['pasture'].value_counts()
     
-    if not summary.index[0] == 0:
+    if not summary.index[0] == 1.0:
         
         errors.append("Error in fire control measure predictions")
     
-    if not np.max(summary.index) == 1.0 and np.median(summary.index) == 0.76:
+    if not np.max(summary.index) == 1.0 and np.median(summary.index) == 0.865902255:
         
         errors.append("Error in cropland fire control measure predictions")
     
-    if not summary2.iloc[2] == 1644:
+    if not summary2.iloc[2] == 1126:
         
         errors.append("Error in pasture fire control measure predictions")
        

@@ -29,6 +29,9 @@ class Swidden(AFT):
         self.Fire_use = {'cfp': {'bool': 'tree_mod', 
                                  'ba':   'tree_mod', 
                                  'size': 0.728455277}}
+        
+        self.Defor_size = 0.833333333
+
 
 class SOSH(AFT):
     
@@ -43,6 +46,9 @@ class SOSH(AFT):
                                  'ba': 'tree_mod', 
                                  'size': 0.666666667}}
         
+        self.Defor_size = 1.8
+        
+        
 class MOSH(AFT):
     
     def setup(self):
@@ -55,6 +61,9 @@ class MOSH(AFT):
         self.Fire_use = {'crb': {'bool': {'constant':1}, 
                                  'ba': 'tree_mod', 
                                  'size': 0.9920635}}
+        
+        self.Defor_size = 4.507162
+        
 
 class Intense_arable(AFT):
     
@@ -67,4 +76,7 @@ class Intense_arable(AFT):
         self.Fire_use = {'crb': {'bool': 'tree_mod', 
                                  'ba': {'constant':0.0425}, 
                                  'size': 33.75}}
+        
+        self.Defor_size = 81.95727
+
 

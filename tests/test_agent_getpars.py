@@ -39,6 +39,7 @@ Core_pars = {'AFT_dist': {},
 Core_pars['AFT_dist']['Cropland/Trans']   = Trans_frame
 Core_pars['AFT_dist']['Cropland/Intense'] = Intense_frame
 Core_pars['AFT_dist']['Sub_AFTs/Trans_Cropland'] = SOSH_frame
+Map_data = {'Area': np.array([1]*27648)}
 
 ### Mock model
 parameters = {
@@ -48,7 +49,7 @@ parameters = {
     'AFTs': [SOSH, Intense_arable],
     'LS'  : [],
     'AFT_pars': Core_pars,
-    'Maps'    : '',
+    'Maps'    : Map_data,
     'start_run': 0,
     'theta'    : 0.1, 
     'bootstrap': False, 

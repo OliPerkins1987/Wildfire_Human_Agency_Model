@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\Escaped_firev2.nc'
+fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\Total_wdefor.nc'
 ds = nc.Dataset(fn, 'w', format='NETCDF4')
 
 
@@ -29,7 +29,7 @@ value.units = 'ba_fraction'
 lats[:] = np.arange(-90, 90, 1.25)
 lons[:] = np.arange(-180, 180, 1.875)
 
-value[:, :, :] = np.stack(esc_fr)
+value[:, :, :] = np.stack([x['Total'] for x in mod.results['Managed_fire']])
 
 ds.close()
 

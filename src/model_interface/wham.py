@@ -243,6 +243,8 @@ class WHAM(ap.Model):
         ''' gathers deliberate fire and multiplies by AFT coverage'''
         
         
+        ### gather and some fire types across AFTs
+        
         self.Managed_fire = {}
         self.Managed_igs  = {}
         
@@ -266,21 +268,28 @@ class WHAM(ap.Model):
             self.Managed_igs[i]  = np.nansum([x for x in self.Managed_igs[i].values()], 
                                                  axis = 0)
             
+            
+        #################################
+        ### Calculate deforestation fire
+        #################################
         
-            ### Divide outputs by seasonality map
+        self.Observers['deforestation'][0].clear_vegetation()
+        self.Managed_fire['defor'] = self.Observers['deforestation'][0].VC_vals
+        self.Managed_igs['defor']  = self.Observers['deforestation'][0].VC_igs    
+                
+        
+        #######################################
+        ### Divide outputs by seasonality map
+        #######################################
+        
+        for i in self.p.Fire_types.keys():
+        
             if self.p.Seasonality == True:
             
                 self.Managed_fire[i] = self.p.Fire_seasonality[i].data * self.Managed_fire[i]
                 self.Managed_igs[i]  = self.p.Fire_seasonality[i].data * self.Managed_igs[i]
-           
-            
-        #################################
-        ### Add deforestation fire
-        #################################
         
-        #self.Managed_fire['deforestation'] = deforestation(self)
         
-            
         ################################################################
         
         ### Group outputs beyond fire use type?
@@ -426,6 +435,7 @@ class WHAM(ap.Model):
             ####################################################
             ### 3) Combine
             ####################################################
+            
             for f in self.escaped_fire.keys():
                 
                 self.escaped_fire[f] = self.escaped_fire[f] * control_weights[f]
@@ -498,6 +508,7 @@ class WHAM(ap.Model):
         self.results['Background_ignitions'].append(deepcopy(self.Background_ignitions))
         self.results['Arson'].append(deepcopy(self.Arson))
         self.results['Escaped_fire'].append(deepcopy(self.escaped_fire))
+    
     
     def write_out(self):
         

@@ -33,6 +33,7 @@ Dummy_dat     = Dummy_dat['Forest_frac'][:]
 Dummy_dat2    = 27647 - np.arange(27648)
 Map_data      = {'Test': Dummy_dat, 'Test2': Dummy_dat2}
 Map_test      = np.array(pd.read_csv('Test_raster.csv'))
+Map_data['Area'] = np.array([1]*27648)
 
 ### Mock load up
 Core_pars = {'AFT_dist': {}, 

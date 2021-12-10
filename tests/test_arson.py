@@ -23,8 +23,8 @@ exec(open("setup_full.py").read())
 os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 R_results = pd.read_csv('Arson_2002.csv')
 
-
-
+parameters['start_run'] = 12
+parameters['end_run']   = 12
 
 mod = WHAM(parameters)
 
@@ -129,7 +129,7 @@ def test_combined_mod():
 def test_arson_ignitions():   
 
 
-    assert(np.nanmean(igs) == np.nanmean(mod.Observers['arson'][0].Fire_vals))
+    assert(np.nanmean(igs) == pytest.approx(np.nanmean(mod.Observers['arson'][0].Fire_vals), 0.1))
 
     
 def test_arson_output():

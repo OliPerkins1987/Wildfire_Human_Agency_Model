@@ -28,7 +28,7 @@ class Pastoralist(AFT):
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': 'tree_mod', 
                                  'size': 6.55}}
-
+        
 
     def fire_constraints(self):
         
@@ -133,6 +133,8 @@ class Ext_LF_p(AFT):
                                  'ba': 'tree_mod', 
                                  'size': 14.03571}}
         
+        self.Defor_size = 44.83549
+        
         
 class Int_LF_p(AFT):
     
@@ -145,6 +147,9 @@ class Int_LF_p(AFT):
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 
                                  'size': 11.5}}
+        
+        self.Defor_size = 65.35
+
         
         
         

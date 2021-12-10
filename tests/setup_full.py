@@ -32,6 +32,8 @@ from Core_functionality.top_down_processes.arson import arson
 from Core_functionality.top_down_processes.background_ignitions import background_rate
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
+from Core_functionality.top_down_processes.deforestation import deforestation
+
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -47,39 +49,60 @@ all_afts = [Swidden, SOSH, MOSH, Intense_arable,
 
 parameters = {
     
+    ### Model run limits
     'xlen': 192, 
     'ylen': 144,
+    'start_run': 0,
+    'end_run' : 0,
+    
+    ### Agents
     'AFTs': all_afts,
+    
     'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
+    
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
-                  'fire_control_measures': fire_control_measures},    
-    'AFT_pars': Core_pars,
-    'Maps'    : Map_data,
+                  'fire_control_measures': fire_control_measures, 
+                  'deforestation': deforestation},    
     
     'Fire_seasonality': Seasonality,
     
+    ### data
+    'AFT_pars': Core_pars,
+    'Maps'    : Map_data,
+    
+    ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
-                   'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'}, 
 
+    ### constraints
     'Constraint_pars': {'Soil_threshold': 0.1325, 
                         'Dominant_afr_threshold': 0.5, 
                         'Rangeland_stocking_contstraint': True, 
                         'R_s_c_Positive' : False, 
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
-    'start_run': 0,
-    'end_run' : 0,
+    
+    'Defor_pars': {'Pre'    : 1, 
+                   'Trans'  : 0.84, 
+                   'Intense': 0.31},
+    
+    
+    ### fire meta pars
+    'Seasonality'  : False, 
+    'escaped_fire' : True,
+    'theta'        : 0.1,
+
+    ### reporters
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Escaped_fire'],
-    'theta'    : 0.1,
     
-    'Seasonality': False, 
-    'escaped_fire': True,
-    
+    ### house keeping
     'bootstrap': False,
-    'n_cores'  : 4 
+    'n_cores'  : 4,
+	
+	'write_annual': False
     
     
     }

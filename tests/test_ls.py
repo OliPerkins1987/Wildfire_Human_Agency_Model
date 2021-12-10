@@ -47,6 +47,7 @@ Map_data['HDI']           = Dummy_dat
 Map_data['NPP']           = Dummy_dat
 Map_data['DEM']           = Dummy_dat
 Map_data['HDI_GDP']       = Dummy_dat
+Map_data['Area']          = np.array([1]*27648)
 
 ##########################################################################
 
@@ -96,7 +97,7 @@ def test_ls_compete():
     'LS'  : [Unoccupied],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
+    'start_run': 0,
     'theta'    : 0.1, 
     'bootstrap': False
     
@@ -106,8 +107,9 @@ def test_ls_compete():
         
     mod = WHAM(parameters)
     # Parameters
-    mod.xlen = mod.p.xlen
-    mod.ylen = mod.p.ylen
+    mod.xlen     = mod.p.xlen
+    mod.ylen     = mod.p.ylen
+    mod.timestep = mod.p.start_run
 
     # Create grid
     mod.grid = ap.Grid(mod, (mod.xlen, mod.ylen), track_empty=False)
@@ -151,7 +153,7 @@ def test_ls_specified():
     'LS'  : [Nonex],
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'timestep': 0,
+    'start_run': 0,
     'theta'    : 0.1, 
     'bootstrap': False
     
@@ -161,8 +163,9 @@ def test_ls_specified():
         
     mod = WHAM(parameters)
     # Parameters
-    mod.xlen = mod.p.xlen
-    mod.ylen = mod.p.ylen
+    mod.xlen     = mod.p.xlen
+    mod.ylen     = mod.p.ylen
+    mod.timestep = mod.p.start_run
 
     # Create grid
     mod.grid = ap.Grid(mod, (mod.xlen, mod.ylen), track_empty=False)
