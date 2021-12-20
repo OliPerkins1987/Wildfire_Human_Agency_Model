@@ -12,7 +12,13 @@ import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
-exec(open("test_setup.py").read())
+
+os.chdir((wd[0:-6] + '/src/data_import'))
+exec(open("local_load_up.py").read())
+
+os.chdir(wd)
+exec(open("setup_full.py").read())
+
 
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
@@ -32,29 +38,34 @@ Trans_frame   = pd.read_csv('Trans_pars.csv')
 Intense_frame = pd.read_csv('Intense_arable_pars.csv')
 SOSH_frame    = pd.read_csv('SOSH_pars.csv')
 
-### Mock load up
-Core_pars = {'AFT_dist': {}, 
-             'Fire_use': {}} 
-
-Core_pars['AFT_dist']['Cropland/Trans']   = Trans_frame
-Core_pars['AFT_dist']['Cropland/Intense'] = Intense_frame
-Core_pars['AFT_dist']['Sub_AFTs/Trans_Cropland'] = SOSH_frame
-Map_data = {'Area': np.array([1]*27648)}
-
 ### Mock model
 parameters = {
     
     'xlen': 144, 
     'ylen': 192,
+    'start_run': 0,
+    'end_run' : 0,
+    
     'AFTs': [SOSH, Intense_arable],
     'LS'  : [],
+    'Observers': {},
+    
     'AFT_pars': Core_pars,
     'Maps'    : Map_data,
-    'start_run': 0,
+    
+    ### Fire parameters
+    'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'},
+
+    'Seasonality'  : False, 
+    'escaped_fire' : False,
+
     'theta'    : 0.1, 
     'bootstrap': False, 
-    'Observers': {},
+    
     'reporters': []
+    
+    
     
     }
 
