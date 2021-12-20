@@ -16,7 +16,7 @@ exec(open("test_setup.py").read())
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent
-from Core_functionality.AFTs.afts import SOSH, Intense_arable
+from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
 from model_interface.wham import WHAM
 
 
