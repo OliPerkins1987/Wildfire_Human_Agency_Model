@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 24,
+    'end_run' : 1,
     
     ### Agents
     'AFTs': all_afts,

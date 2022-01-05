@@ -1,0 +1,5 @@
+1) Get sizes and numbers of all fires for each cell
+
+2) Fires > 21ha go in
+
+3) Fires < 21ha ...
