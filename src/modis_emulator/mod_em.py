@@ -18,7 +18,7 @@ class modis_em():
 
         self.abm = abm
         self.map = np.zeros(
-            shape=(self.abm.p.ylen, self.abm.p.xlen))  # emulated BA
+            shape=(self.abm.p.ylen * self.abm.p.xlen))  # emulated BA
 
         # number of MODIS pixels per WHAM/INFERNO pixel
         self.n_MODIS = np.array(self.abm.Area / (0.5*0.5))
@@ -33,6 +33,8 @@ class modis_em():
 
     def get_fire_vals(self):
         ''' get burned area frac by fire taxon (human, lightning, etc) '''
+
+        long_area = self.abm.Area.reshape(self.abm.p.ylen*self.abm.p.xlen)
 
         self.Managed_fire = {}
         self.Managed_igs = {}
@@ -52,31 +54,16 @@ class modis_em():
 
                     self.Managed_fire[i][a] = np.array(a.Fire_vals[i]).reshape(
                         self.abm.p.ylen, self.abm.p.xlen)
-                    self.Managed_fire[i][a] = self.Managed_fire[i][a] * \
-                        self.abm.AFT_scores[type(a).__name__]
+                    self.Managed_fire[i][a] = (self.Managed_fire[i][a] *
+                        self.abm.AFT_scores[type(a).__name__])
                     self.Managed_fire[i][a] = np.array(self.Managed_fire[i][a]).reshape(
                         self.abm.p.ylen * self.abm.p.xlen)
-                    self.Managed_igs[i][a] = self.Managed_fire[i][a] / \
-                        (a.Fire_use[i]['size'] / 100)
+                    self.Managed_igs[i][a] = (self.Managed_fire[i][a] /
+                        (a.Fire_use[i]['size'] / 100)) * long_area
                     self.Managed_big[i][a] = a.Fire_use[i]['size'] >= 21
 
         # !!! add INFERNO outputs
 
-    def calc_big_fires(self):
-        ''' add all fires bigger than 21ha as a fraction of the grid cell '''
-
-        # ABM
-
-        for i in self.Managed_fire.keys():
-
-            for a in self.abm.agents:
-
-                if i in a.Fire_vals.keys():
-
-                    if self.Managed_big[i][a] == True:
-
-                        self.map = np.nansum(
-                            [self.map, self.Managed_fire[i][a]], axis=0)
 
     def divide_cells(self):
         ''' apportion numbers of MODIS pixels to different land use types '''
@@ -90,20 +77,19 @@ class modis_em():
             [X_axis['Pasture'], X_axis['Rangeland']], axis=0)
         self.LC_pix['Pasture'] = self.LC_pix['Pasture'].reshape(
             self.abm.p.ylen * self.abm.p.xlen)
-        self.LC_pix['Vegetation'] = self.LC_pix['Mask'] - \
-            self.LC_pix['Pasture'] - self.LC_pix['Arable']
+        self.LC_pix['Vegetation'] = (self.LC_pix['Mask'] -
+            self.LC_pix['Pasture'] - self.LC_pix['Arable'])
 
         # Assign number of MODIS pixels to land covers
         for x in ['Arable', 'Pasture', 'Vegetation']:
 
             self.LC_pix[x] = self.LC_pix[x] * self.LC_pix['n_MODIS']
-            self.LC_pix[x] = self.LC_pix[x].reshape(
-                self.abm.p.ylen * self.abm.p.xlen)
+
             self.LC_pix[x] = np.array(
                 [round(y) if y > 0 else 0 for y in np.array(self.LC_pix[x])])
 
 
-    def null_cell(self, cell_numb):
+    def not_null_cell(self, cell_numb):
 
         # is there any land in the cell?
 
@@ -136,10 +122,11 @@ class modis_em():
         # arrays of length n_MODIS by land cover type
 
         cell = {}
+        cn   = int(cell_numb)
 
         for lc in ['Arable', 'Pasture', 'Vegetation']:
 
-            cell[lc] = np.zeros(self.LC_pix[lc][cell_numb])
+            cell[lc] = np.zeros(int(self.LC_pix[lc][cn]))
 
             # loop through fire types then compile BA fractions for subcells
 
@@ -153,17 +140,17 @@ class modis_em():
                         
                         ### only cells with some of the relevant lc
                         
-                        if i in a.Fire_vals.keys() and self.LC_pix[lc][cell_numb] > 0:
+                        if i in a.Fire_vals.keys() and self.LC_pix[lc][cn] > 0:
 
                             ### rate of poisson distribution                            
 
-                            fire_rate = self.get_rate(self.Managed_igs[i][a][cell_numb],
-                                                      self.LC_pix[lc][cell_numb])
+                            fire_rate = self.get_rate(self.Managed_igs[i][a][cn],
+                                                      self.LC_pix[lc][cn])
 
                             ### Distribute fires using poisson process
 
                             fire_dist = self.poisson_fires(
-                                fire_rate, self.LC_pix[lc][cell_numb])
+                                fire_rate, self.LC_pix[lc][cn])
 
                             ### burned area from n fires
 
@@ -175,7 +162,7 @@ class modis_em():
         return(cell)
         
     
-    def limit_ba(self, cell_dict):
+    def distribute_ba(self, cell_dict):
         
         ### take cells with BA > 21ha (MODIS pixel) & reallocate
         ### assumes BA != >100% in a given month
@@ -214,10 +201,62 @@ class modis_em():
                             cell[lc][i] = 21.0
                 
         return(cell)
+    
+    
+    def filter_ba_MODIS(self, cell_dict):
         
-
+        '''filter out partially burned cells which MODIS will not detect'''
+        
+        cell = cell_dict
+        
+        for lc in ['Arable', 'Pasture', 'Vegetation']:
+            
+            for i in range(cell[lc].shape[0]):
+                
+               cell[lc][i] = 0 if cell[lc][i] < 21 else cell[lc][i]
+        
+        return(cell)
+    
+    
+    def emulate(self):
+        
+        cells = []
+        
+        for i in range(self.map.shape[0]):
+    
+            ### skip ocean !       
+    
+            if self.not_null_cell(i):
+                
+                ### assign fires to MODIS pixels
+                temp_cell = self.assign_fires(i)
+                
+                ### prevent >100% BA in a month
+                temp_cell = self.distribute_ba(temp_cell)
+                
+                ### apply MODIS filter
+                temp_cell = self.filter_ba_MODIS(temp_cell)
+                
+                ### add totals of different land systems by WHAM cell
+                temp_cell = dict(zip([x for x in temp_cell.keys()], 
+                                 [np.nansum(y) for y in temp_cell.values()]))
+                
+                            
+            else:
+                
+                ### Cells with no land
+                temp_cell = {'Arable': 0.0, 'Pasture': 0.0, 'Vegetation':0.0}
+        
+            ### gather together
+            cells.append(temp_cell)
+            
+        self.emulated_BA = cells
+    
 
 #####
 # experiment
 #####
 em = modis_em(mod)
+em.get_fire_vals()
+em.divide_cells()
+em.emulate()
