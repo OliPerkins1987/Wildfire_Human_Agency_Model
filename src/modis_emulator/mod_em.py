@@ -102,16 +102,19 @@ class modis_em():
             self.LC_pix[x] = np.array(
                 [round(y) if y > 0 else 0 for y in np.array(self.LC_pix[x])])
 
+
     def null_cell(self, cell_numb):
 
         # is there any land in the cell?
 
         return(self.LC_pix['Mask'][cell_numb] > 0)
 
+
     def get_rate(self, fire_grid, Mod_grid):
         ''' calculates lambda for rate of fire per theoretical MODIS sub-cells '''
 
         return(fire_grid / Mod_grid)
+
 
     def poisson_fires(self, rate, n_cell, shuffle=True):
         ''' returns number of fires per cell following a poisson distribution'''
@@ -125,6 +128,7 @@ class modis_em():
             random.shuffle(y_out)
 
         return(y_out)
+
 
     def assign_fires(self, cell_numb):
         ''' assigns numbers of fires to theoretical MODIS sub-cells by land cover type '''
@@ -140,23 +144,77 @@ class modis_em():
             # loop through fire types then compile BA fractions for subcells
 
             for i in self.Managed_fire.keys():
-
+                
+                ### only fire types for relevant land cover
+                
                 if self.abm.p.Fire_types[i] == lc:
 
                     for a in self.abm.agents:
-
+                        
+                        ### only cells with some of the relevant lc
+                        
                         if i in a.Fire_vals.keys() and self.LC_pix[lc][cell_numb] > 0:
+
+                            ### rate of poisson distribution                            
 
                             fire_rate = self.get_rate(self.Managed_igs[i][a][cell_numb],
                                                       self.LC_pix[lc][cell_numb])
 
+                            ### Distribute fires using poisson process
+
                             fire_dist = self.poisson_fires(
                                 fire_rate, self.LC_pix[lc][cell_numb])
+
+                            ### burned area from n fires
 
                             fire_dist = [x * a.Fire_use[i]['size']
                                          for x in fire_dist]
 
                             cell[lc]  = cell[lc] + np.array(fire_dist)
+        
+        return(cell)
+        
+    
+    def limit_ba(self, cell_dict):
+        
+        ### take cells with BA > 21ha (MODIS pixel) & reallocate
+        ### assumes BA != >100% in a given month
+        ### spillover fire, including larger fires, moves to contiguous cells
+        
+        cell = cell_dict
+        
+        for lc in ['Arable', 'Pasture', 'Vegetation']:
+        
+                
+            ### only conduct smoothing if overall ba in lc is less than 100%!
+            ### (unlikely edge case)
+            
+            if np.nansum(cell[lc]* cell[lc].shape[0]) >  (21 * cell[lc].shape[0]):
+                
+                pass
+        
+            else: 
+                
+                while any(cell[lc] > 21):
+        
+                    for i in range(cell[lc].shape[0]):
+                        
+                        ### cell has ba > 100%?
+                        
+                        if cell[lc][i] > 21:
+                        
+                            ### assign overflow to contiguous cell(s)
+                        
+                            diff     = cell[lc][i] - 21
+                            new_cell = (i + 1) if (i + 1) <= cell[lc].shape[0] else 0
+                            cell[lc][new_cell] = cell[lc][new_cell] + diff 
+                            
+                            ### set ba of original cell to 100%
+                            
+                            cell[lc][i] = 21.0
+                
+        return(cell)
+        
 
 
 #####
