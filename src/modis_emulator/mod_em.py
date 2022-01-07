@@ -19,7 +19,11 @@ class modis_em():
         self.abm = abm
         self.map = np.zeros(
             shape=(self.abm.p.ylen * self.abm.p.xlen))  # emulated BA
-
+        
+        ### Treat shifting cultivation as arable (by land system)... 
+        ### rather than vegetation (what gets burned)
+        self.abm.p.Fire_types['cfp'] = 'Arable'
+        
         # number of MODIS pixels per WHAM/INFERNO pixel
         self.n_MODIS = np.array(self.abm.Area / (0.5*0.5))
 
@@ -91,24 +95,73 @@ class modis_em():
 
     def not_null_cell(self, cell_numb):
 
-        # is there any land in the cell?
+        ''' is there any land in the cell? '''
 
         return(self.LC_pix['Mask'][cell_numb] > 0)
 
 
-    def get_rate(self, fire_grid, Mod_grid):
+    def get_AFT_area(self, AFT, cell_numb):
+    
+        ''' find fractional coverage of AFT by cell'''    
+    
+        AFT_area = self.abm.AFT_scores[type(AFT).__name__].reshape(
+            self.abm.p.ylen * self.abm.p.xlen)
+        
+        AFT_area = AFT_area[cell_numb]
+        
+        return(AFT_area)
+
+
+    def get_rate(self, fire_grid, n_mod, AFT_area):
+        
         ''' calculates lambda for rate of fire per theoretical MODIS sub-cells '''
+        ''' calculation factors in proportion of a cell covered by the relevant lc '''        
 
-        return(fire_grid / Mod_grid)
+                
+        if AFT_area > 0:
+        
+        ### numb fires / n MODIS pixels (lc) / nMODIS total weighted by AFT_coverage    
+        
+            return(fire_grid / (n_mod * AFT_area))
+        
+        else:
+            
+            return 0.0
 
 
-    def poisson_fires(self, rate, n_cell, shuffle=True):
+    def poisson_fires(self, rate, n_cell, AFT_area, cell_numb, shuffle=True):
+        
         ''' returns number of fires per cell following a poisson distribution'''
+        ''' Logic is that n_fires = pois(rate) if AFT > 0, else 0 '''
 
+        ### make poisson object
         pois_obj = sp.stats.poisson(rate)
-        x_in     = [x for x in np.linspace(0, 1, n_cell + 2)] ### 0 and 1 will be -inf and inf!
-        y_out    = [y for y in pois_obj.ppf(x_in[1:-1])]     ### finite probability space!
-
+        
+        ### define fraction of MODIS pixels for given AFT
+        lc_frac   = n_cell / self.LC_pix['n_MODIS'][cell_numb]
+        
+        ### is AFT present?
+        
+        if (n_cell * (AFT_area/lc_frac)) > 0:
+            
+            ### yes - calc AFT area and proceed
+            AFT_cells = round(n_cell * (AFT_area/lc_frac))
+        
+        else:
+            
+            ### no - return zeros
+            return([x for x in np.zeros(n_cell)])
+        
+        ### sample quantiles of poisson
+        x_in     = [x for x in np.linspace(0, 1, AFT_cells + 2)] ### 0 and 1 will be -inf and inf!
+        y_out    = [y for y in pois_obj.ppf(x_in[1:-1])]         ### finite probability space!
+        
+        ### append 0s for AFT not present within the land cover type
+        
+        for x in range((n_cell - AFT_cells)):
+            
+            y_out.append(0.0) 
+        
         if shuffle == True:
 
             random.shuffle(y_out)
@@ -134,7 +187,7 @@ class modis_em():
                 
                 ### only fire types for relevant land cover
                 
-                if self.abm.p.Fire_types[i] == lc:
+                if self.abm.p.Fire_types[i] == lc:                    
 
                     for a in self.abm.agents:
                         
@@ -142,21 +195,22 @@ class modis_em():
                         
                         if i in a.Fire_vals.keys() and self.LC_pix[lc][cn] > 0:
 
+                            ### fractional coverage of AFT
+                            a_area    = self.get_AFT_area(a, cn)
+                            
                             ### rate of poisson distribution                            
-
                             fire_rate = self.get_rate(self.Managed_igs[i][a][cn],
-                                                      self.LC_pix[lc][cn])
+                                                      self.LC_pix['n_MODIS'][cn], 
+                                                      a_area)
 
                             ### Distribute fires using poisson process
-
                             fire_dist = self.poisson_fires(
-                                fire_rate, self.LC_pix[lc][cn])
+                                fire_rate, self.LC_pix[lc][cn], a_area, cn)
 
                             ### burned area from n fires
-
                             fire_dist = [x * a.Fire_use[i]['size']
                                          for x in fire_dist]
-
+                            
                             cell[lc]  = cell[lc] + np.array(fire_dist)
         
         return(cell)
@@ -250,13 +304,19 @@ class modis_em():
             ### gather together
             cells.append(temp_cell)
             
+            print(i)
+            
         self.emulated_BA = cells
-    
+
 
 #####
 # experiment
 #####
-em = modis_em(mod)
-em.get_fire_vals()
-em.divide_cells()
-em.emulate()
+em3 = modis_em(mod)
+em3.get_fire_vals()
+em3.divide_cells()
+em3.emulate()
+
+
+res = [x['Pasture'] + x['Arable'] + x['Vegetation'] for x in em3.emulated_BA]
+res = (np.array(res) / 100) / em.abm.Area.reshape(144*192)
