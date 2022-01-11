@@ -70,6 +70,22 @@ class modis_em():
         # !!! add INFERNO outputs
 
 
+    def constrain_managed_fire(self):
+        
+        ''' apply WHAM top-down fire constraints by land user '''
+        
+        for c in self.abm.Observers.values():
+            
+            if 'ct' in type(c[0]).__name__:
+                
+                constraint = c[0].Constraint.reshape(self.abm.p.ylen * self.abm.p.xlen)
+                
+                for k in self.Managed_fire.keys():
+                
+                    self.Managed_fire[k] = dict(zip([x for x in self.Managed_fire[k].keys()], 
+                                         [y*constraint for y in self.Managed_fire[k].values()]))
+
+
     def divide_cells(self):
         ''' apportion numbers of MODIS pixels to different land use types '''
 
@@ -273,11 +289,21 @@ class modis_em():
         return(cell)
     
     
-    def emulate(self):
+    
+    def setup_emulate(self):
+        
+        '''run emulate setup'''
         
         ### set up emulation
         self.get_fire_vals()
         self.divide_cells()
+        self.constrain_managed_fire()
+    
+    
+    def emulate(self):
+        
+        ''' run emulation'''
+        
         cells = []
         
         ### run emulation
@@ -315,13 +341,21 @@ class modis_em():
         self.emulated_BA = cells
 
 
-##########################
-# experiment
-##########################
+#######################################
 
-em = modis_em(mod)
-em.emulate()
+### run emulator
+
+#######################################
+
+if __name__ == "__main__":
+
+    ### instantiate
+    em = modis_em(mod)
+
+    ### setup
+    em.setup_emulate()
+
+    ### go
+    em.emulate()
 
 
-res = [x['Pasture'] + x['Arable'] + x['Vegetation'] for x in em.emulated_BA]
-res = (np.array(res) / 100) / em.abm.Area.reshape(144*192)

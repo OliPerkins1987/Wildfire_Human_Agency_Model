@@ -29,6 +29,7 @@ from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_fr
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
 from output_analysis.ncdf_write_func import write_nc
+from modis_emulator.mod_em import modis_em 
 
 ###################################################################
 
@@ -393,14 +394,14 @@ class WHAM(ap.Model):
             ####################################################
         
         
-            self.escaped_fire = {}
+            self.Escaped_fire = {}
             base = self.model.p.AFT_pars['Fire_escape']['Overall']
         
         
             for i in self.Managed_igs.keys():
                 
                 base_rate            = base.loc[base['Intention'] == i,'Base_escape_rate'].iloc[0]
-                self.escaped_fire[i] = self.Managed_igs[i] * base_rate         
+                self.Escaped_fire[i] = self.Managed_igs[i] * base_rate         
     
     
             ####################################################
@@ -436,9 +437,9 @@ class WHAM(ap.Model):
             ### 3) Combine
             ####################################################
             
-            for f in self.escaped_fire.keys():
+            for f in self.Escaped_fire.keys():
                 
-                self.escaped_fire[f] = self.escaped_fire[f] * control_weights[f]
+                self.Escaped_fire[f] = self.Escaped_fire[f] * control_weights[f]
     
     
     #####################################################################################
@@ -491,6 +492,15 @@ class WHAM(ap.Model):
     def update(self):
         
         self.record()        ### store data in model object
+        
+        if self.p.emulation == True:
+            
+            em = modis_em(self)
+            em.setup_emulate()
+            em.emulate()
+            
+            self.Emulated_fire = em.emulated_BA
+            
         self.write_out()     ### write data to disk
         
     
@@ -502,13 +512,12 @@ class WHAM(ap.Model):
     
     def record(self):
         
-        ''' choose data to stash in ram '''
+        ''' stash reported variables in RAM '''
         
-        self.results['Managed_fire'].append(deepcopy(self.Managed_fire))        
-        self.results['Background_ignitions'].append(deepcopy(self.Background_ignitions))
-        self.results['Arson'].append(deepcopy(self.Arson))
-        self.results['Escaped_fire'].append(deepcopy(self.escaped_fire))
-    
+        for i in self.p.reporters:
+        
+            self.results[i].append(deepcopy(self[i]))        
+            
     
     def write_out(self):
         

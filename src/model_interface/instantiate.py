@@ -52,11 +52,11 @@ all_afts = [Swidden, SOSH, MOSH, Intense_arable,
 
 parameters = {
     
-    ### Model run limits
+    ### Spatio-temporal limits
     'xlen': 192, 
     'ylen': 144,
-    'start_run': 0,
-    'end_run' : 1,
+    'start_run': 24,
+    'end_run' : 24,
     
     ### Agents
     'AFTs': all_afts,
@@ -99,11 +99,13 @@ parameters = {
     
     ### fire meta pars
     'Seasonality'  : False, 
-    'escaped_fire' : True,
+    'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
     
+    ### MODIS emulation
+    'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Escaped_fire'],
+    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
     
     ### house keeping
     'bootstrap': False,

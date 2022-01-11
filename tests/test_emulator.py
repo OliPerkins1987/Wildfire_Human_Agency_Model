@@ -37,6 +37,8 @@ from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, F
 from Core_functionality.top_down_processes.arson import arson
 from Core_functionality.top_down_processes.background_ignitions import background_rate
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
+from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
+from Core_functionality.top_down_processes.deforestation import deforestation
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -107,7 +109,7 @@ parameters = {
     
 
     ### reporters
-    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Escaped_fire'],
+    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
     
     ### house keeping
     'bootstrap': False,

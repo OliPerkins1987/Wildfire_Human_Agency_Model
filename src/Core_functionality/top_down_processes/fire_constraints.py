@@ -19,11 +19,12 @@ class fuel_ct(ap.Agent):
         Soil = self.model.p.Maps['Baresoil'].data
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold'])) #defaults mean bare soil cover
 
-        
         ### multiple Soil constraint by relevant fire types ??Pasture
         self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
         self.model.Managed_fire['Vegetation']  = self.model.Managed_fire['Vegetation'] * Soil
-
+        
+        ### store for easy analysis & use with emulator
+        self.Constraint = Soil
 
     def constrain_arson(self):
         
@@ -75,7 +76,8 @@ class dominant_afr_ct(ap.Agent):
         self.model.Managed_fire = dict(zip([x for x in self.model.Managed_fire.keys()], 
                                          [y*Intense for y in self.model.Managed_fire.values()]))
 
-        
+        ### store for easy analysis & use with emulator
+        self.Constraint = Intense
         
         
     def constrain_arson(self):
