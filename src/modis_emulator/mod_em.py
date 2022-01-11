@@ -16,6 +16,7 @@ class modis_em():
 
     def __init__(self, abm):
 
+        random.seed(1987) #for poisson fire assignment
         self.abm = abm
         self.map = np.zeros(
             shape=(self.abm.p.ylen * self.abm.p.xlen))  # emulated BA
@@ -138,7 +139,7 @@ class modis_em():
         pois_obj = sp.stats.poisson(rate)
         
         ### define fraction of MODIS pixels for given AFT
-        lc_frac   = n_cell / self.LC_pix['n_MODIS'][cell_numb]
+        lc_frac  = n_cell / self.LC_pix['n_MODIS'][cell_numb]
         
         ### is AFT present?
         
@@ -230,7 +231,7 @@ class modis_em():
             ### only conduct smoothing if overall ba in lc is less than 100%!
             ### (unlikely edge case)
             
-            if np.nansum(cell[lc]* cell[lc].shape[0]) >  (21 * cell[lc].shape[0]):
+            if np.nansum(cell[lc]) >  (21 * cell[lc].shape[0]):
                 
                 pass
         
@@ -247,7 +248,7 @@ class modis_em():
                             ### assign overflow to contiguous cell(s)
                         
                             diff     = cell[lc][i] - 21
-                            new_cell = (i + 1) if (i + 1) <= cell[lc].shape[0] else 0
+                            new_cell = (i + 1) if (i + 1) < cell[lc].shape[0] else 0
                             cell[lc][new_cell] = cell[lc][new_cell] + diff 
                             
                             ### set ba of original cell to 100%
@@ -274,11 +275,15 @@ class modis_em():
     
     def emulate(self):
         
+        ### set up emulation
+        self.get_fire_vals()
+        self.divide_cells()
         cells = []
         
+        ### run emulation
         for i in range(self.map.shape[0]):
     
-            ### skip ocean !       
+            ### skip ocean!       
     
             if self.not_null_cell(i):
                 
@@ -295,7 +300,6 @@ class modis_em():
                 temp_cell = dict(zip([x for x in temp_cell.keys()], 
                                  [np.nansum(y) for y in temp_cell.values()]))
                 
-                            
             else:
                 
                 ### Cells with no land
@@ -304,19 +308,20 @@ class modis_em():
             ### gather together
             cells.append(temp_cell)
             
-            print(i)
+            if i % 1000 == 0:
+                
+                print('Emulation ', i / 1000 * 5, '% completed')
             
         self.emulated_BA = cells
 
 
-#####
+##########################
 # experiment
-#####
-em3 = modis_em(mod)
-em3.get_fire_vals()
-em3.divide_cells()
-em3.emulate()
+##########################
+
+em = modis_em(mod)
+em.emulate()
 
 
-res = [x['Pasture'] + x['Arable'] + x['Vegetation'] for x in em3.emulated_BA]
+res = [x['Pasture'] + x['Arable'] + x['Vegetation'] for x in em.emulated_BA]
 res = (np.array(res) / 100) / em.abm.Area.reshape(144*192)
