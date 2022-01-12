@@ -107,6 +107,8 @@ parameters = {
     'Seasonality'  : False, 
     'escaped_fire' : False,
     
+    ### MODIS emulation
+    'emulation'    : False, ## run incrementally after single WHAM run
 
     ### reporters
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],

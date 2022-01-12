@@ -491,16 +491,16 @@ class WHAM(ap.Model):
     
     def update(self):
         
-        self.record()        ### store data in model object
-        
+        ### run emulation
         if self.p.emulation == True:
             
             em = modis_em(self)
             em.setup_emulate()
             em.emulate()
-            
             self.Emulated_fire = em.emulated_BA
-            
+        
+        
+        self.record()        ### store data in model object
         self.write_out()     ### write data to disk
         
     
@@ -562,6 +562,5 @@ class WHAM(ap.Model):
         
         pass
     
-
-    
+          
 

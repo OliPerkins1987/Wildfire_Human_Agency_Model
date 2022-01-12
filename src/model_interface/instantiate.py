@@ -55,8 +55,8 @@ parameters = {
     ### Spatio-temporal limits
     'xlen': 192, 
     'ylen': 144,
-    'start_run': 24,
-    'end_run' : 24,
+    'start_run': 0,
+    'end_run' : 0,
     
     ### Agents
     'AFTs': all_afts,
@@ -99,13 +99,13 @@ parameters = {
     
     ### fire meta pars
     'Seasonality'  : False, 
-    'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
+    'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
     
     ### MODIS emulation
-    'emulation'    : False, ##if True add 'Emulated_fire' to reporters
+    'emulation'    : True, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson'],
+    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Emulated_fire'],
     
     ### house keeping
     'bootstrap': False,

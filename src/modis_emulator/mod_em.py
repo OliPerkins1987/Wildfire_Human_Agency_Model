@@ -43,14 +43,12 @@ class modis_em():
 
         self.Managed_fire = {}
         self.Managed_igs = {}
-        self.Managed_big = {}
 
         for i in self.abm.p.Fire_types.keys():
 
             self.Managed_fire[i] = {}
             self.Managed_igs[i] = {}
-            self.Managed_big[i] = {}
-
+            
             # gather managed fire from abm
 
             for a in self.abm.agents:
@@ -65,7 +63,6 @@ class modis_em():
                         self.abm.p.ylen * self.abm.p.xlen)
                     self.Managed_igs[i][a] = (self.Managed_fire[i][a] /
                         (a.Fire_use[i]['size'] / 100)) * long_area
-                    self.Managed_big[i][a] = a.Fire_use[i]['size'] >= 21
 
         # !!! add INFERNO outputs
 
@@ -84,6 +81,9 @@ class modis_em():
                 
                     self.Managed_fire[k] = dict(zip([x for x in self.Managed_fire[k].keys()], 
                                          [y*constraint for y in self.Managed_fire[k].values()]))
+
+                    self.Managed_igs[k] = dict(zip([x for x in self.Managed_igs[k].keys()], 
+                                         [y*constraint for y in self.Managed_igs[k].values()]))
 
 
     def divide_cells(self):
@@ -336,9 +336,23 @@ class modis_em():
             
             if i % 1000 == 0:
                 
-                print('Emulation ', i / 1000 * 5, '% completed')
-            
-        self.emulated_BA = cells
+                print('Emulation ', round((i / 27648) * 100, 2), '% completed')
+
+        total = [val.values() for val in cells]
+        total = np.array([sum(x) for x in total]).reshape(self.abm.p.ylen, self.abm.p.xlen)
+
+        ### reassemble array
+        self.emulated_BA = {'Arable': np.array([x['Arable'] for x in cells]).reshape(
+                                    self.abm.p.ylen, self.abm.p.xlen), 
+                            'Pasture': np.array([x['Pasture'] for x in cells]).reshape(
+                                    self.abm.p.ylen, self.abm.p.xlen), 
+                            'Vegetation': np.array([x['Vegetation'] for x in cells]).reshape(
+                                    self.abm.p.ylen, self.abm.p.xlen), 
+                            'Total': total}
+        
+        ### convert hectares -> km2 -> BA fraction
+        self.emulated_BA = dict(zip([x for x in self.emulated_BA.keys()], 
+                            [y / 100 / self.abm.Area for y in self.emulated_BA.values()]))
 
 
 #######################################
