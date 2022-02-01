@@ -63,9 +63,7 @@ parameters = {
     
     'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
     
-    'Observers': {'background_rate': background_rate, 
-                  'arson': arson, 
-                  'fuel_constraint': fuel_ct, 
+    'Observers': {'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
                   'deforestation': deforestation},    
@@ -105,7 +103,7 @@ parameters = {
     'emulation'    : True, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Emulated_fire'],
+    'reporters': ['Managed_fire'],
     
     ### house keeping
     'bootstrap': False,

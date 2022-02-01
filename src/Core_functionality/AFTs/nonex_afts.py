@@ -30,7 +30,7 @@ class Hunter_gatherer(AFT):
                                  'ba': 'lin_mod', 
                                  'size': 1.27}, 
                          'pyrome': {'bool': 'tree_mod', 
-                                    'ba': 'lin_mod', 
+                                    'ba': 'tree_mod', 
                                     'size': 1}}
 
     def fire_constraints(self):
@@ -77,7 +77,7 @@ class Conservationist(AFT):
                          'ls': ['Nonex', 'Nonex', 'Nonex']} 
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
-                                    'ba'  : 'lin_mod', 
+                                    'ba'  : 'tree_mod', 
                                     'size': 150}}
 
 
