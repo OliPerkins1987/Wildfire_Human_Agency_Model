@@ -137,7 +137,9 @@ class WHAM(ap.Model):
         #################################################
         
         ### Forestry
-        ls_scores['Forestry'] =  ls_scores['Forestry'] * (1 - np.array(ls_scores['Nonex']['Forest'])) * (1 - np.array(ls_scores['Unoccupied']))
+        ls_scores['Forestry'] =  ls_scores['Forestry'] * (1 - 
+                                  np.array(ls_scores['Nonex']['Forest'])) * (1 - 
+                                        np.array(ls_scores['Unoccupied']))
         
         ### Get remaining vegetation fraction
         Open_vegetation                =  self.p.Maps['Mask'] - ls_scores['Cropland'] - ls_scores['Pasture'] - ls_scores['Rangeland'] - ls_scores['Forestry'] - ls_scores['Urban']
@@ -147,10 +149,16 @@ class WHAM(ap.Model):
         ls_scores['Nonex']['Combined'] =  Open_vegetation * (np.array(ls_scores['Nonex']['Other']) / (np.array(ls_scores['Nonex']['Other']) + np.array(ls_scores['Unoccupied'])))
         ls_scores['Unoccupied']        =  Open_vegetation * (np.array(ls_scores['Unoccupied']) / (np.array(ls_scores['Nonex']['Other']) + np.array(ls_scores['Unoccupied'])))
         ls_scores['Nonex']             =  ls_scores['Nonex']['Combined']
-                
+        
+        ### re-scale against Mask: coastal pixels
+        ls_frame                       = pd.DataFrame(ls_scores)
+        ls_frame['tot']                = self.p.Maps['Mask'] / ls_frame.sum(axis = 1) 
+        ls_frame.iloc[:, 0:-1  ]       = ls_frame.iloc[:,0:-1].multiply(ls_frame.tot, axis="index")                            
+        ls_frame                       = ls_frame.iloc[:, 0:-1].to_dict('series')
+        
         ### reshape and stash
-        self.X_axis                    =  dict(zip([x for x in ls_scores.keys()], 
-                                            [np.array(x).reshape(self.ylen, self.xlen) for x in ls_scores.values()]))
+        self.X_axis                    =  dict(zip([x for x in ls_frame.keys()], 
+                                            [np.array(x).reshape(self.ylen, self.xlen) for x in ls_frame.values()]))
         
     
     def allocate_Y_axis(self):

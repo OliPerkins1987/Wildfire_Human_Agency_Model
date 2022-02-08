@@ -35,10 +35,16 @@ class Hunter_gatherer(AFT):
 
     def fire_constraints(self):
         
+        ### constrain fire use by forest cover
+        Forest_mask              = 1 - (self.model.p.Maps['Primary_forest'][self.model.timestep, :, :].data + 
+                                         (0.5 * self.model.p.Maps['Secondary_forest'][self.model.timestep, :, :].data))
+        self.Fire_vals['hg']     = self.Fire_vals['hg'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
+        self.Fire_vals['pyrome'] = self.Fire_vals['pyrome'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
+        
+        ### constrain hg for proximity to wealthy cities
         threshold            = self.model.p.Constraint_pars['HG_Market_constraint']
         MI_constraint        = self.model.p.Maps['Market_influence'][self.model.timestep, :, :].data
         self.Fire_vals['hg'] = self.Fire_vals['hg'] * (MI_constraint.reshape(self.model.p.xlen * self.model.p.ylen) < threshold)
-
 
 
 class Recreationalist(AFT):
@@ -80,5 +86,13 @@ class Conservationist(AFT):
                                     'ba'  : 'tree_mod', 
                                     'size': 150}}
 
+    def fire_constraints(self):
+              
+        
+        ### constrain fire use by forest cover
+        Forest_mask              = 1 - (self.model.p.Maps['Primary_forest'][self.model.timestep, :, :].data + 
+                                         (0.5 * self.model.p.Maps['Secondary_forest'][self.model.timestep, :, :].data))
+        
+        self.Fire_vals['pyrome'] = self.Fire_vals['pyrome'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
 
 

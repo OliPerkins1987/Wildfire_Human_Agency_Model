@@ -330,7 +330,7 @@ class modis_em():
                 
                 ### Cells with no land
                 temp_cell = {'Arable': 0.0, 'Pasture': 0.0, 'Vegetation':0.0}
-        
+            
             ### gather together
             cells.append(temp_cell)
             

@@ -409,7 +409,12 @@ class AFT(ap.Agent):
                     elif self.Fire_use[x][b]['type'] == 'lin_mod':
     
                         self.Fire_vals[x][b] = deepcopy(self.Fire_dat[x][b])
-                    
+                        
+                        ### remove missing values
+                        for col in self.Fire_vars[x][b]:
+                            
+                            self.Fire_vals[x][b][col]  = [x if x != -3.3999999521443642e+38 else 0 for x in self.Fire_vals[x][b][col]]
+                        
                         ### Mulitply data by regression coefs
                         for coef in self.Fire_vars[x][b]:
                         
@@ -442,8 +447,8 @@ class AFT(ap.Agent):
             ### calculate burned area through bool & ba%
             self.Fire_vals[x] = self.Fire_vals[x]['bool'] * self.Fire_vals[x]['ba']
             
-            ### Adjust for AFT specific constraints
-            self.fire_constraints()
+        ### Adjust for AFT specific constraints
+        self.fire_constraints()
     
     
     def fire_constraints(self):

@@ -46,7 +46,15 @@ class deforestation(AFT):
         
         self.VC_vals         = {'Cropland': self.VC_rate['Cropland'][self.model.timestep, :, :], 
                                 'Pasture': self.VC_rate['Pasture'][self.model.timestep, :, :]}
-
+        
+        ### mask missing vals
+        mask_vals = [np.array(x).reshape(self.model.p.xlen*self.model.p.ylen) 
+                     for x in self.VC_vals.values()]
+        
+        mask_vals = [[y if y > 0  else 0 for y in x] for x in mask_vals]
+    
+        self.VC_vals = dict(zip([x for x in self.VC_vals.keys()], 
+                                [np.array(y).reshape(self.model.p.ylen, self.model.p.xlen) for y in mask_vals]))
     
         ### calculate vegetation clearance fire
         ### could this be done more neatly?

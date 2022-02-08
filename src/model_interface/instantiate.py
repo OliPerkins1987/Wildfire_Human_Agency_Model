@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 0,
+    'end_run' : 25,
     
     ### Agents
     'AFTs': all_afts,
@@ -82,7 +82,7 @@ parameters = {
                    'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'}, 
 
     ### constraints
-    'Constraint_pars': {'Soil_threshold': 0.1325, 
+    'Constraint_pars': {'Soil_threshold': {'max': 0.65, 'min': 0.15}, 
                         'Dominant_afr_threshold': 0.5, 
                         'Rangeland_stocking_contstraint': True, 
                         'R_s_c_Positive' : False, 
@@ -100,7 +100,7 @@ parameters = {
     'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
     
     ### MODIS emulation
-    'emulation'    : True, ##if True add 'Emulated_fire' to reporters
+    'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
     'reporters': ['Managed_fire'],
@@ -110,7 +110,7 @@ parameters = {
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\new_pop'  
         
     }
 

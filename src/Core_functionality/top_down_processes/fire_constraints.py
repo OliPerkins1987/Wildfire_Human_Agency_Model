@@ -15,10 +15,15 @@ class fuel_ct(ap.Agent):
     
     def constrain(self):
         
-        ### Calculate soil constraint
-        Soil = self.model.p.Maps['Baresoil'].data
-        Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold'])) #defaults mean bare soil cover
-
+        ### Calculate vegetation absence constraint
+        Soil = self.model.p.Maps['NDVI'].data[self.model.timestep, :, :]
+        Soil = ((Soil - self.model.p.Constraint_pars['Soil_threshold']['min']) / 
+                (self.model.p.Constraint_pars['Soil_threshold']['max'] - 
+                 self.model.p.Constraint_pars['Soil_threshold']['min']))
+        
+        Soil = np.select([Soil < 0, Soil > 1], [0, 1], default=Soil)
+        
+        
         ### multiple Soil constraint by relevant fire types ??Pasture
         self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
         self.model.Managed_fire['Vegetation']  = self.model.Managed_fire['Vegetation'] * Soil
@@ -29,8 +34,13 @@ class fuel_ct(ap.Agent):
     def constrain_arson(self):
         
         ### Calculate soil constraint
-        Soil = self.model.p.Maps['Baresoil'].data
-        Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold']))
+        Soil = self.model.p.Maps['NDVI'].data[self.model.timestep, :, :]
+        Soil = ((Soil - self.model.p.Constraint_pars['Soil_threshold']['min']) / 
+                (self.model.p.Constraint_pars['Soil_threshold']['max'] - 
+                 self.model.p.Constraint_pars['Soil_threshold']['min']))
+ 
+        Soil = np.select([Soil < 0, Soil > 1], [0, 1], default=Soil)
+        
         Soil = Soil.reshape(self.model.ylen * self.model.xlen)
         
         ### multiply arson by soil constraint
@@ -53,16 +63,14 @@ class dominant_afr_ct(ap.Agent):
     
             afr_vals = []
     
-            for ls in ['Nonex']:
+            for ls in ['Cropland', 'Pasture', 'Rangeland', 'Forestry','Nonex']:
         
                 if afr in self.model.LFS[ls].keys():
                 
                     afr_vals.append(self.model.LFS[ls][afr])
                
             afr_res[afr] = np.nansum(afr_vals, axis = 0)
-            
-            ### divide by nonex fraction
-            afr_res[afr] = afr_res[afr] / self.model.X_axis['Nonex']
+
         
         
         ### Zero intensive cases below dominance threshold
