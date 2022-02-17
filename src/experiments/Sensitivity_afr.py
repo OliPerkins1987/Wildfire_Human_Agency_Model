@@ -50,7 +50,17 @@ all_afts = [Swidden, SOSH, MOSH, Intense_arable,
             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
              Hunter_gatherer, Recreationalist, SLM, Conservationist]
 
-parameters = {
+### random sample of parameters
+import random
+random.seed(1987)
+
+par_dict = [x for x in np.arange(0, 1, 0.05)]
+
+    
+
+for p in range(len(par_dict)):
+
+    parameters = {
     
     ### Spatio-temporal limits
     'xlen': 192, 
@@ -83,7 +93,7 @@ parameters = {
 
     ### constraints
     'Constraint_pars': {'Soil_threshold': {'max': 160, 'median': 100, 'min': 40}, 
-                        'Dominant_afr_threshold': 0.5, 
+                        'Dominant_afr_threshold': par_dict[p], 
                         'Rangeland_stocking_contstraint': True, 
                         'R_s_c_Positive' : False, 
                         'HG_Market_constraint': 7800, 
@@ -110,7 +120,7 @@ parameters = {
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\Model calibration\empirical_afr' + '\\' + str(p) 
         
     }
 
@@ -121,15 +131,15 @@ parameters = {
 
 #####################################################
 
-if __name__ == "__main__":
+    if __name__ == "__main__":
 
-    ### instantiate
-    mod = WHAM(parameters)
+        ### instantiate
+        mod = WHAM(parameters)
 
-    ### setup
-    mod.setup()
+        ### setup
+        mod.setup()
 
-    ### go
-    mod.go()
+        ### go
+        mod.go()
 
 

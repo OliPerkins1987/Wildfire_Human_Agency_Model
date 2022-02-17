@@ -15,14 +15,14 @@ class fuel_ct(ap.Agent):
     
     def constrain(self):
         
+        pars = self.model.p.Constraint_pars['Soil_threshold']
+        
         ### Calculate vegetation absence constraint
-        Soil = self.model.p.Maps['NDVI'].data[self.model.timestep, :, :]
-        Soil = ((Soil - self.model.p.Constraint_pars['Soil_threshold']['min']) / 
-                (self.model.p.Constraint_pars['Soil_threshold']['max'] - 
-                 self.model.p.Constraint_pars['Soil_threshold']['min']))
+        Soil = self.model.p.Maps['NPP'].data[self.model.timestep, :, :]
+        Soil = ((Soil - pars['min']) / (pars['max'] - pars['min']))
         
+        Soil = Soil + (self.model.p.Maps['NPP'].data[self.model.timestep, :, :] > pars['median'])
         Soil = np.select([Soil < 0, Soil > 1], [0, 1], default=Soil)
-        
         
         ### multiple Soil constraint by relevant fire types ??Pasture
         self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
@@ -33,14 +33,16 @@ class fuel_ct(ap.Agent):
 
     def constrain_arson(self):
         
-        ### Calculate soil constraint
-        Soil = self.model.p.Maps['NDVI'].data[self.model.timestep, :, :]
-        Soil = ((Soil - self.model.p.Constraint_pars['Soil_threshold']['min']) / 
-                (self.model.p.Constraint_pars['Soil_threshold']['max'] - 
-                 self.model.p.Constraint_pars['Soil_threshold']['min']))
- 
+        pars = self.model.p.Constraint_pars['Soil_threshold']
+        
+        ### Calculate vegetation absence constraint
+        Soil = self.model.p.Maps['NPP'].data[self.model.timestep, :, :]
+        Soil = ((Soil - pars['min']) / (pars['max'] - pars['min']))
+        
+        Soil = Soil + (self.model.p.Maps['NPP'].data[self.model.timestep, :, :] > pars['median'])
         Soil = np.select([Soil < 0, Soil > 1], [0, 1], default=Soil)
         
+        ### reshape
         Soil = Soil.reshape(self.model.ylen * self.model.xlen)
         
         ### multiply arson by soil constraint

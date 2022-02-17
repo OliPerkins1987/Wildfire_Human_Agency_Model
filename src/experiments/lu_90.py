@@ -39,6 +39,24 @@ os.chdir((wd[0:-16] + '/data_import'))
 exec(open("local_load_up.py").read())
 
 
+##################################################
+
+#setup scenario
+
+##################################################
+
+for i in range(Map_data['GDP'].shape[0]):
+    
+    Map_data['GDP'][i, :, :] = Map_data['GDP'][0, :, :]
+    Map_data['HDI'][i, :, :] = Map_data['HDI'][0, :, :]
+    Map_data['Pop_dense'][i, :, :] = Map_data['Pop_dense'][0, :, :]
+    Map_data['Market_access'][i, :, :] = Map_data['Market_access'][0, :, :]
+    Map_data['Market_influence'][i, :, :] = Map_data['Market_influence'][0, :, :]
+    Map_data['Market.influence'][i, :, :] = Map_data['Market.influence'][0, :, :]
+    Map_data['HDI_GDP'][i, :, :] = Map_data['HDI_GDP'][0, :, :]
+    Map_data['WFI'][i, :, :] = Map_data['WFI'][0, :, :]
+
+
 #################################################
 
 ### setup parameters
@@ -56,7 +74,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 0,
+    'end_run' : 24,
     
     ### Agents
     'AFTs': all_afts,
@@ -107,10 +125,10 @@ parameters = {
     
     ### house keeping
     'bootstrap': False,
-    'n_cores'  : 4,
+    'n_cores'  : 2,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\CF\LU90'  
         
     }
 
@@ -128,6 +146,7 @@ if __name__ == "__main__":
 
     ### setup
     mod.setup()
+
 
     ### go
     mod.go()

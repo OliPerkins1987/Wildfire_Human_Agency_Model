@@ -39,6 +39,27 @@ os.chdir((wd[0:-16] + '/data_import'))
 exec(open("local_load_up.py").read())
 
 
+##################################################
+
+#setup scenario
+
+##################################################
+
+for i in range(25):
+    
+    Map_data['Cropland'][i, :, :]         = Map_data['Cropland'][0, :, :]
+    Map_data['Pasture'][i, :, :]          = Map_data['Pasture'][0, :, :]
+    Map_data['Rangeland'][i, :, :]        = Map_data['Rangeland'][0, :, :]
+    Map_data['Forest'][i, :, :]           = Map_data['Forest'][0, :, :]
+    Map_data['Primary_forest'][i, :, :]   = Map_data['Primary_forest'][0, :, :]
+    Map_data['Secondary_forest'][i, :, :] = Map_data['Secondary_forest'][0, :, :]
+    Map_data['Urban'][i, :, :]      = Map_data['Urban'][0, :, :]
+    Map_data['Vegetation'][i, :, :] = Map_data['Vegetation'][0, :, :]
+
+    Map_data['Arable_deforestation'][i, :, :]    = Map_data['Arable_deforestation'][0, :, :]
+    Map_data['Livestock_deforestation'][i, :, :] = Map_data['Livestock_deforestation'][0, :, :]
+
+
 #################################################
 
 ### setup parameters
@@ -56,7 +77,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 0,
+    'end_run' : 24,
     
     ### Agents
     'AFTs': all_afts,
@@ -107,10 +128,10 @@ parameters = {
     
     ### house keeping
     'bootstrap': False,
-    'n_cores'  : 4,
+    'n_cores'  : 2,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\CF\LU90'  
         
     }
 
@@ -128,6 +149,7 @@ if __name__ == "__main__":
 
     ### setup
     mod.setup()
+
 
     ### go
     mod.go()

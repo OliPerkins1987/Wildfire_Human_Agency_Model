@@ -11,6 +11,9 @@ import agentpy as ap
 import scipy as sp
 import random
 
+### for evaluation
+import os
+import math
 
 class modis_em():
 
@@ -305,7 +308,7 @@ class modis_em():
         ''' run emulation'''
         
         cells = []
-        
+                
         ### run emulation
         for i in range(self.map.shape[0]):
     
@@ -321,6 +324,7 @@ class modis_em():
                 
                 ### apply MODIS filter
                 temp_cell = self.filter_ba_MODIS(temp_cell)
+
                 
                 ### add totals of different land systems by WHAM cell
                 temp_cell = dict(zip([x for x in temp_cell.keys()], 
@@ -353,8 +357,39 @@ class modis_em():
         ### convert hectares -> km2 -> BA fraction
         self.emulated_BA = dict(zip([x for x in self.emulated_BA.keys()], 
                             [y / 100 / self.abm.Area for y in self.emulated_BA.values()]))
+        
+        ### switch shifting cultivation back to vegetation
+        self.abm.p.Fire_types['cfp'] = 'Vegetation'
+        
 
+    def em_eval(self, tc):
+        
+        '''utility for analysing outputs'''
+        
+        ### combine land systems
+        combined_cell = np.concatenate([x for x in tc.values()], axis = 0)
+        
+        ### round to 100 for arranging
+        combined_cell = combined_cell[0:math.floor(combined_cell.shape[0] / 100)*100]
+        
+        ### arrange the combined cell into a square
+        t=np.arange(2,combined_cell.shape[0],1)
+        t=t[combined_cell.shape[0]%t==0]
 
+        middle = float(len([x for x in t]))/2
+        if middle == 0:
+            return(np.array([[0], [0]]))
+        elif middle % 2 != 0:
+            t = t[int(middle - .5)]
+        else:
+            t = t[int(middle-1)]
+            
+        combined_cell = combined_cell.reshape(int(t), 
+                         int(combined_cell.shape[0]/t))
+        
+        return(combined_cell)
+    
+        
 #######################################
 
 ### run emulator
