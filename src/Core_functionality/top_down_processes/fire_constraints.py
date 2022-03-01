@@ -98,7 +98,7 @@ class dominant_afr_ct(ap.Agent):
     
             afr_vals = []
     
-            for ls in ['Cropland', 'Rangeland', 'Pasture', 'Forestry', 'Nonex']:
+            for ls in ['Cropland', 'Pasture', 'Rangeland', 'Forestry','Nonex']:
         
                 if afr in self.model.LFS[ls].keys():
                 
@@ -121,6 +121,3 @@ class dominant_afr_ct(ap.Agent):
         ### Impact of Unoccupied regions 
         Unoc = np.array(1 - self.model.X_axis['Unoccupied']).reshape(self.model.p.ylen*self.model.p.xlen)
         self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals * Unoc
-
-
-    

@@ -84,6 +84,7 @@ class WHAM(ap.Model):
         self.agents.get_pars(self.p.AFT_pars)
         self.agents.get_boot_vals(self.p.AFT_pars)
         self.agents.get_fire_pars()
+        self.agents.get_constraint_pars()
     
         ### Observers
         for observer in self.Observers.keys():
@@ -276,9 +277,11 @@ class WHAM(ap.Model):
         ### Calculate deforestation fire
         #################################
         
-        self.Observers['deforestation'][0].clear_vegetation()
-        self.Managed_fire['defor'] = self.Observers['deforestation'][0].VC_vals
-        self.Managed_igs['defor']  = self.Observers['deforestation'][0].VC_igs    
+        if 'deforestation' in self.Observers.keys():
+        
+            self.Observers['deforestation'][0].clear_vegetation()
+            self.Managed_fire['defor'] = self.Observers['deforestation'][0].VC_vals
+            self.Managed_igs['defor']  = self.Observers['deforestation'][0].VC_igs    
                 
         
         #######################################

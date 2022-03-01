@@ -41,6 +41,7 @@ Core_pars = {'AFT_dist': '',
              'Fire_use': {},
              'Fire_suppression':'',
              'Fire_escape': {},
+             'Fire_constraints': {},
              'Dist_pars': {'Thresholds': '', 
              'Probabilities': '', 
              'Weighted_thresholds':'',
@@ -140,6 +141,14 @@ escape_dict['fire_types']  = dict(zip([x[(Rlen+12):-16] for x in escape_pars],
 
 Core_pars['Fire_escape'] = escape_dict
 
+
+### fire constraint
+constraints                = [s.replace('\\', '/') for s in file_list if "Constraint_pars" in s]
+constraint_pars            = [pd.read_csv(s) for s in constraints]
+constraint_dict            = dict(zip([x[(Rlen)+24:-4] for x in constraints], 
+                                 [x for x in constraint_pars]))
+
+Core_pars['Fire_constraints'] = constraint_dict
 
 ###########################################################################
 

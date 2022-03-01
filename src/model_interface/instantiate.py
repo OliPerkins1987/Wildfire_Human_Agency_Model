@@ -10,7 +10,7 @@ from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
+from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
 from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
 from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
 
@@ -46,7 +46,7 @@ exec(open("local_load_up.py").read())
 #################################################
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
-            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
+            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
              Hunter_gatherer, Recreationalist, SLM, Conservationist]
 
@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 0,
+    'end_run' : 31,
     
     ### Agents
     'AFTs': all_afts,
@@ -65,8 +65,8 @@ parameters = {
     
     'Observers': {'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
-                  'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'fire_control_measures': fire_control_measures}, 
+                  #'deforestation': deforestation},    
     
     'Fire_seasonality': Seasonality,
     
@@ -79,7 +79,7 @@ parameters = {
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
-                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'}, 
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation'}, #, 'defor': 'Vegetation'
 
     ### constraints
     'Constraint_pars': {'Soil_threshold': {'max': 160, 'median': 100, 'min': 40}, 
@@ -110,7 +110,7 @@ parameters = {
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\new_rangeland'  
         
     }
 

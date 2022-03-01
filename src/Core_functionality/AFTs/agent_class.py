@@ -16,6 +16,7 @@ from Core_functionality.prediction_tools.regression_families import regression_l
 from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
 
+
 class AFT(ap.Agent):
     
     ''' 
@@ -40,6 +41,7 @@ class AFT(ap.Agent):
         
         self.Fire_use = {}
         self.Fire_vars = {}
+        self.Constraint_vars = {}
         
 
     def get_pars(self, AFT_dict):
@@ -177,9 +179,43 @@ class AFT(ap.Agent):
                     self.Fire_vars[par]['ba'] = [x for x in self.Fire_use[par]['ba']['pars'].iloc[:,1].tolist() if x != '<leaf>']
             
             
-
-    
-    ### Needs doing
+    ### Fire constraint parameters
+    def get_constraint_pars(self):
+         
+        if hasattr(self, 'Constraint_pars'):
+            
+            for par in self.Constraint_pars.keys():
+                
+                self.Constraint_vars[par] = {}
+        
+            ### get parameters for fire constraints   
+            #parameters can be specified in par dict directly either with a pandas
+            # {'type': 'constant', 'pars':float} for a constant value
+                for sub_par in self.Constraint_pars[par].keys():    
+                    
+                    self.Constraint_vars[par][sub_par] = {}
+                    
+                    if self.Constraint_pars[par][sub_par] in ['lin_mod', 'tree_mod']: 
+        
+                        self.Constraint_pars[par][sub_par] = {'type': self.Constraint_pars[par][sub_par], 
+                                                'pars': self.p.AFT_pars['Fire_constraints'][sub_par]}
+            
+                        
+                
+                ###########################################
+                ### extract parameter names
+                ###########################################
+                
+                    if self.Constraint_pars[par][sub_par]['type'] == 'lin_mod':
+                
+                        self.Constraint_vars[par][sub_par] = [x for x in self.Constraint_pars[par][sub_par]['pars'].iloc[:,0].tolist() if x != 'Intercept']      
+                
+                    elif self.Constraint_pars[par][sub_par]['type'] == 'tree_mod':
+                    
+                        self.Constraint_vars[par][sub_par] = [x for x in self.Constraint_pars[par][sub_par]['pars'].iloc[:,1].tolist() if x != '<leaf>']
+                      
+            
+    ### Container
     def get_suppression_pars(self):
         
         pass
