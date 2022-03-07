@@ -46,7 +46,7 @@ exec(open("local_load_up.py").read())
 #################################################
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
-            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
+            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
              Hunter_gatherer, Recreationalist, SLM, Conservationist]
 
@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 0,
+    'end_run' : 26,
     
     ### Agents
     'AFTs': all_afts,
@@ -102,17 +102,17 @@ parameters = {
     'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
     
     ### MODIS emulation
-    'emulation'    : True, ##if True add 'Emulated_fire' to reporters
+    'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Emulated_fire'],
+    'reporters': ['LFS', 'Unoccupied'],
     
     ### house keeping
     'bootstrap': False,
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\v2'  
         
     }
 

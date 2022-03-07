@@ -17,12 +17,6 @@ def get_model_output(model, kind):
         temp = pd.DataFrame(temp)
         temp.columns = [type(x).__name__ for x in model.agents]
         
-    elif kind == 'LFS':
-        
-        temp = np.column_stack([(x.reshape(27648))for x in model.LFS.values()])
-        temp = pd.DataFrame(temp)
-        
-
     return(temp)
 
 
