@@ -152,10 +152,6 @@ class WHAM(ap.Model):
         ls_scores['Nonex']             =  ls_scores['Nonex']['Combined']
         
         
-        ### for ease of reporting
-        self.Unoccupied                =  ls_scores['Unoccupied']
-        
-        
         ### re-scale against Mask: coastal pixels
         ls_frame                       = pd.DataFrame(ls_scores)
         ls_frame['tot']                = self.p.Maps['Mask'] / ls_frame.sum(axis = 1) 
@@ -166,8 +162,10 @@ class WHAM(ap.Model):
         self.X_axis                    =  dict(zip([x for x in ls_frame.keys()], 
                                             [np.array(x).reshape(self.ylen, self.xlen) for x in ls_frame.values()]))
         
+        ### for ease of reporting
+        self.Unoccupied                =  self.X_axis['Unoccupied'] 
        
-    
+        
     def allocate_Y_axis(self):
         
         ### Gather Y-axis scores from AFTs

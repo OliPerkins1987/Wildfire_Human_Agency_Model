@@ -108,15 +108,69 @@ parameters = {
     'reporters': ['AFR', 'Unoccupied'],
     
     ### house keeping
-    'bootstrap': False,
+    'bootstrap': True,
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\v2'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\land_use'  
         
     }
 
 
+######################################################################
+
+### Update parameters and run
+
+######################################################################
+
+### only run land use elements of model
+def step(self):
+    
+    ### ls distribution
+    self.ls.get_vals()
+    self.allocate_X_axis()
+
+    ### afr distribution
+    self.agents.compete()
+    self.allocate_Y_axis()
+    
+    self.update()
+
+WHAM.step = step
+
+
+####################
+
+### update pars
+
+####################
+
+### load up bootstrap parameters
+mod            = WHAM(parameters)
+mod.setup()
+    
+### close bootstrap clusters
+mod.p.bootstrap= False
+mod.client.close()
+core_path      = mod.p.write_fp
+
+### run iteratively with one parameter
+for i in range(100):
+    
+    mod.p.write_fp = core_path + '\\' + str(i)
+    os.mkdir(mod.p.write_fp)    
+
+    for a in mod.agents:
+        
+        update_pars(a.Dist_frame, a.boot_Dist_pars['Thresholds'], 
+                    a.boot_Dist_pars['Probs'], method = 'bootstrapped', 
+                target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+        
+    
+        
+    mod.go()
+    
+    
 #####################################################
 
 ### Run model
