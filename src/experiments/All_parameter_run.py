@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 26,
+    'end_run' : 1,
     
     ### Agents
     'AFTs': all_afts,
@@ -145,47 +145,32 @@ WHAM.step = step
 
 ####################
 
-### load up bootstrap parameters
-mod            = WHAM(parameters)
-mod.setup()
-    
-### close bootstrap clusters
-mod.p.bootstrap= False
-mod.client.close()
-core_path      = mod.p.write_fp
+
+core_path      = deepcopy(parameters['write_fp'])
 
 ### run iteratively with one parameter
-for i in range(100):
+for i in range(0, 100):
     
+    ### load up bootstrap parameters
+    mod            = WHAM(parameters)
+    mod.setup()
+    
+    ### close bootstrap clusters
+    mod.p.bootstrap= False
+    mod.client.close()
+    
+    mod.timestep   = 0
     mod.p.write_fp = core_path + '\\' + str(i)
     os.mkdir(mod.p.write_fp)    
 
     for a in mod.agents:
         
-        update_pars(a.Dist_frame, a.boot_Dist_pars['Thresholds'], 
-                    a.boot_Dist_pars['Probs'], method = 'bootstrapped', 
-                target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+        a.Dist_frame =  update_pars(a.Dist_frame, a.boot_Dist_pars['Thresholds'], 
+                       a.boot_Dist_pars['Probs'], method = 'bootstrapped', 
+                        target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
         
     
         
     mod.go()
     
-    
-#####################################################
-
-### Run model
-
-#####################################################
-
-if __name__ == "__main__":
-
-    ### instantiate
-    mod = WHAM(parameters)
-
-    ### setup
-    mod.setup()
-
-    ### go
-    mod.go()
-
 

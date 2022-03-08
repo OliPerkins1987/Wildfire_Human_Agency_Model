@@ -112,7 +112,7 @@ parameters = {
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\v2'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\v3'  
         
     }
 
