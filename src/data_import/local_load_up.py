@@ -203,13 +203,13 @@ for key in Core_pars['Dist_pars']['Thresholds'].keys():
     
     for j in range(len(Core_pars['Dist_pars']['Thresholds'][key])):
         
-        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j][0:10] , 
-                                                        Core_pars['Dist_pars']['Thresholds'][key][j][11:20]])
+        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j][0:51] , 
+                                                        Core_pars['Dist_pars']['Thresholds'][key][j][51:100]])
         
     for j in range(len(Core_pars['Dist_pars']['Probs'][key])):
 
-        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j][0:10], 
-                                                    Core_pars['Dist_pars']['Probs'][key][j][11:20]])
+        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j][0:51], 
+                                                    Core_pars['Dist_pars']['Probs'][key][j][51:100]])
 
 
 ###########################################################################

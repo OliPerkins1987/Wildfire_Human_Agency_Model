@@ -17,10 +17,12 @@ import math
 
 class modis_em():
 
-    def __init__(self, abm):
+    def __init__(self, abm, dgvm):
 
         random.seed(1987) #for poisson fire assignment
         self.abm = abm
+        self.dgvm= dgvm
+        
         self.map = np.zeros(
             shape=(self.abm.p.ylen * self.abm.p.xlen))  # emulated BA
         
@@ -40,17 +42,24 @@ class modis_em():
 
 
     def get_fire_vals(self):
+        
         ''' get burned area frac by fire taxon (human, lightning, etc) '''
 
         long_area = self.abm.Area.reshape(self.abm.p.ylen*self.abm.p.xlen)
-
+        
+        ###########################################################
+        
+        ### ABM managed fire
+        
+        ###########################################################
+        
         self.Managed_fire = {}
-        self.Managed_igs = {}
+        self.Managed_igs  = {}
 
         for i in self.abm.p.Fire_types.keys():
 
             self.Managed_fire[i] = {}
-            self.Managed_igs[i] = {}
+            self.Managed_igs[i]  = {}
             
             # gather managed fire from abm
 
@@ -64,12 +73,28 @@ class modis_em():
                         self.abm.AFT_scores[type(a).__name__])
                     self.Managed_fire[i][a] = np.array(self.Managed_fire[i][a]).reshape(
                         self.abm.p.ylen * self.abm.p.xlen)
-                    self.Managed_igs[i][a] = (self.Managed_fire[i][a] /
-                        (a.Fire_use[i]['size'] / 100)) * long_area
-
-        # !!! add INFERNO outputs
-
-
+                    self.Managed_igs[i][a]  = (self.Managed_fire[i][a] /
+                        (a.Fire_use[i]['size'] / 100)) * long_area ##size in km2
+        
+        ################################################
+        
+        # Lightning fire
+        
+        ################################################
+        
+        Lightning_fire = np.nansum(self.abm.Area *self.dgvm['Lightning_fires'] * self.dgvm['PFT_ba'] * self.dgvm['PFT'], 
+                                        axis = 0)
+        
+        Lightning_igs  = self.dgvm['Lightning_fires'] * self.abm.Area
+        
+        #Lightning_size = 100 * (Lightning_fire * self.abm.Area) / Lightning_igs
+        
+        self.Lightning = {'ba_frac': Lightning_fire, 
+                          'igs'    : Lightning_igs
+                          #, 'size'   : Lightning_size
+                          }
+        
+        
     def constrain_managed_fire(self):
         
         ''' apply WHAM top-down fire constraints by land user '''
@@ -88,7 +113,51 @@ class modis_em():
                     self.Managed_igs[k] = dict(zip([x for x in self.Managed_igs[k].keys()], 
                                          [y*constraint for y in self.Managed_igs[k].values()]))
 
-
+    
+    def calc_lightning_ba_ls(self):
+        
+        ''' calculates BA per pft by WHAM land systems'''
+        
+        ### need to divide pasture into rangeland & managed pasture
+        range_frac     = [x.Dist_vals for x in self.abm.ls if type(x).__name__ == 'Rangeland'][0]
+        pasture_frac   = [x.Dist_vals for x in self.abm.ls if type(x).__name__ == 'Pasture'][0]
+        
+        range_frac     = range_frac / (range_frac + pasture_frac)
+        pasture_frac   = pasture_frac / (range_frac + pasture_frac)
+        
+        ### calculate sizes
+        size           = {}
+        
+        ### constant size for arable of 0.4 km2
+        size['Arable'] = np.array([0.4 * 100] * (self.abm.ylen*self.abm.xlen)).reshape(self.abm.ylen, self.abm.xlen)
+            
+        ############################
+        ### open vegetation
+        ############################
+        
+        # ba per pft
+        size['Vegetation'] = (self.dgvm['PFT_ba'][[0, 1, 2, 3, 4, 5, 8, 11, 12], :, :] * self.abm.Area) * self.dgvm['PFT'][[0, 1, 2, 3, 4, 5, 8, 11, 12], :, :]
+        
+        # divide by fraction of cell occupied by relevant PFTs
+        size['Vegetation'] = np.nansum(size['Vegetation'], axis = 0) / np.nansum(self.dgvm['PFT'][[0, 1, 2, 3, 4, 5, 8, 11, 12], :, :], axis = 0)
+        
+        # convert to hectares
+        size['Vegetation'] = size['Vegetation'] * 100
+        
+        ##################################################
+        ### pasture - adjusted for rangeland fraction
+        ##################################################
+        
+        size['Pasture']= 100 * np.array([3.2] * (self.abm.ylen*self.abm.xlen)).reshape(self.abm.ylen, self.abm.xlen)
+        size['Pasture']= (size['Pasture'] * pasture_frac.reshape(self.abm.ylen, self.abm.xlen)) + (
+                                size['Vegetation'] * range_frac.reshape(self.abm.ylen, self.abm.xlen))
+        
+        ### !!!
+        ### !!! Sizes all need adjusting for bare soil
+        
+        self.Lightning['size'] = size
+        
+        
     def divide_cells(self):
         ''' apportion numbers of MODIS pixels to different land use types '''
 
@@ -189,7 +258,7 @@ class modis_em():
         return(y_out)
 
 
-    def assign_fires(self, cell_numb):
+    def assign_managed_fires(self, cell_numb):
         ''' assigns numbers of fires to theoretical MODIS sub-cells by land cover type '''
 
         # arrays of length n_MODIS by land cover type
@@ -236,6 +305,41 @@ class modis_em():
         return(cell)
         
     
+    
+    
+    def assign_lightning_fires(self, cell_numb):
+    
+        ''' defines distribution of lightning fires'''    
+    
+    
+        ### assign fire numbers by land system
+        cell    = {}
+        cn      = int(cell_numb)
+        lc_frac = {'Arable' : (self.LC_pix['Arable'][cn] / self.LC_pix['n_MODIS'][cn]), 
+                   'Pasture': self.LC_pix['Pasture'][cn] / self.LC_pix['n_MODIS'][cn], 
+                   'Vegetation' : self.LC_pix['Vegetation'][cn] / self.LC_pix['n_MODIS'][cn]}
+        
+        lightning_fires = dict(zip([x for x in lc_frac.keys()], 
+                              [y * self.Lightning['igs'].reshape(self.abm.ylen * self.abm.xlen)[cn] for y in lc_frac.values()]))
+        
+        lightning_fires = dict(zip([x for x in lightning_fires.keys()], 
+                                   [round(y) for y in lightning_fires.values()]))
+        
+       
+        ### distribute in cell
+        for lc in ['Arable', 'Pasture', 'Vegetation']:
+            
+            cell[lc] = self.poisson_fires(
+                        lightning_fires[lc] / self.LC_pix[lc][cn], 
+                            self.LC_pix[lc][cn], lc_frac[lc], cn)
+        
+            ### calc fire size
+            cell[lc] = np.array([x * (self.Lightning['size'][lc].reshape(144*192)[cn]) for x in cell[lc]])
+
+
+        return(cell)
+
+    
     def distribute_ba(self, cell_dict):
         
         ### take cells with BA > 21ha (MODIS pixel) & reallocate
@@ -248,7 +352,6 @@ class modis_em():
         
                 
             ### only conduct smoothing if overall ba in lc is less than 100%!
-            ### (unlikely edge case)
             
             if np.nansum(cell[lc]) >  (21 * cell[lc].shape[0]):
                 
@@ -301,6 +404,7 @@ class modis_em():
         self.get_fire_vals()
         self.divide_cells()
         self.constrain_managed_fire()
+        self.calc_lightning_ba_ls()
     
     
     def emulate(self):
@@ -317,7 +421,14 @@ class modis_em():
             if self.not_null_cell(i):
                 
                 ### assign fires to MODIS pixels
-                temp_cell = self.assign_fires(i)
+                temp_cell      = self.assign_managed_fires(i)
+                
+                ### assign lightning fires to MODIS pixels
+                temp_lightning = self.assign_lightning_fires(i) 
+                
+                ### combine
+                temp_cell = dict(zip([x for x in temp_cell.keys()], 
+                            [x + y for x, y in zip(temp_cell.values(), temp_lightning.values())]))
                 
                 ### prevent >100% BA in a month
                 temp_cell = self.distribute_ba(temp_cell)
@@ -362,6 +473,7 @@ class modis_em():
         self.abm.p.Fire_types['cfp'] = 'Vegetation'
         
 
+
     def em_eval(self, tc):
         
         '''utility for analysing outputs'''
@@ -399,7 +511,7 @@ class modis_em():
 if __name__ == "__main__":
 
     ### instantiate
-    em = modis_em(mod)
+    em = modis_em(mod, INFERNO)
 
     ### setup
     em.setup_emulate()
