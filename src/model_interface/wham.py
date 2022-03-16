@@ -162,8 +162,10 @@ class WHAM(ap.Model):
         self.X_axis                    =  dict(zip([x for x in ls_frame.keys()], 
                                             [np.array(x).reshape(self.ylen, self.xlen) for x in ls_frame.values()]))
         
+        ### for ease of reporting
+        self.Unoccupied                =  self.X_axis['Unoccupied'] 
        
-    
+        
     def allocate_Y_axis(self):
         
         ### Gather Y-axis scores from AFTs

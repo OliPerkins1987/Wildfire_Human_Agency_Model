@@ -86,13 +86,9 @@ class modis_em():
                                         axis = 0)
         
         Lightning_igs  = self.dgvm['Lightning_fires'] * self.abm.Area
-        
-        #Lightning_size = 100 * (Lightning_fire * self.abm.Area) / Lightning_igs
-        
+               
         self.Lightning = {'ba_frac': Lightning_fire, 
-                          'igs'    : Lightning_igs
-                          #, 'size'   : Lightning_size
-                          }
+                          'igs'    : Lightning_igs}
         
         
     def constrain_managed_fire(self):
@@ -128,8 +124,8 @@ class modis_em():
         ### calculate sizes
         size           = {}
         
-        ### constant size for arable of 0.4 km2
-        size['Arable'] = np.array([0.4 * 100] * (self.abm.ylen*self.abm.xlen)).reshape(self.abm.ylen, self.abm.xlen)
+        ### constant size for arable of 0.4 km2 (set to 0 currently)
+        size['Arable'] = np.array([0 * 100] * (self.abm.ylen*self.abm.xlen)).reshape(self.abm.ylen, self.abm.xlen)
             
         ############################
         ### open vegetation
@@ -152,11 +148,37 @@ class modis_em():
         size['Pasture']= (size['Pasture'] * pasture_frac.reshape(self.abm.ylen, self.abm.xlen)) + (
                                 size['Vegetation'] * range_frac.reshape(self.abm.ylen, self.abm.xlen))
         
-        ### !!!
-        ### !!! Sizes all need adjusting for bare soil
+        ###################################################
+        ### Adjust sizes for bare soil
+        ###################################################        
+        
+        for k in size.keys():
+            
+            size[k] = size[k] * (1-self.Bare_soil[k])
+        
         
         self.Lightning['size'] = size
         
+      
+    def calc_bare_soil(self):
+        
+        ''' needed to convert JULES PFTs to WHAM land systems'''
+        ''' allocates bare soil from PFT to each WHAM land system'''
+        
+        Arable_JULES = self.dgvm['PFT'][6, :, :] + self.dgvm['PFT'][9, :, :]
+        Arable_Soil  = self.abm.X_axis['Cropland'] - Arable_JULES
+        Arable_Soil  = np.select([Arable_Soil < 0], [0], default = Arable_Soil)
+        
+        Pasture_JULES = self.dgvm['PFT'][7, :, :] + self.dgvm['PFT'][10, :, :]
+        Pasture_Soil  = self.abm.X_axis['Pasture'] - Pasture_JULES
+        Pasture_Soil  = np.select([Pasture_Soil < 0], [0], default = Pasture_Soil)
+        
+        Vegetation_Soil = self.dgvm['Bare_soil'] - Arable_Soil - Pasture_Soil
+        Vegetation_Soil = np.select([Vegetation_Soil < 0], [0], default = Vegetation_Soil)
+        
+        self.Bare_soil  = {'Arable': Arable_Soil, 
+                           'Pasture': Pasture_Soil, 
+                           'Vegetation': Vegetation_Soil}
         
     def divide_cells(self):
         ''' apportion numbers of MODIS pixels to different land use types '''
@@ -403,7 +425,12 @@ class modis_em():
         ### set up emulation
         self.get_fire_vals()
         self.divide_cells()
+        
+        ### managed fire
         self.constrain_managed_fire()
+        
+        ### lightning fire
+        self.calc_bare_soil()
         self.calc_lightning_ba_ls()
     
     

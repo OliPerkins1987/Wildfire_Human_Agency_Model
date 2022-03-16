@@ -36,6 +36,7 @@ Flammability = nc.Dataset('FlammabilityJULES_output_1.nc')['variable'][:]
 INFERNO    = {'Lightning_fires' : Lightning[0, :, :], 
               'PFT_ba'          : PFT_ba, 
               'PFT'             : PFT[0:13, :, :], 
+              'Bare_soil'       : PFT[15, :, :],
               'Flammability'    : Flammability}
 
 
