@@ -10,7 +10,7 @@ from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
+from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
 from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
 from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
 
@@ -22,6 +22,7 @@ from Core_functionality.top_down_processes.background_ignitions import backgroun
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
+from Core_functionality.top_down_processes.fire_suppression import fire_fighter
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -56,7 +57,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 26,
+    'end_run' : 0,
     
     ### Agents
     'AFTs': all_afts,
@@ -68,7 +69,8 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'deforestation': deforestation, 
+                  'fire_suppression': fire_fighter},    
     
     'Fire_seasonality': Seasonality,
     
@@ -91,6 +93,9 @@ parameters = {
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
     
+    ### suppresion rate - default or a list of 4 floats (0-1)
+    'Suppression_rate': 'Default', ### default is [0, 0.1, 0.7, 0.95]
+    
     ### Deforestation fire fraction
     'Defor_pars': {'Pre'    : 1, 
                    'Trans'  : 0.84, 
@@ -105,14 +110,14 @@ parameters = {
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['LFS', 'Unoccupied'],
+    'reporters': ['Suppression'],
     
     ### house keeping
     'bootstrap': False,
     'n_cores'  : 4,
         
-    'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\v2'  
+    'write_annual': False,
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\v3'  
         
     }
 

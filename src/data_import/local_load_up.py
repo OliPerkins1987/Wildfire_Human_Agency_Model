@@ -140,6 +140,19 @@ escape_dict['fire_types']  = dict(zip([x[(Rlen+12):-16] for x in escape_pars],
 
 Core_pars['Fire_escape'] = escape_dict
 
+##############################
+
+### Suppression
+
+##############################
+
+sup_pars              = [s.replace('\\', '/') for s in file_list if "Fire suppression" in s]
+bool_pars             = [s for s in sup_pars if "bool.csv" in s]
+ba_pars               = [s for s in sup_pars if "ba.csv" in s]
+
+
+Core_pars['Fire_suppression'] = {'bool': pd.read_csv(bool_pars[0]), 
+                                 'ba': pd.read_csv(ba_pars[0])}
 
 ###########################################################################
 

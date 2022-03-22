@@ -28,12 +28,12 @@ os.chdir(root)
 Lightning= nc.Dataset('Lightning_fires_annual.nc')
 Lightning= Lightning['variable'][:]
 
-PFT      = nc.Dataset('PFTsJULES_output_1.nc')['variable'][:]
+PFT      = nc.Dataset('PFTsJULES_output_2.nc')['variable'][:]
 PFT_ba   = nc.Dataset('PFT_ba.nc')['variable'][:]
 
-Flammability = nc.Dataset('FlammabilityJULES_output_1.nc')['variable'][:]
+Flammability = nc.Dataset('FlammabilityJULES_output_2.nc')['variable'][:]
 
-INFERNO    = {'Lightning_fires' : Lightning[0, :, :], 
+INFERNO    = {'Lightning_fires' : Lightning[1, :, :], 
               'PFT_ba'          : PFT_ba, 
               'PFT'             : PFT[0:13, :, :], 
               'Bare_soil'       : PFT[15, :, :],

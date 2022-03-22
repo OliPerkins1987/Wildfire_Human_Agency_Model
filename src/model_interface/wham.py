@@ -161,11 +161,7 @@ class WHAM(ap.Model):
         ### reshape and stash
         self.X_axis                    =  dict(zip([x for x in ls_frame.keys()], 
                                             [np.array(x).reshape(self.ylen, self.xlen) for x in ls_frame.values()]))
-        
-        ### for ease of reporting
-        self.Unoccupied                =  self.X_axis['Unoccupied'] 
-       
-        
+               
     def allocate_Y_axis(self):
         
         ### Gather Y-axis scores from AFTs
@@ -197,10 +193,9 @@ class WHAM(ap.Model):
                              [y * self.X_axis[l] for y in afr_scores[l]]))
         
         ### stash afr scores
-        self.LFS = afr_scores
-        self.AFR = get_afr_vals(self.LFS)
-        
-        
+        self.LFS      = afr_scores
+        self.AFR      = get_afr_vals(self.LFS)
+                
     def allocate_AFT(self):
         
         AFT_scores   = {}
@@ -448,6 +443,19 @@ class WHAM(ap.Model):
             for f in self.Escaped_fire.keys():
                 
                 self.Escaped_fire[f] = self.Escaped_fire[f] * control_weights[f]
+                
+    
+    ###############################################
+    
+    ### Suppression of unmanaged ignitions
+    
+    ###############################################
+    def suppress_fire(self):
+    
+        if 'fire_suppression' in self.p.Observers.keys():
+        
+            self.Observers['fire_suppression'][0].suppress()
+            self.Suppression = self.Observers['fire_suppression'][0].Sup_vals
     
     
     #####################################################################################
@@ -491,6 +499,7 @@ class WHAM(ap.Model):
         
         ### Suppression
         self.agents.fire_suppression()
+        self.suppress_fire()
         self.calc_escaped_fires()
         
         ### update
