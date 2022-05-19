@@ -5,8 +5,6 @@ Created on Wed Sep 29 12:05:09 2021
 @author: Oli
 """
 
-### I am satisfied this is working, just not sure how best to test?
-
 import pytest 
 import pandas as pd
 import numpy as np
@@ -18,6 +16,8 @@ wd = os.getcwd().replace('\\', '/')
 
 os.chdir((wd[0:-6] + '/src/data_import'))
 exec(open("local_load_up.py").read())
+exec(open("load_INFERNO_offline.py").read())
+
 
 os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 R_fire = pd.read_csv('Fire_1990.csv')
@@ -39,6 +39,7 @@ from Core_functionality.top_down_processes.background_ignitions import backgroun
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
+from Core_functionality.top_down_processes.fire_suppression import fire_fighter
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -61,8 +62,8 @@ parameters = {
     ### Model run limits
     'xlen': 192, 
     'ylen': 144,
-    'start_run': 24,
-    'end_run' : 24,
+    'start_run': 0,
+    'end_run' : 0,
     
     ### Agents
     'AFTs': all_afts,
@@ -74,7 +75,8 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'deforestation': deforestation, 
+                  'fire_suppression': fire_fighter},    
     
     'Fire_seasonality': Seasonality,
     
@@ -137,7 +139,7 @@ mod.go()
 
 #######################################################################################
 
-em = modis_em(mod)
+em = modis_em(mod, dgvm = False)
 
 def test_em_getter():
     
@@ -197,7 +199,7 @@ def test_aft_assignment():
     
     cn     = 17016
     errors = []
-    fire_res = em.assign_fires(cn) #max BA from emulator
+    fire_res = em.assign_managed_fires(cn) #max BA from emulator
     
     ################################
     ### ? n_cells = total
@@ -233,7 +235,7 @@ def test_aft_assignment():
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
 
 
-def test_fire_assignment():
+def test_managed_fire_assignment():
     
     cn     = 17016 #max BA from emulator
     errors = [] 
@@ -251,7 +253,7 @@ def test_fire_assignment():
                                em.LC_pix['n_MODIS'][cn], 
                                    AFT_area)
     
-    if not round(fire_rate, 3) == 1.254:
+    if not round(fire_rate, 3) == 0.858:
         
         errors.append('Fire rate calculated incorrectly')
         
@@ -274,7 +276,7 @@ def test_fire_assignment():
 
 def test_fire_distribution():
     
-    tmp    = em.assign_fires(17016)
+    tmp    = em.assign_managed_fires(17016)
     BA     = em.distribute_ba(tmp)
     filtBA = em.filter_ba_MODIS(BA)
     errors = []
@@ -295,7 +297,38 @@ def test_fire_distribution():
         
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
         
-
-
     
+################################################################
+
+### tests for INFERNO emulation
+
+################################################################
+
+em = modis_em(mod, dgvm = INFERNO)
+
+def test_dgvm_load():
     
+    em.setup_emulate()
+    
+    errors = []
+    
+    ### check loading of fire data
+    if not np.nanmean(em.Lightning['igs'].data.reshape(144*192)) == np.nanmean(
+            (em.dgvm['Lightning_fires'].data * em.abm.Area * (1-em.abm.Suppression)).reshape(144*192)):
+        
+        errors.append('Calculation of fire suppression incorrect')
+    
+    if not np.nanmean(em.Bare_soil['Arable']) < np.nanmean(em.abm.X_axis['Cropland']):
+        
+        errors.append('Arable bare soil fraction loaded incorrectly')
+                
+    if not np.nanmean(em.Bare_soil['Pasture']) < np.nanmean(em.abm.X_axis['Rangeland'] + em.abm.X_axis['Pasture']):
+        
+        errors.append('Arable bare soil fraction loaded incorrectly')
+        
+        
+        
+        
+
+        
+        

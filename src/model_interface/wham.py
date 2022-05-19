@@ -344,7 +344,6 @@ class WHAM(ap.Model):
 
 
         ### Total up managed fire
-
         self.Managed_fire['Total']  = np.nansum([x for x in self.Managed_fire.values() if type(x) != np.float64], 
                                                  axis = 0)
         
@@ -480,7 +479,7 @@ class WHAM(ap.Model):
 
         ### Fire use
         self.agents.fire_use()
-        self.calc_BA(group_lc = True)
+        self.calc_BA(group_lc = False)
         
         #################################################
         ### Background & arson ignitions

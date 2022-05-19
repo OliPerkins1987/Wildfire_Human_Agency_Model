@@ -57,7 +57,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 25,
+    'end_run' : 24,
     
     ### Agents
     'AFTs': all_afts,
@@ -110,7 +110,7 @@ parameters = {
     'reporters': ['Managed_fire', 'Escaped_fire', 'Arson', 'Background_ignitions'],
     
     ### house keeping
-    'bootstrap': False,
+    'bootstrap': True,
     'n_cores'  : 4,
         
     'write_annual': True,
@@ -119,21 +119,43 @@ parameters = {
     }
 
 
-#####################################################
+######################################################################
 
-### Run model
+### Update parameters and run
 
-#####################################################
+######################################################################
 
-if __name__ == "__main__":
+####################
 
-    ### instantiate
-    mod = WHAM(parameters)
+### update pars
 
-    ### setup
+####################
+
+core_path  = deepcopy(parameters['write_fp'])
+
+### run iteratively with one parameter
+for i in range(8, 101):
+    
+    ### load up bootstrap parameters
+    mod            = WHAM(parameters)
     mod.setup()
+    
+    ### close bootstrap clusters
+    mod.p.bootstrap= False
+    mod.client.close()
+    
+    mod.timestep   = 0
+    mod.p.write_fp = core_path + '\\' + str(i)
+    os.mkdir(mod.p.write_fp)    
 
-    ### go
+    for a in mod.agents:
+        
+        a.Dist_frame =  update_pars(a.Dist_frame, a.boot_Dist_pars['Thresholds'], 
+                       a.boot_Dist_pars['Probs'], method = 'bootstrapped', 
+                        target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+        
+    
+        
     mod.go()
-
+    
 

@@ -20,16 +20,15 @@ exec(open("local_load_up.py").read())
 os.chdir(wd)
 exec(open("setup_full.py").read())
 
+### bespoke parameters
+parameters['escaped_fire'] = False
+parameters['reporters']    = []
+parameters['write_annual'] = False
 
+### setup mod
 mod = WHAM(parameters)
-
-### setup
 mod.setup()
 mod.go()
-
-### ignite
-#mod.Observers['fire_control_measures'].control()
-#mod.calc_escaped_fires()
 
 
 def test_control_fundamentals():

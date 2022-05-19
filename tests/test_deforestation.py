@@ -24,6 +24,10 @@ exec(open("setup_full.py").read())
 os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 Defor_R = pd.read_csv('Deforestation_2014.csv')/100
 
+### exclude escaped fires
+parameters['escaped_fire'] = False
+parameters['reporters']    = []
+
 ### set to end of run
 parameters['start_run'] = 24
 parameters['end_run']   = 24   
@@ -42,7 +46,7 @@ def test_defor():
     
     errors = []
     
-    Defor_WHAM = pd.Series(mod.Observers['deforestation'][0].VC_vals.reshape(144*192))
+    Defor_WHAM = pd.Series(mod.Observers['deforestation'][0].VC_vals.reshape(mod.p.xlen*mod.p.ylen))
     Defor_WHAM[np.isnan(Defor_R).iloc[:, 0]] = np.nan 
 
     Defor_frame = pd.concat([Defor_WHAM, pd.Series(Defor_R.iloc[:, 0])], axis = 1)

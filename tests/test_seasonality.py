@@ -25,7 +25,10 @@ exec(open("setup_full.py").read())
 ### Run annual model
 ######################
 
-parameters['Seasonality'] = False
+parameters['Seasonality']  = False
+parameters['escaped_fire'] = False
+parameters['reporters']    = ['Managed_fire']
+parameters['write_annual'] = False
 
 mod = WHAM(parameters)
 

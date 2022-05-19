@@ -39,4 +39,4 @@ INFERNO    = {'Lightning_fires' : Lightning[1, :, :],
               'Bare_soil'       : PFT[15, :, :],
               'Flammability'    : Flammability}
 
-
+del([root, Lightning, PFT, PFT_ba, Flammability])

@@ -17,7 +17,7 @@ import math
 
 class modis_em():
 
-    def __init__(self, abm, dgvm):
+    def __init__(self, abm, dgvm = False):
 
         random.seed(1987) #for poisson fire assignment
         self.abm = abm
@@ -41,7 +41,9 @@ class modis_em():
                        'Vegetation': np.zeros(shape=(self.abm.p.ylen * self.abm.p.xlen))}
         
         # Flammability
-        self.Flammability    = np.nansum(self.dgvm['Flammability'] * self.dgvm['PFT'], axis = 0)
+        if self.dgvm != False:        
+            self.Flammability    = np.nansum(
+                                     self.dgvm['Flammability'] * self.dgvm['PFT'], axis = 0)
     
     ###################################################################
     
@@ -61,8 +63,10 @@ class modis_em():
         self.constrain_managed_fire()
         
         ### lightning & unmanaged fire
-        self.calc_bare_soil()
-        self.calc_lightning_ba_ls()
+        if self.dgvm != False: 
+        
+            self.calc_bare_soil()
+            self.calc_lightning_ba_ls()
     
     
     def get_fire_vals(self):
@@ -101,32 +105,41 @@ class modis_em():
         ################################################
         # Lightning fire
         ################################################
-        
-        Lightning_fire = np.nansum(self.abm.Area *self.dgvm['Lightning_fires'] * 
+        if self.dgvm != False:
+            
+            Lightning_fire = np.nansum(self.abm.Area *self.dgvm['Lightning_fires'] * 
                                    self.dgvm['PFT_ba'] * self.dgvm['PFT'] * self.Flammability, 
                                         axis = 0)
         
-        Lightning_igs  = self.dgvm['Lightning_fires'] * self.abm.Area
+            Lightning_igs  = self.dgvm['Lightning_fires'] * self.abm.Area
                
-        self.Lightning = {'ba_frac': Lightning_fire * (1-self.abm.Suppression), 
-                          'igs'    : Lightning_igs * (1 - self.abm.Suppression)}
-        
+            self.Lightning = {'ba_frac': Lightning_fire * (1-self.abm.Suppression), 
+                              'igs'    : Lightning_igs * (1 - self.abm.Suppression)}
+            
+            ### constraint >= 0
+            self.Lightning = dict(zip([x for x in self.Lightning.keys()], 
+                              [np.select([y.data < 0], [0], y.data) for y in self.Lightning.values()]))
+            
         ################################################
         ### Unmanaged anthropogenic fire
         ################################################
         
-        Flam_norm      = self.dgvm['Flammability'] / np.nanmean(np.select([self.dgvm['Flammability'] == 0, self.dgvm['Flammability'] >= 1], 
+            Flam_norm      = self.dgvm['Flammability'] / np.nanmean(np.select([self.dgvm['Flammability'] == 0, self.dgvm['Flammability'] >= 1], 
                                               [np.nan, 1], default = self.dgvm['Flammability']))
                 
-        UI             =  (self.abm.Arson + self.abm.Background_ignitions + self.abm.Escaped_fire) if self.abm.p['escaped_fire'] == True else (self.abm.Arson + self.abm.Background_ignitions)
+            UI             =  (self.abm.Arson + self.abm.Background_ignitions + self.abm.Escaped_fire) if self.abm.p['escaped_fire'] == True else (self.abm.Arson + self.abm.Background_ignitions)
         
-        ### suppression
-        Unmanaged_igs  =  UI * (1-self.abm.Suppression)
+            ### suppression
+            Unmanaged_igs  =  UI * (1-self.abm.Suppression)
         
-        self.Unmanaged_fire = np.array(self.abm.Area * Unmanaged_igs * np.nansum(Flam_norm, axis= 0) * np.nansum(
+            self.Unmanaged_fire = np.array(self.abm.Area * Unmanaged_igs * np.nansum(Flam_norm, axis= 0) * np.nansum(
                                self.dgvm['PFT_ba'] * self.dgvm['PFT'], 
                                         axis = 0)).reshape(self.abm.p.xlen * self.abm.p.ylen)
-        
+            
+            ### constraint >= 0
+            self.Unmanaged_fire = np.select([self.Unmanaged_fire < 0], [0], self.Unmanaged_fire) 
+            
+            
     def constrain_managed_fire(self):
         
         ''' apply WHAM top-down fire constraints by land user '''
@@ -480,11 +493,18 @@ class modis_em():
                 temp_managed      = self.assign_managed_fires(i)
                 
                 ### assign unmanaged fires to MODIS pixels
-                temp_um           = self.assign_unmanaged_fires(i) 
+                if self.dgvm != False:
                 
-                ### combine
-                temp_cell = dict(zip([x for x in temp_managed.keys()], 
+                    temp_um           = self.assign_unmanaged_fires(i) 
+                
+                    ### combine
+                    temp_cell = dict(zip([x for x in temp_managed.keys()], 
                             [x + y for x, y in zip(temp_managed.values(), temp_um.values())]))
+                
+                else:
+                    
+                    temp_cell = dict(zip([x for x in temp_managed.keys()], 
+                            [x for x in temp_managed.values]))
                 
                 ### prevent >100% BA in a month
                 temp_cell = self.distribute_ba(temp_cell)

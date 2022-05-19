@@ -89,6 +89,8 @@ parameters = {
                    'Trans'  : 0.84, 
                    'Intense': 0.31},
     
+    ### MODIS emulation
+    'emulation'    : False, ##if True add 'Emulated_fire' to reporters
     
     ### fire meta pars
     'Seasonality'  : False, 
