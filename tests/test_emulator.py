@@ -313,7 +313,7 @@ def test_dgvm_load():
     errors = []
     
     ### check loading of fire data
-    if not np.nanmean(em.Lightning['igs'].data.reshape(144*192)) == np.nanmean(
+    if not np.nanmean(em.Lightning['igs'].reshape(144*192)) == np.nanmean(
             (em.dgvm['Lightning_fires'].data * em.abm.Area * (1-em.abm.Suppression)).reshape(144*192)):
         
         errors.append('Calculation of fire suppression incorrect')

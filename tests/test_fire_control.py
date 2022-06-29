@@ -29,7 +29,7 @@ parameters['write_annual'] = False
 mod = WHAM(parameters)
 mod.setup()
 mod.go()
-
+mod.Observers['fire_control_measures'][0].control()
 
 def test_control_fundamentals():
     
@@ -45,14 +45,10 @@ def test_control_fundamentals():
         
         errors.append("Error in cropland fire control measure predictions")
     
-    if not summary2.iloc[2] == 1126:
+    if not summary2.iloc[2] == 1136:
         
         errors.append("Error in pasture fire control measure predictions")
        
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
-
-def test_escaped_fire():
-    
-    pass
     
