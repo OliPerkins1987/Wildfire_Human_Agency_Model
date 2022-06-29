@@ -195,7 +195,8 @@ class WHAM(ap.Model):
         ### stash afr scores
         self.LFS      = afr_scores
         self.AFR      = get_afr_vals(self.LFS)
-                
+       
+         
     def allocate_AFT(self):
         
         AFT_scores   = {}

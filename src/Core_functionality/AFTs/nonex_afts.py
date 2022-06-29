@@ -65,8 +65,8 @@ class SLM(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Nonex'
-        self.sub_AFT = {'exists': True, 'kind': 'Multiple', 
-                        'afr': ['Intense', 'Post'], 'ls': ['Nonex', 'Nonex']} 
+        self.sub_AFT = {'exists': True, 'kind': 'Addition', 
+                        'afr': 'Post', 'ls': 'Nonex'} 
 
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
                                     'ba'  : 'tree_mod', 
@@ -80,8 +80,8 @@ class Conservationist(AFT):
         self.afr = 'Post'
         self.ls  = 'Nonex'
         self.sub_AFT = {'exists': True, 'kind': 'Multiple',
-                         'afr': ['Trans', 'Intense', 'Post'], 
-                         'ls': ['Nonex', 'Nonex', 'Nonex']} 
+                         'afr': ['Trans', 'Post'], 
+                         'ls': ['Nonex', 'Nonex']} 
         
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
