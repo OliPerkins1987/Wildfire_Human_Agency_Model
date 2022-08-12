@@ -64,8 +64,7 @@ class SLM(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Nonex'
-        self.sub_AFT = {'exists': True, 'kind': 'Addition', 
-                        'afr': 'Post', 'ls': 'Nonex'} 
+        self.sub_AFT = {'exists': False} 
 
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
                                     'ba'  : 'tree_mod', 
@@ -82,9 +81,11 @@ class Conservationist(AFT):
                          'afr': ['Trans', 'Post'], 
                          'ls': ['Nonex', 'Nonex']} 
         
+        
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
-                                    'ba'  : 'tree_mod', 
+                                    'ba'  : 'lin_mod', 
                                     'size': 150}}
+
 
     def fire_constraints(self):
               
