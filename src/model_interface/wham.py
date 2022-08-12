@@ -28,6 +28,7 @@ from Core_functionality.top_down_processes.fire_constraints import fuel_ct, domi
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
+from output_analysis.utility import get_afr_vals
 from output_analysis.ncdf_write_func import write_nc
 from modis_emulator.mod_em import modis_em 
 
@@ -161,6 +162,8 @@ class WHAM(ap.Model):
         self.X_axis                    =  dict(zip([x for x in ls_frame.keys()], 
                                             [np.array(x).reshape(self.ylen, self.xlen) for x in ls_frame.values()]))
         
+        ### for ease of reporting
+        self.Unoccupied                =  self.X_axis['Unoccupied'] 
     
     def allocate_Y_axis(self):
         
@@ -194,6 +197,7 @@ class WHAM(ap.Model):
         
         ### stash afr scores
         self.LFS = afr_scores
+        self.AFR      = get_afr_vals(self.LFS)
         
         
     def allocate_AFT(self):
@@ -234,7 +238,7 @@ class WHAM(ap.Model):
                         AFT_scores[type(a).__name__] = AFT_scores[type(a).__name__] + (self.LFS[a.sub_AFT['ls'][i]][a.sub_AFT['afr'][i]] * temp_vals)
                 
         self.AFT_scores = AFT_scores
-    
+            
     
     ###################################################################################
     

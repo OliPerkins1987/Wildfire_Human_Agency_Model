@@ -10,7 +10,7 @@ from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
+from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
 from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
 from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
 
@@ -60,6 +60,7 @@ for i in range(25):
     Map_data['Livestock_deforestation'][i, :, :] = Map_data['Livestock_deforestation'][0, :, :]
 
 
+
 #################################################
 
 ### setup parameters
@@ -67,7 +68,7 @@ for i in range(25):
 #################################################
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
-            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
+            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
              Hunter_gatherer, Recreationalist, SLM, Conservationist]
 
@@ -77,7 +78,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 24,
+    'end_run' : 25,
     
     ### Agents
     'AFTs': all_afts,
@@ -87,7 +88,8 @@ parameters = {
     'Observers': {'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+		  'arson': arson}, 
+                  #'deforestation': deforestation},    
     
     'Fire_seasonality': Seasonality,
     
@@ -100,7 +102,7 @@ parameters = {
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
-                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'}, 
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation'}, #, 'defor': 'Vegetation'
 
     ### constraints
     'Constraint_pars': {'Soil_threshold': {'max': 160, 'median': 100, 'min': 40}, 
@@ -118,20 +120,20 @@ parameters = {
     
     ### fire meta pars
     'Seasonality'  : False, 
-    'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
+    'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
     
     ### MODIS emulation
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire'],
+    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],
     
     ### house keeping
     'bootstrap': False,
-    'n_cores'  : 2,
+    'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\CF\LU90'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_empirical\results\SLM_test'  
         
     }
 
@@ -149,7 +151,6 @@ if __name__ == "__main__":
 
     ### setup
     mod.setup()
-
 
     ### go
     mod.go()

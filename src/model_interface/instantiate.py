@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 31,
+    'end_run' : 25,
     
     ### Agents
     'AFTs': all_afts,
@@ -65,7 +65,8 @@ parameters = {
     
     'Observers': {'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
-                  'fire_control_measures': fire_control_measures}, 
+                  'fire_control_measures': fire_control_measures, 
+		  'arson': arson}, 
                   #'deforestation': deforestation},    
     
     'Fire_seasonality': Seasonality,
@@ -97,20 +98,20 @@ parameters = {
     
     ### fire meta pars
     'Seasonality'  : False, 
-    'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
+    'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
     
     ### MODIS emulation
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire'],
+    'reporters': ['Unoccupied'],
     
     ### house keeping
     'bootstrap': False,
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\new_rangeland'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_empirical\results\Land_use'  
         
     }
 

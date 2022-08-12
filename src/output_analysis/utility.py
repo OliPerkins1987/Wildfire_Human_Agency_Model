@@ -40,7 +40,7 @@ def get_afr_vals(afr_dict):
                 
                 afr_vals.append(afr_dict[ls][afr])
                 
-        afr_res[afr] = np.nansum(afr_vals)
+        afr_res[afr] = np.nansum(afr_vals, axis = 0)
     
     return(afr_res)
 
