@@ -83,7 +83,7 @@ class Conservationist(AFT):
         
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
-                                    'ba'  : 'lin_mod', 
+                                    'ba'  : 'tree_mod', 
                                     'size': 150}}
 
 
