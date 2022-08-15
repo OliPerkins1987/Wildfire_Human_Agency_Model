@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 0,
+    'end_run' : 24,
     
     ### Agents
     'AFTs': all_afts,
@@ -104,14 +104,14 @@ parameters = {
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Unoccupied', 'Managed_fire'],
+    'reporters': ['Unoccupied'],
     
     ### house keeping
-    'bootstrap': False,
+    'bootstrap': True,
     'n_cores'  : 4,
         
-    'write_annual': False,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_empirical\results\Land_use'  
+    'write_annual': True,
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_empirical\results\all_par'  
         
     }
 
@@ -122,15 +122,32 @@ parameters = {
 
 #####################################################
 
+core_path  = deepcopy(parameters['write_fp'])
+
 if __name__ == "__main__":
 
-    ### instantiate
-    mod = WHAM(parameters)
+    ### run iteratively with one parameter
+    for i in range(2):
+    
+        ### load up bootstrap parameters
+        mod            = WHAM(parameters)
+        mod.setup()
+    
+        ### close bootstrap clusters
+        mod.p.bootstrap= False
+        mod.client.close()
+    
+        mod.timestep   = 0
+        mod.p.write_fp = core_path + '\\' + str(i)
+        os.mkdir(mod.p.write_fp)    
 
-    ### setup
-    mod.setup()
-
-    ### go
-    mod.go()
-
+        for a in mod.agents:
+        
+            a.Dist_frame =  update_pars(a.Dist_frame, a.boot_Dist_pars['Thresholds'], 
+                       a.boot_Dist_pars['Probs'], method = 'bootstrapped', 
+                        target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+        
+    
+        
+        mod.go()
 

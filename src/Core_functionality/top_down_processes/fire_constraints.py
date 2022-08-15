@@ -24,9 +24,12 @@ class fuel_ct(ap.Agent):
         Soil = Soil + (self.model.p.Maps['NPP'].data[self.model.timestep, :, :] > pars['median'])
         Soil = np.select([Soil < 0, Soil > 1], [0, 1], default=Soil)
         
-        ### multiple Soil constraint by relevant fire types ??Pasture
-        self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
-        self.model.Managed_fire['Vegetation']  = self.model.Managed_fire['Vegetation'] * Soil
+        ### constrain all apart from crop fires
+        f_con = [x for x in self.model.Managed_fire.keys() if x not in ['crb', 'Cropland', 'Arable']]
+        self.model.Managed_fire = dict(zip([x for x in self.model.Managed_fire.keys()], 
+                                   [self.model.Managed_fire[x] * 
+                                    Soil if x in f_con else self.model.Managed_fire[x] for x in self.model.Managed_fire.keys()]))
+        
         
         ### store for easy analysis & use with emulator
         self.Constraint = Soil

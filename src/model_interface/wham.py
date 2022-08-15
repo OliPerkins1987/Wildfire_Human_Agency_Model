@@ -473,7 +473,7 @@ class WHAM(ap.Model):
 
         ### Fire use
         self.agents.fire_use()
-        self.calc_BA(group_lc = True)
+        self.calc_BA(group_lc = False)
         
         #################################################
         ### Background & arson ignitions
