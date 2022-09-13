@@ -57,7 +57,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 25,
+    'end_run' : 86,
     
     ### Agents
     'AFTs': all_afts,
@@ -69,7 +69,7 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation, 
+                  #'deforestation': deforestation, 
                   'fire_suppression': fire_fighter},    
     
     'Fire_seasonality': Seasonality,
@@ -83,7 +83,8 @@ parameters = {
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
-                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'}, 
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation'#, 'defor': 'Vegetation'
+                   }, 
 
     ### constraints
     'Constraint_pars': {'Soil_threshold': 0.1325, 
@@ -107,14 +108,14 @@ parameters = {
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson', 'Background_ignitions'],
+    'reporters': ['Managed_fire'],
     
     ### house keeping
     'bootstrap': False,
     'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_coupled\results\thesis'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_coupled\results\Future_test'  
         
     }
 
@@ -127,7 +128,6 @@ parameters = {
 
 if __name__ == "__main__":
 
-    ### instantiate
     mod = WHAM(parameters)
 
     ### setup

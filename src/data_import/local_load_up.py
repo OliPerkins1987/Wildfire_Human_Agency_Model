@@ -23,7 +23,7 @@ from copy import deepcopy
 ### Set these to your local directories!
 
 root       = r'F:/PhD/Model files/'
-Map_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/'
+Map_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_future/Test/'
 
 Rlen       = len(root)
 Mlen       = len(Map_folder)
@@ -184,8 +184,8 @@ Map_data['Area'] = np.array(pd.read_csv(Area[0])).reshape(27648)
 
 ###########################################################################
 
-Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
-Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
+Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:86, :, :]
+Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:86, :, :]
 Map_data['HDI_GDP']          = np.log(Map_data['GDP'].data) * Map_data['HDI']
 Map_data['WFI']              = (1/Map_data['TRI']) * Map_data['GDP']
 
@@ -242,7 +242,6 @@ var_key  = zip([x for x in Season_Map.values()],
 
 Seasonality = dict(zip([x for x in Season_Map.keys()], 
             [x[y][:] for x, y in var_key]))
-
 
 
 import gc

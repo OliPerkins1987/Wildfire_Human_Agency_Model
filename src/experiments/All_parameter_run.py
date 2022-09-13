@@ -134,7 +134,7 @@ parameters = {
 core_path  = deepcopy(parameters['write_fp'])
 
 ### run iteratively with one parameter
-for i in range(8, 101):
+for i in range(101):
     
     ### load up bootstrap parameters
     mod            = WHAM(parameters)
