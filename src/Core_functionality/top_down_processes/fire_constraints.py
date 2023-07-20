@@ -16,7 +16,7 @@ class fuel_ct(ap.Agent):
     def constrain(self):
         
         ### Calculate soil constraint
-        Soil = self.model.p.Maps['Baresoil'].data[self.timestep, :, :]
+        Soil = self.model.p.Maps['Baresoil'].data[self.model.timestep, :, :]
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold'])) #defaults mean bare soil cover
         
         ### constrain all apart from crop fires
@@ -31,7 +31,7 @@ class fuel_ct(ap.Agent):
     def constrain_arson(self):
         
         ### Calculate soil constraint
-        Soil = self.model.p.Maps['Baresoil'].data[self.timestep, :, :]
+        Soil = self.model.p.Maps['Baresoil'].data[self.model.timestep, :, :]
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold']))
         Soil = Soil.reshape(self.model.ylen * self.model.xlen)
         

@@ -22,11 +22,11 @@ from Core_functionality.top_down_processes.background_ignitions import backgroun
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
-from Core_functionality.top_down_processes.fire_suppression import fire_fighter
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
+
 
 ### Load data
 import os
@@ -69,8 +69,9 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  #'deforestation': deforestation, 
-                  'fire_suppression': fire_fighter},    
+                  'deforestation': deforestation 
+                  #'fire_suppression': fire_fighter
+		  },    
     
     'Fire_seasonality': Seasonality,
     
@@ -83,7 +84,7 @@ parameters = {
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
-                   'pasture': 'Pasture', 'pyrome': 'Vegetation'#, 'defor': 'Vegetation'
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'
                    }, 
 
     ### constraints
@@ -108,7 +109,7 @@ parameters = {
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire'],
+    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson', 'Background_ignitions', 'AFR'],
     
     ### house keeping
     'bootstrap': False,
