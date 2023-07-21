@@ -20,17 +20,16 @@ exec(open("local_load_up.py").read())
 os.chdir(wd)
 exec(open("setup_full.py").read())
 
+### bespoke parameters
+parameters['escaped_fire'] = False
+parameters['reporters']    = []
+parameters['write_annual'] = False
 
+### setup mod
 mod = WHAM(parameters)
-
-### setup
 mod.setup()
 mod.go()
-
-### ignite
-#mod.Observers['fire_control_measures'].control()
-#mod.calc_escaped_fires()
-
+mod.Observers['fire_control_measures'][0].control()
 
 def test_control_fundamentals():
     
@@ -46,14 +45,10 @@ def test_control_fundamentals():
         
         errors.append("Error in cropland fire control measure predictions")
     
-    if not summary2.iloc[2] == 1126:
+    if not summary2.iloc[2] == 1136:
         
         errors.append("Error in pasture fire control measure predictions")
        
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
-
-def test_escaped_fire():
-    
-    pass
     

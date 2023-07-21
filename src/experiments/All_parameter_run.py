@@ -22,6 +22,7 @@ from Core_functionality.top_down_processes.background_ignitions import backgroun
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
+from Core_functionality.top_down_processes.fire_suppression import fire_fighter
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -56,7 +57,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 26,
+    'end_run' : 24,
     
     ### Agents
     'AFTs': all_afts,
@@ -68,7 +69,8 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'deforestation': deforestation, 
+                  'fire_suppression': fire_fighter},    
     
     'Fire_seasonality': Seasonality,
     
@@ -105,33 +107,55 @@ parameters = {
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],
+    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson', 'Background_ignitions'],
     
     ### house keeping
-    'bootstrap': False,
-    'n_cores'  : 3,
+    'bootstrap': True,
+    'n_cores'  : 4,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\test'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_coupled\results\thesis'  
         
     }
 
 
-#####################################################
+######################################################################
 
-### Run model
+### Update parameters and run
 
-#####################################################
+######################################################################
 
-if __name__ == "__main__":
+####################
 
-    ### instantiate
-    mod = WHAM(parameters)
+### update pars
 
-    ### setup
+####################
+
+core_path  = deepcopy(parameters['write_fp'])
+
+### run iteratively with one parameter
+for i in range(101):
+    
+    ### load up bootstrap parameters
+    mod            = WHAM(parameters)
     mod.setup()
+    
+    ### close bootstrap clusters
+    mod.p.bootstrap= False
+    mod.client.close()
+    
+    mod.timestep   = 0
+    mod.p.write_fp = core_path + '\\' + str(i)
+    os.mkdir(mod.p.write_fp)    
 
-    ### go
+    for a in mod.agents:
+        
+        a.Dist_frame =  update_pars(a.Dist_frame, a.boot_Dist_pars['Thresholds'], 
+                       a.boot_Dist_pars['Probs'], method = 'bootstrapped', 
+                        target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)
+        
+    
+        
     mod.go()
-
+    
 

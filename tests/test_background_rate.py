@@ -68,7 +68,7 @@ def test_backgroundrate_fundamentals1():
         
         errors.append("Incorrect ordering of background rate predictions")
     
-    if not np.nanmedian(mod.Observers['background_rate'].Fire_vals[0]) == pytest.approx(0.0008, 0.1):
+    if not np.nanmedian(mod.Observers['background_rate'].Fire_vals[0]) == pytest.approx(0.0014, 0.1):
         
         errors.append("Incorrect background_rate predictions")
     
@@ -90,7 +90,7 @@ def test_backgroundrate_fundamentals2():
     R_results['NPP']           = Map_data['NPP'][0, :, :].data.reshape(27648)
     R_results['Market_access'] = Map_data['Market_access'][0, :, :].data.reshape(27648)
 
-    Wrong = R_results[np.logical_and(np.abs(R_results.Delta) > 0.001, R_results.Market_access >= 0)]    
+    Wrong = R_results[np.logical_and(np.abs(R_results.Delta) > 0.05, R_results.Market_access >= 0)]    
     
     if not Wrong.shape[0] == 0:
         

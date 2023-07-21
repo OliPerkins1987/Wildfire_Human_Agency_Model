@@ -17,12 +17,6 @@ def get_model_output(model, kind):
         temp = pd.DataFrame(temp)
         temp.columns = [type(x).__name__ for x in model.agents]
         
-    elif kind == 'LFS':
-        
-        temp = np.column_stack([(x.reshape(27648))for x in model.LFS.values()])
-        temp = pd.DataFrame(temp)
-        
-
     return(temp)
 
 
@@ -39,9 +33,9 @@ def get_afr_vals(afr_dict):
             if afr in afr_dict[ls].keys():
                 
                 afr_vals.append(afr_dict[ls][afr])
-                
-        afr_res[afr] = sum(afr_vals)
-    
+        
+        afr_res[afr] = np.nansum(afr_vals, axis = 0)
+        
     return(afr_res)
 
 

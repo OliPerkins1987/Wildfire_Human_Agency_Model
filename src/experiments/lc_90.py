@@ -22,6 +22,7 @@ from Core_functionality.top_down_processes.background_ignitions import backgroun
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
+from Core_functionality.top_down_processes.fire_suppression import fire_fighter
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
@@ -37,6 +38,25 @@ wd = os.getcwd().replace('\\', '/')
 os.chdir((wd[0:-16] + '/data_import'))
 
 exec(open("local_load_up.py").read())
+
+
+##################################################
+
+#setup scenario
+
+##################################################
+
+for i in range(25):
+    
+    Map_data['Cropland'][i, :, :]         = Map_data['Cropland'][0, :, :]
+    Map_data['Pasture'][i, :, :]          = Map_data['Pasture'][0, :, :]
+    Map_data['Rangeland'][i, :, :]        = Map_data['Rangeland'][0, :, :]
+    Map_data['Forest'][i, :, :]           = Map_data['Forest'][0, :, :]
+    Map_data['Urban'][i, :, :]      = Map_data['Urban'][0, :, :]
+    Map_data['Arable_deforestation'][i, :, :]    = Map_data['Arable_deforestation'][0, :, :]
+    Map_data['Livestock_deforestation'][i, :, :] = Map_data['Livestock_deforestation'][0, :, :]
+
+
 
 
 #################################################
@@ -56,7 +76,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 26,
+    'end_run' : 25,
     
     ### Agents
     'AFTs': all_afts,
@@ -68,7 +88,8 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'deforestation': deforestation, 
+                  'fire_suppression': fire_fighter},    
     
     'Fire_seasonality': Seasonality,
     
@@ -105,14 +126,14 @@ parameters = {
     'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
-    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],
+    'reporters': ['Managed_fire'],
     
     ### house keeping
     'bootstrap': False,
-    'n_cores'  : 3,
+    'n_cores'  : 2,
         
     'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\test'  
+    'write_fp': r'C:\Users\Oli\Documents\PhD\wham_coupled\results\thesis\counterfactual\LC90'  
         
     }
 

@@ -442,8 +442,8 @@ class AFT(ap.Agent):
             ### calculate burned area through bool & ba%
             self.Fire_vals[x] = self.Fire_vals[x]['bool'] * self.Fire_vals[x]['ba']
             
-            ### Adjust for AFT specific constraints
-            self.fire_constraints()
+        ### Adjust for AFT specific constraints
+        self.fire_constraints()
     
     
     def fire_constraints(self):

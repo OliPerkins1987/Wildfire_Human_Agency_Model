@@ -16,12 +16,14 @@ class fuel_ct(ap.Agent):
     def constrain(self):
         
         ### Calculate soil constraint
-        Soil = self.model.p.Maps['Baresoil'].data
+        Soil = self.model.p.Maps['Baresoil'].data[self.model.timestep, :, :]
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold'])) #defaults mean bare soil cover
-
-        ### multiple Soil constraint by relevant fire types ??Pasture
-        self.model.Managed_fire['Pasture']     = self.model.Managed_fire['Pasture'] * Soil
-        self.model.Managed_fire['Vegetation']  = self.model.Managed_fire['Vegetation'] * Soil
+        
+        ### constrain all apart from crop fires
+        f_con = [x for x in self.model.Managed_fire.keys() if x not in ['crb', 'Cropland', 'Arable']]
+        self.model.Managed_fire = dict(zip([x for x in self.model.Managed_fire.keys()], 
+                                   [self.model.Managed_fire[x] * 
+                                        Soil if x in f_con else self.model.Managed_fire[x] for x in self.model.Managed_fire.keys()]))
         
         ### store for easy analysis & use with emulator
         self.Constraint = Soil
@@ -29,7 +31,7 @@ class fuel_ct(ap.Agent):
     def constrain_arson(self):
         
         ### Calculate soil constraint
-        Soil = self.model.p.Maps['Baresoil'].data
+        Soil = self.model.p.Maps['Baresoil'].data[self.model.timestep, :, :]
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold']))
         Soil = Soil.reshape(self.model.ylen * self.model.xlen)
         
