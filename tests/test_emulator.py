@@ -75,8 +75,7 @@ parameters = {
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation, 
-                  'fire_suppression': fire_fighter},    
+                  'deforestation': deforestation},    
     
     'Fire_seasonality': Seasonality,
     
