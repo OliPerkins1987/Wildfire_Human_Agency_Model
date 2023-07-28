@@ -56,7 +56,7 @@ parameters = {
     'xlen': 192, 
     'ylen': 144,
     'start_run': 0,
-    'end_run' : 26,
+    'end_run' : 25,
     
     ### Agents
     'AFTs': all_afts,
@@ -70,14 +70,14 @@ parameters = {
                   'fire_control_measures': fire_control_measures, 
                   'deforestation': deforestation},    
     
-    'Fire_seasonality': Seasonality,
+    'Fire_seasonality': Seasonality, ##defined in data load
     
     ### AFT distribution parameter
     'theta'   : 0.1,
     
     ### data
-    'AFT_pars': Core_pars,
-    'Maps'    : Map_data,
+    'AFT_pars': Core_pars, ##defined in data load
+    'Maps'    : Map_data,  ##defined in data load
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
@@ -101,8 +101,6 @@ parameters = {
     'Seasonality'  : False, 
     'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
     
-    ### MODIS emulation
-    'emulation'    : False, ##if True add 'Emulated_fire' to reporters
 
     ### reporters
     'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],

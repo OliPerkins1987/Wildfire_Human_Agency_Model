@@ -30,7 +30,7 @@ from Core_functionality.prediction_tools.regression_families import regression_l
 
 from output_analysis.utility import get_afr_vals
 from output_analysis.ncdf_write_func import write_nc
-from modis_emulator.mod_em import modis_em 
+
 
 ###################################################################
 
@@ -445,7 +445,18 @@ class WHAM(ap.Model):
             for f in self.Escaped_fire.keys():
                 
                 self.Escaped_fire[f] = self.Escaped_fire[f] * control_weights[f]
+                
     
+    ###############################################
+    
+    ### Suppression of unmanaged ignitions
+    ### Currently calculated offline
+    
+    ###############################################
+    
+    def suppress_fire(self):
+    
+        pass
     
     #####################################################################################
     
@@ -488,6 +499,7 @@ class WHAM(ap.Model):
         
         ### Suppression
         self.agents.fire_suppression()
+        self.suppress_fire()
         self.calc_escaped_fires()
         
         ### update
@@ -495,16 +507,7 @@ class WHAM(ap.Model):
     
     
     def update(self):
-        
-        ### run emulation
-        if self.p.emulation == True:
-            
-            em = modis_em(self)
-            em.setup_emulate()
-            em.emulate()
-            self.Emulated_fire = em.emulated_BA
-        
-        
+                
         self.record()        ### store data in model object
         self.write_out()     ### write data to disk
         

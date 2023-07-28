@@ -179,7 +179,7 @@ class AFT(ap.Agent):
             
 
     
-    ### Needs doing
+    ### Container for suppression pars
     def get_suppression_pars(self):
         
         pass
@@ -457,9 +457,10 @@ class AFT(ap.Agent):
     ### Fire suppression
     
     #######################   
-                    
-                    
+               
     def fire_suppression(self):
+        
+        ''' container for suppression actions'''
         
         pass
 
