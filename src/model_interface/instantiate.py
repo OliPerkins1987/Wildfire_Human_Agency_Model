@@ -109,8 +109,8 @@ parameters = {
     'bootstrap': False,
     'n_cores'  : 3,
         
-    'write_annual': True,
-    'write_fp': r'C:\Users\Oli\Documents\PhD\wham\results\test'  
+    'write_annual': False,
+    'write_fp': r'C:/Users/'  
         
     }
 

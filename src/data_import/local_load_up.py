@@ -23,7 +23,7 @@ from copy import deepcopy
 ### Set these to your local directories!
 
 root       = r'F:/PhD/Model files/'
-Map_folder = r'C:/Users/Oli/Documents/PhD/Model development/Data/wham_dynamic/'
+Map_folder = root + r'wham_dynamic/'
 
 Rlen       = len(root)
 Mlen       = len(Map_folder)
