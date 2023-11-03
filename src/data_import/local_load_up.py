@@ -154,7 +154,7 @@ for path, subdirs, files in os.walk(Map_folder):
         Map_list.append(os.path.join(path, name))
 
 Maps       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
-Mask       = [s.replace('\\', '/') for s in Map_list if "mask.csv" in s]
+Mask       = [s.replace('\\', '/') for s in Map_list if "JULES_mask.csv" in s]
 Area       = [s.replace('\\', '/') for s in Map_list if "Area.csv" in s]
 
 Map_data = dict(zip([x[Mlen:-3] for x in Maps], 
