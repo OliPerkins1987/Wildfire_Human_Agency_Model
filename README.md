@@ -4,6 +4,10 @@ This repository contains code to run the Wildfire Human Agency Model, a global g
 
 Installation instructions follow below. see /docs for user guidelines. All questions and bugs to oliver.perkins@kcl.ac.uk
 
+*** Installation guidelines ***
+
+1.1 Install code and data	
+
 Download or clone code from main branch.
 
 Data for historical model runs can be downloaded from: 
