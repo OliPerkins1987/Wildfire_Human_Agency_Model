@@ -1,4 +1,4 @@
-name: py38
+name: wham38
 channels:
   - defaults
 dependencies:
