@@ -19,13 +19,13 @@ https://zenodo.org/records/8363979
 Instructions for setting up a virtual environment (using conda) with required python packages are now provided for each of Windows, MacOS and Linux; these instructions have been tested for Windows 10 & 11, MaxOS 14.1 and Linux (Mint 20).
 Package requirements are provided as a wham38.yml file for Windows users, a requirements.txt for Linux and requirements_mac.txt for MacOS users. These files are stored in the base directory of where you downloaded & unzipped the wham code.
 
-1.2.1	Windows
+1.2.1	Windows:
 Windows users can either use the .yml file for convenience, or follow Linux instructions below using requirements.txt. 
 Open an anaconda command prompt and navigate to the where wham38.yml file is saved then run the following commands:
 conda env create -f wham38.yml
 conda activate wham38
 
-1.2.2 MacOS
+1.2.2 MacOS:
 Open terminal, navigate to where requirements.txt is saved, and run the following commands: 
 conda create --name wham38 python=3.8
 conda activate wham38
@@ -33,7 +33,7 @@ pip install -r requirements_mac.txt
 conda install -c conda-forge netcdf4
 NB: there are known issues with installation of netcdf4 for Mac users using pip. Using conda forge should solve this.
 
-1.2.3 Linux
+1.2.3 Linux:
 Open terminal, navigate to where requirements.txt is saved, and run the following commands: 
 conda create --name wham38 python=3.8
 conda activate wham38
