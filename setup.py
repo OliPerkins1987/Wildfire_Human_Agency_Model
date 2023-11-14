@@ -20,7 +20,7 @@ setuptools.setup(
     packages=setuptools.find_packages("src"),
     package_dir={"": "src"},
 
-    python_requires=">=3.8",
+    python_requires="==3.8",
     #setup_requires=["setuptools-scm"],
     #use_scm_version=dict(write_to="src/wildfires/_version.py"),
     #include_package_data=True,
