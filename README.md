@@ -43,8 +43,6 @@ pip install -r requirements.txt
 1.3 Install wham code
 Installation of wham code is done using python install from command line or terminal. Install the code by navigating to the directory where you unzipped the code, and running the following commands: 
 python setup.py install
-Ubuntu users will need to enter: 
-sudo python setup.py install
 
 
 1.4 Data download and set up
@@ -74,7 +72,7 @@ pytest
 Type & run the following command:
 pytest
 
-Tests should take around 15 mins to run on a medium performance desktop. Tests should return 76 warnings, these are composed of the following warning messages & can be ignored:
+Tests should take around 15-30 mins to run on a medium performance desktop. Tests should return 76 warnings, these are composed of the following warning messages & can be ignored:
 •	dividing by zero – this is where the land fraction equals 0
 •	np.bool being deprecated – this arises from the netCDF4 package 
 •	np.log being applied to a negative number – this relates to the netCDF4 package using -3.3e38 for missing values
