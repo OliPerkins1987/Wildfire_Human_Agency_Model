@@ -41,11 +41,13 @@ pip install -r requirements.txt
 
 
 1.3 Install wham code
+
 Installation of wham code is done using python install from command line or terminal. Install the code by navigating to the directory where you unzipped the code, and running the following commands: 
 python setup.py install
 
 
 1.4 Data download and set up
+
 Check where you have saved (and unzipped) the model data (from step 1). We now need to modify a line of code to specify to the model where data are saved: 
 
 i.	Open the ‘local_load_up.py’ script (in the src/data_import directory) in a text editor
@@ -55,20 +57,21 @@ ii.	Go to lines 25-26 & edit the paths to point to where the data files are stor
 iii.	save your edits to ‘local_load_up.py’ 
 
 1.5 Testing
+
 To check that has all worked, at the command line or in terminal navigate to /tests in the code files and follow instructions below. 
 
-1.5.1	Windows
+1.5.1	Windows:
 Type & run the following command:
 pytest
 Running code tests may trigger a Window’s Defender Firewall; this relates to the dask.distributed library making requests to establish a slave & master set of parallel CPU cores. Please select yes, when asked for permission. 
 
-1.5.2	MacOS
+1.5.2	MacOS:
 Running tests may breach the number of open files allowed by shell. To alter this, enter: 
 ulimit -n 2048
 Type & run the following command:
 pytest
 
-1.5.3	Linux
+1.5.3	Linux:
 Type & run the following command:
 pytest
 
