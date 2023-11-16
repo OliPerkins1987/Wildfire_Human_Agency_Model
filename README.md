@@ -34,7 +34,7 @@ conda install -c conda-forge netcdf4
 NB: there are known issues with installation of netcdf4 for Mac users using pip. Using conda forge should solve this.
 
 1.2.3 Linux:
-Open terminal, navigate to where requirements.txt is saved, and run the following commands: 
+Open terminal, navigate to where requirements.txt is saved, and run the following commands:  
 conda create --name wham38 python=3.8  
 conda activate wham38  
 pip install -r requirements.txt  
@@ -66,16 +66,16 @@ pytest
 Running code tests may trigger a Window’s Defender Firewall; this relates to the dask.distributed library making requests to establish a slave & master set of parallel CPU cores. Please select yes, when asked for permission. 
 
 1.5.2	MacOS:
-Running tests may breach the number of open files allowed by shell. To alter this, enter: 
+Running tests may breach the number of open files allowed by shell. To alter this, enter:  
 ulimit -n 2048  
-Type & run the following command:
+Type & run the following command:  
 pytest
 
 1.5.3	Linux:
 Type & run the following command:
 pytest  
 
-Tests should take around 15-30 mins to run on a medium performance desktop. Tests should return 76 warnings, these are composed of the following warning messages & can be ignored:  
+Tests should take around 15-30 mins to run on a medium performance desktop. Tests should return 76 warnings, these are primarily composed of the following warning messages & can be ignored:  
 •	dividing by zero – this is where the land fraction equals 0  
 •	np.bool being deprecated – this arises from the netCDF4 package  
 •	np.log being applied to a negative number – this relates to the netCDF4 package using -3.3e38 for missing values  
