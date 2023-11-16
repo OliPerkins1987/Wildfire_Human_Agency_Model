@@ -21,12 +21,12 @@ Package requirements are provided as a wham38.yml file for Windows users, a requ
 
 1.2.1	Windows:
 Windows users can either use the .yml file for convenience, or follow Linux instructions below using requirements.txt. 
-Open an anaconda command prompt and navigate to the where wham38.yml file is saved then run the following commands:
+Open an anaconda command prompt and navigate to the where wham38.yml file is saved then run the following commands:  
 conda env create -f wham38.yml  
 conda activate wham38  
 
 1.2.2 MacOS:
-Open terminal, navigate to where requirements.txt is saved, and run the following commands: 
+Open terminal, navigate to where requirements.txt is saved, and run the following commands:  
 conda create --name wham38 python=3.8  
 conda activate wham38  
 pip install -r requirements_mac.txt  
@@ -52,8 +52,8 @@ Check where you have saved (and unzipped) the model data (from step 1). We now n
 
 i.	Open the ‘local_load_up.py’ script (in the src/data_import directory) in a text editor  
 ii.	Go to lines 25-26 & edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored (by default …/wham_dynamic/)  
-		If copying and pasting the path on Windows, please replace any backslash (\) characters in the path either with Unix-style forward slash (/), or with a double backslash (\\), since a single backslash is interpreted as an escape character in Python.  
-		Ensure the file paths both end in a trailing slash - e.g. -  ‘…/mypath/’ or ‘…\\mypath\\’  
+			If copying and pasting the path on Windows, please replace any backslash (\) characters in the path either with Unix-style forward slash (/), or with a double backslash (\\), since a single backslash is interpreted as an escape character in Python.  
+			Ensure the file paths both end in a trailing slash - e.g. -  ‘…/mypath/’ or ‘…\\mypath\\’  
 iii.	save your edits to ‘local_load_up.py’ 
 
 1.5 Testing
