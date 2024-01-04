@@ -21,27 +21,35 @@ Package requirements are provided as a wham38.yml file for Windows users, a requ
 #### 1.2.1	Windows:
 Windows users can either use the .yml file for convenience, or follow Linux instructions below using requirements.txt. 
 Open an anaconda command prompt and navigate to the where wham38.yml file is saved then run the following commands:  
+```shell
 conda env create -f wham38.yml  
 conda activate wham38  
+```
 
 #### 1.2.2 MacOS:
 Open terminal, navigate to where requirements.txt is saved, and run the following commands:  
+```shell
 conda create --name wham38 python=3.8  
 conda activate wham38  
 pip install -r requirements_mac.txt  
 conda install -c conda-forge netcdf4  
+```
 NB: there are known issues with installation of netcdf4 for Mac users using pip. Using conda forge should solve this.
 
 #### 1.2.3 Linux:
 Open terminal, navigate to where requirements.txt is saved, and run the following commands:  
+```shell
 conda create --name wham38 python=3.8  
 conda activate wham38  
 pip install -r requirements.txt  
+```
 
 ### 1.3 Install wham code
 
-Installation of wham code is done using python install from command line or terminal. Install the code by navigating to the directory where you unzipped the code, and running the following commands: 
+Installation of wham code is done using python install from command line or terminal. Install the code by navigating to the directory where you unzipped the code, and running the following command: 
+```shell
 python setup.py install  
+```
 
 ### 1.4 Data download and set up
 
@@ -59,18 +67,26 @@ To check that has all worked, at the command line or in terminal navigate to /te
 
 #### 1.5.1	Windows:
 Type & run the following command:
+```shell
 pytest  
+```
 Running code tests may trigger a Window’s Defender Firewall; this relates to the dask.distributed library making requests to establish a slave & master set of parallel CPU cores. Please select yes, when asked for permission. 
 
 #### 1.5.2	MacOS:
 Running tests may breach the number of open files allowed by shell. To alter this, enter:  
+```shell
 ulimit -n 2048  
+```
 Type & run the following command:  
+```shell
 pytest
+```
 
 #### 1.5.3	Linux:
 Type & run the following command:
+```shell
 pytest  
+```
 
 Tests should take around 15-30 mins to run on a medium performance desktop. Tests should return 76 warnings, these are primarily composed of the following warning messages & can be ignored:  
 •	dividing by zero – this is where the land fraction equals 0  
