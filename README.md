@@ -2,7 +2,7 @@
 
 This repository contains code to run the Wildfire Human Agency Model, a global geospatial model of human fire use and management. 
 
-Installation instructions follow below. see docs/ for user guidelines. All questions and bugs to oliver.perkins@kcl.ac.uk
+Installation instructions follow below. see `docs/` for user guidelines. All questions and bugs to oliver.perkins@kcl.ac.uk
 
 ## Installation guidelines
 
@@ -57,11 +57,11 @@ python setup.py install
 
 Check where you have saved (and unzipped) the model data (from step 1). We now need to modify a line of code to specify to the model where data are saved: 
 
-1. Open the ‘local_load_up.py’ script (in the src/data_import/ directory) in a text editor  
-2. Go to lines 25-26 & edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored (by default …/wham_dynamic/)  
-- If copying and pasting the path on Windows, please replace any backslash (\) characters in the path either with Unix-style forward slash (/), or with a double backslash (\\), since a single backslash is interpreted as an escape character in Python.  
-- Ensure the file paths both end in a trailing slash - e.g. -  ‘…/mypath/’ or ‘…\\mypath\\’  
-3. save your edits to ‘local_load_up.py’ 
+1. Open the `local_load_up.py` script (in the `src/data_import/` directory) in a text editor  
+2. Go to lines 25-26 & edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored (by default `.../wham_dynamic/`)  
+- If copying and pasting the path on Windows, please replace any backslash (`\`) characters in the path either with Unix-style forward slash (`/`), or with a double backslash (`\\`), since a single backslash is interpreted as an escape character in Python.  
+- Ensure the file paths both end in a trailing slash - e.g. -  `.../mypath/` or `...\\mypath\\`  
+3. save your edits to `local_load_up.py`
 
 ### 1.5 Testing
 
