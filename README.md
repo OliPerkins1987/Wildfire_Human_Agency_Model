@@ -55,11 +55,11 @@ python setup.py install
 
 Check where you have saved (and unzipped) the model data (from step 1). We now need to modify a line of code to specify to the model where data are saved: 
 
-i.	Open the ‘local_load_up.py’ script (in the src/data_import directory) in a text editor  
-ii.	Go to lines 25-26 & edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored (by default …/wham_dynamic/)  
-			If copying and pasting the path on Windows, please replace any backslash (\) characters in the path either with Unix-style forward slash (/), or with a double backslash (\\), since a single backslash is interpreted as an escape character in Python.  
-			Ensure the file paths both end in a trailing slash - e.g. -  ‘…/mypath/’ or ‘…\\mypath\\’  
-iii.	save your edits to ‘local_load_up.py’ 
+1. Open the ‘local_load_up.py’ script (in the src/data_import directory) in a text editor  
+2. Go to lines 25-26 & edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored (by default …/wham_dynamic/)  
+- If copying and pasting the path on Windows, please replace any backslash (\) characters in the path either with Unix-style forward slash (/), or with a double backslash (\\), since a single backslash is interpreted as an escape character in Python.  
+- Ensure the file paths both end in a trailing slash - e.g. -  ‘…/mypath/’ or ‘…\\mypath\\’  
+3. save your edits to ‘local_load_up.py’ 
 
 ### 1.5 Testing
 
@@ -89,9 +89,9 @@ pytest
 ```
 
 Tests should take around 15-30 mins to run on a medium performance desktop. Tests should return 76 warnings, these are primarily composed of the following warning messages & can be ignored:  
-•	dividing by zero – this is where the land fraction equals 0  
-•	np.bool being deprecated – this arises from the netCDF4 package  
-•	np.log being applied to a negative number – this relates to the netCDF4 package using -3.3e38 for missing values  
+- dividing by zero – this is where the land fraction equals 0  
+- np.bool being deprecated – this arises from the netCDF4 package  
+- np.log being applied to a negative number – this relates to the netCDF4 package using -3.3e38 for missing values  
 
 However, any test failures need to be explored. Please report them to oliver.perkins@kcl.ac.uk
 
