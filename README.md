@@ -16,10 +16,12 @@ https://zenodo.org/records/8363979
 ### 1.2	Set up virtual environment
 
 Instructions for setting up a virtual environment (using conda) with required python packages are now provided for each of Windows, MacOS and Linux; these instructions have been tested for Windows 10 & 11, MaxOS 14.1 and Linux (Mint 20).
+
 Package requirements are provided as a wham38.yml file for Windows users, a requirements.txt for Linux and requirements_mac.txt for MacOS users. These files are stored in the base directory of where you downloaded & unzipped the wham code.
 
 #### 1.2.1	Windows:
 Windows users can either use the .yml file for convenience, or follow Linux instructions below using requirements.txt. 
+
 Open an anaconda command prompt and navigate to the where wham38.yml file is saved then run the following commands:  
 ```shell
 conda env create -f wham38.yml  
