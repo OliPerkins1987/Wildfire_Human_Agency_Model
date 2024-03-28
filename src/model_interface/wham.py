@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from dask.distributed import Client
+from collections import defaultdict
 
 
 from Core_functionality.AFTs.agent_class import AFT
@@ -65,7 +66,6 @@ class WHAM(ap.Model):
         self.agents = ap.AgentList(self, 
                        [y[0] for y in [ap.AgentList(self, 1, x) for x in self.p.AFTs]])
 
-
         # Create Observers
         self.Observers = dict(zip([x for x in self.p.Observers.keys()], 
                                   [ap.AgentList(self, 1, y) for y in self.p.Observers.values()]))
@@ -82,8 +82,7 @@ class WHAM(ap.Model):
         
         ### AFTs
         self.agents.setup()
-        self.agents.get_pars(self.p.AFT_pars)
-        self.agents.get_boot_vals(self.p.AFT_pars)
+        self.agents.get_dist_pars(self.p.AFT_pars)
         self.agents.get_fire_pars()
     
         ### Observers
@@ -138,18 +137,16 @@ class WHAM(ap.Model):
         #################################################
         
         ### Forestry
-        ls_scores['Forestry'] =  ls_scores['Forestry'] * (1 - 
-                                  np.array(ls_scores['Nonex']['Forest'])) * (1 - 
-                                        np.array(ls_scores['Unoccupied']))
+        ls_scores['Forestry'] =  ls_scores['Forestry'] * (self.p.Maps['Forest'].data[self.timestep, :, :]).reshape(self.xlen * self.ylen)
+        ls_scores['Forestry'] =  np.select([ls_scores['Forestry']>0], [ls_scores['Forestry']], default = 0)
         
         ### Get remaining vegetation fraction
         Open_vegetation                =  self.p.Maps['Mask'] - ls_scores['Cropland'] - ls_scores['Pasture'] - ls_scores['Rangeland'] - ls_scores['Forestry'] - ls_scores['Urban']
         Open_vegetation                =  np.array([x if x >=0 else 0 for x in Open_vegetation])
         
         ### calc nonex & unoccupied
-        ls_scores['Nonex']['Combined'] =  Open_vegetation * (np.array(ls_scores['Nonex']['Other']) / (np.array(ls_scores['Nonex']['Other']) + np.array(ls_scores['Unoccupied'])))
-        ls_scores['Unoccupied']        =  Open_vegetation * (np.array(ls_scores['Unoccupied']) / (np.array(ls_scores['Nonex']['Other']) + np.array(ls_scores['Unoccupied'])))
-        ls_scores['Nonex']             =  ls_scores['Nonex']['Combined']
+        ls_scores['Unoccupied']        =  Open_vegetation * ls_scores['Unoccupied']
+        ls_scores['Nonex']             =  Open_vegetation - ls_scores['Unoccupied']
         
         
         ### re-scale against Mask: coastal pixels
@@ -162,13 +159,13 @@ class WHAM(ap.Model):
         self.X_axis                    =  dict(zip([x for x in ls_frame.keys()], 
                                             [np.array(x).reshape(self.ylen, self.xlen) for x in ls_frame.values()]))
                
-    def allocate_Y_axis(self):
+    def allocate_AFT(self):
         
-        ### Gather Y-axis scores from AFTs
+        self.AFT_scores = {}
         
+        ### Gather competitiveness scores from AFTs
         land_systems = [y for y in pd.Series([x for x in self.agents.ls]).unique()]
-        afr_scores   = {}
-    
+        aft_scores   = {}
     
         if type(land_systems) == str:
             land_systems = [land_systems] #catch the case where only 1 ls type
@@ -176,66 +173,47 @@ class WHAM(ap.Model):
         for l in land_systems:
             
             ### get predictions
-            afr_scores[l] = [x.Dist_vals for x in self.agents if x.ls == l]
-                
-            ### remove dupes - this only works with more than 1 AFR per LS
-            unique_arr    = [np.array(x) for x in set(map(tuple, afr_scores[l]))]
-            
+            aft_scores[l] = dict(zip([type(x).__name__ for x in self.agents if x.ls == l], 
+                                     [x.Dist_vals for x in self.agents if x.ls == l]))
+
             ### calculate total by land system by cell
-            tot_y         = np.add.reduce(unique_arr)
+            tot_y         = np.add.reduce([x for x in aft_scores[l].values()])
             
             ### divide by total & reshape to world map
-            afr_scores[l] = [np.array(x / tot_y).reshape(self.ylen, self.xlen) for x in afr_scores[l]]
-               
+            for k in aft_scores[l].keys():
+                
+                aft_scores[l][k]   = np.array(aft_scores[l][k]/tot_y).reshape(self.ylen, self.xlen)
+                aft_scores[l][k]   = aft_scores[l][k] * self.X_axis[l]
+                self.AFT_scores[k] = aft_scores[l][k]
         
-            ### Here - multiply Yscore by X-axis
-            afr_scores[l] = dict(zip([x.afr for x in self.agents if x.ls == l], 
-                             [y * self.X_axis[l] for y in afr_scores[l]]))
-        
-        ### stash afr scores
-        self.LFS      = afr_scores
-        self.AFR      = get_afr_vals(self.LFS)
-       
+        self.calc_AFR(aft_scores)
          
-    def allocate_AFT(self):
+    def calc_AFR(self, aft_dist_by_ls):
         
-        AFT_scores   = {}
+        self.LFS = {}
         
-        ### Loop through agents and assign fractional coverage
-        for a in self.agents:
+        for l in aft_dist_by_ls.keys():
             
-            if a.sub_AFT['exists'] == False:
+            afr_temp = dict(zip([x for x in aft_dist_by_ls[l].keys()], 
+                                [a.afr for a in self.agents if type(a).__name__ in aft_dist_by_ls[l].keys()]))
+        
+            afr_dict = defaultdict(list)
             
-                AFT_scores[type(a).__name__] = self.LFS[a.ls][a.afr]
+            [afr_dict[value].append(key) for key, value in afr_temp.items()]
+        
+            for key, value in afr_dict.items():
                 
-            elif a.sub_AFT['exists'] == True:
-                
-                ### Where AFT is a fraction of a single LFS
-                if a.sub_AFT['kind'] == 'Fraction':
+                for r in range(len(afr_dict[key])):
                     
-                    a.AFT_vals                   = np.array(a.AFT_vals).reshape(self.ylen, self.xlen)
-                    AFT_scores[type(a).__name__] = self.LFS[a.ls][a.afr] * a.AFT_vals
+                    afr_dict[key][r] = aft_dist_by_ls[l][value[r]]
                     
-                    
-                ### Where AFT is a whole LFS plus a fraction of another
-                elif a.sub_AFT['kind'] == 'Addition':
-                    
-                    a.AFT_vals                   = np.array(a.AFT_vals).reshape(self.ylen, self.xlen)
-                    AFT_scores[type(a).__name__] = self.LFS[a.ls][a.afr] + (self.LFS[a.sub_AFT['ls']][a.sub_AFT['afr']] * a.AFT_vals)
+                afr_dict[key] = np.add.reduce(afr_dict[key])
+        
+            self.LFS[l] = dict(afr_dict)
                 
-                
-                ### Where AFT is a fraction of several LFS
-                elif a.sub_AFT['kind'] == 'Multiple':
-                    
-                    AFT_scores[type(a).__name__] = np.zeros([self.ylen, self.xlen])
-                
-                    for i in range(len(a.sub_AFT['afr'])):
-                        
-                        temp_vals                    = np.array(a.AFT_vals[i]).reshape(self.ylen, self.xlen)
-                        AFT_scores[type(a).__name__] = AFT_scores[type(a).__name__] + (self.LFS[a.sub_AFT['ls'][i]][a.sub_AFT['afr'][i]] * temp_vals)
-                
-        self.AFT_scores = AFT_scores
-    
+        ### stash afr scores
+        #self.AFR      = get_afr_vals(self.LFS)
+
     
     ###################################################################################
     
@@ -472,10 +450,6 @@ class WHAM(ap.Model):
 
         ### afr distribution
         self.agents.compete()
-        self.allocate_Y_axis()
-
-        ### AFT distribution
-        self.agents.sub_compete()
         self.allocate_AFT()
 
         ### Fire use

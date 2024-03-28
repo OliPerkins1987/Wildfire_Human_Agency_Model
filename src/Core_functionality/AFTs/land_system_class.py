@@ -86,8 +86,6 @@ class land_system(ap.Agent):
         Raw fraction / competition scores for land systems
         Feeds into Allocate_X_axis in WHAM class
         
-        Can we find a way to stop predicting over duplicate parameter sets for LFS?
-        
         '''
         
         if self.dist_method == 'Competition' and self.model.p.bootstrap == False:
@@ -129,7 +127,7 @@ class land_system(ap.Agent):
         
             ### NB uses agent class name to identify map - second line removes missing
             self.Dist_vals  = self.model.p.Maps[type(self).__name__][self.model.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
-            self.Dist_vals  = np.array([x if x >= 0 else 0 for x in self.Dist_vals])
+            self.Dist_vals  = np.select([self.Dist_vals>0], [self.Dist_vals], default = 0)
         
         elif self.dist_method == 'Specified':
             

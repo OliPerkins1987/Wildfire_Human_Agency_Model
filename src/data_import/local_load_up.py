@@ -4,8 +4,6 @@ Created on Sun Jan 17 16:16:40 2021
 
 @author: Oli
 """
-
-
 import pandas as pd
 import numpy as np
 import netCDF4 as nc
@@ -13,6 +11,7 @@ import os
 import re
 from copy import deepcopy
 
+from data_import.load_funs import mk_par_dict
 
 ##########################################################################
 
@@ -22,8 +21,8 @@ from copy import deepcopy
 
 ### Set these to your local directories!
 
-root       = r'F:/PhD/Model files/'
-Map_folder = root + r'wham_dynamic/'
+root       = r'C:/Users/Oli/Documents/PIES/WHAMv2/mod_data/'
+Map_folder = root + r'Forcing/'
 
 Rlen       = len(root)
 Mlen       = len(Map_folder)
@@ -37,14 +36,13 @@ for path, subdirs, files in os.walk(root):
 file_list = [s.replace('\\', '/') for s in file_list]
 
 #empty dict to house files
-Core_pars = {'AFT_dist': '', 
+Core_pars = {'AFT_dist': '',
+             'Dist_pars': {'Thresholds': '', 
+             'Probabilities': ''},
              'Fire_use': {},
              'Fire_suppression':'',
              'Fire_escape': {},
-             'Dist_pars': {'Thresholds': '', 
-             'Probabilities': '', 
-             'Weighted_thresholds':'',
-             'Weighted_probabilities': ''}} 
+             'Nitrogen': {}} 
 
 ##########################################################################
 
@@ -52,60 +50,23 @@ Core_pars = {'AFT_dist': '',
 
 ##########################################################################
 
+### Distribution parameters
+AFT_dist              = [s.replace('\\', '/') for s in file_list if "/Distribution" in s]
+
 ### Tree structures
-
-AFT_dist              = [s.replace('\\', '/') for s in file_list if "Distribution/Trees" in s]
-Core_pars['AFT_dist'] = [s for s in AFT_dist if "Tree_frame.csv" in s]
-
-Core_pars_keys        = [x[(Rlen+19):-15] for x in Core_pars['AFT_dist']]
-Core_pars_vals        = [pd.read_csv(x) for x in Core_pars['AFT_dist']]
-Core_pars['AFT_dist'] = dict(zip(Core_pars_keys, Core_pars_vals))
+Core_pars['AFT_dist'] = mk_par_dict(dat = AFT_dist, filt = 'Tree_frame', name_key = [Rlen, 24, 15])
 
 ### Thresholds
-Core_pars['Dist_pars']['Thresholds']           = [s for s in AFT_dist if "Thresholds" in s]
-Core_pars['Dist_pars']['Weighted_thresholds']  = [s for s in AFT_dist if "Weighted_thresholds" in s]
-
-Core_pars_keys                       = [x[(Rlen+19):-17] for x in Core_pars['Dist_pars']['Thresholds']]
-Core_pars_vals                       = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Thresholds']]
-Core_pars['Dist_pars']['Thresholds'] = {}
-
-for i in range(len(Core_pars_keys)):
-    
-    Core_pars['Dist_pars']['Thresholds'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
-
-Core_pars_keys                                 = [x[(Rlen+19):-26] for x in Core_pars['Dist_pars']['Weighted_thresholds']]
-Core_pars_vals                                 = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Weighted_thresholds']]
-Core_pars['Dist_pars']['Weighted_thresholds']  = {}
-
-for i in range(len(Core_pars_keys)):
-    
-    Core_pars['Dist_pars']['Weighted_thresholds'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
-
+Core_pars['Dist_pars']['Thresholds'] = mk_par_dict(dat = AFT_dist, filt = 'thresholds', 
+                                                    kind = 'multiple', name_key = [Rlen, 24, 17])
 
 ### Probs
-Core_pars['Dist_pars']['Probs']           = [s for s in AFT_dist if "Probs" in s]
-Core_pars['Dist_pars']['Weighted_probs']  = [s for s in AFT_dist if "Weighted_probs" in s]
-
-Core_pars_keys                            = [x[(Rlen+19):-12] for x in Core_pars['Dist_pars']['Probs']]
-Core_pars_vals                            = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Probs']]
-Core_pars['Dist_pars']['Probs']           = {}
-
-for i in range(len(Core_pars_keys)):
-    
-    Core_pars['Dist_pars']['Probs'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
-
-Core_pars_keys                            = [x[(Rlen+19):-21] for x in Core_pars['Dist_pars']['Weighted_probs']]
-Core_pars_vals                            = [pd.read_csv(x) for x in Core_pars['Dist_pars']['Weighted_probs']]
-Core_pars['Dist_pars']['Weighted_probs']  = {}
-
-for i in range(len(Core_pars_keys)):
-    
-    Core_pars['Dist_pars']['Weighted_probs'].setdefault(Core_pars_keys[i],[]).append(Core_pars_vals[i])
-
+Core_pars['Dist_pars']['Probs']  = mk_par_dict(dat = AFT_dist, filt = 'probs', 
+                                               kind = 'multiple', name_key = [Rlen, 24, 12])
 
 ###########################################################################
 
-### Get fire maps
+### Get AFT pars
 
 ###########################################################################
 
@@ -143,7 +104,7 @@ Core_pars['Fire_escape'] = escape_dict
 
 ###########################################################################
 
-### Get maps
+### Get forcing maps
 
 ###########################################################################
 
@@ -154,62 +115,40 @@ for path, subdirs, files in os.walk(Map_folder):
         Map_list.append(os.path.join(path, name))
 
 Maps       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
-Mask       = [s.replace('\\', '/') for s in Map_list if "JULES_mask.csv" in s]
+Mask       = [s.replace('\\', '/') for s in Map_list if "Mask.csv" in s]
 Area       = [s.replace('\\', '/') for s in Map_list if "Area.csv" in s]
 
 Map_data = dict(zip([x[Mlen:-3] for x in Maps], 
             [nc.Dataset(Map_folder + x[Mlen:-3] + '.nc') for x in Maps]))
 
 var_key  = zip([x for x in Map_data.values()], 
-               [[x for x in y.variables.keys()][len(y.variables.keys()) -1 ] for y in Map_data.values()])
+               [[x for x in y.variables.keys()][len(y.variables.keys()) -2 ] for y in Map_data.values()])
 
 Map_data = dict(zip([x for x in Map_data.keys()], 
             [x[y][:] for x, y in var_key]))
 
-Map_data['Mask'] = np.array(pd.read_csv(Mask[0])).reshape(27648)
-Map_data['Area'] = np.array(pd.read_csv(Area[0])).reshape(27648)
+shp      = Map_data[[x for x in Map_data.keys()][0]].shape[1] * Map_data[[x for x in Map_data.keys()][0]].shape[2]
+Map_data['Mask'] = np.array(pd.read_csv(Mask[0])).reshape(shp)
+Map_data['Area'] = np.array(pd.read_csv(Area[0])).reshape(shp)
 
 ###########################################################################
 
-Map_data['Market_influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
-Map_data['Market.influence'] = Map_data['GDP'] * Map_data['Market_access'][0:26, :, :]
+### make auxiliaries / convolutions
+
+Map_data['Market.Inf']       = Map_data['GDP'] * Map_data['MA']
 Map_data['HDI_GDP']          = np.log(Map_data['GDP'].data) * Map_data['HDI']
-Map_data['WFI']              = (1/Map_data['TRI']) * Map_data['GDP']
+Map_data['W_flat']              = (1/Map_data['TRI']) * Map_data['GDP']
 
 
 ### handle missing values in processed data
 for i in range(Map_data['HDI_GDP'].shape[0]):
     
-    for j in range(Map_data['HDI_GDP'].shape[1]):
-        
-        for k in range(Map_data['HDI_GDP'].shape[2]):
-            
-            if np.isnan(Map_data['HDI_GDP'].data[i, j, k]):
-                 
-                Map_data['HDI_GDP'].data[i, j, k] = -3.3999999521443642e+38
-            
-            if Map_data['WFI'].data[i, j, k] == 0.0:
-            
-                Map_data['WFI'].data[i, j, k] = -3.3999999521443642e+38
-
-
-###########################################################################
-
-### Combined weighted/un-weighted thresholds
-
-###########################################################################
-
-for key in Core_pars['Dist_pars']['Thresholds'].keys():
+    Map_data['HDI_GDP'].data[i,:, :] = np.select([np.isnan(Map_data['HDI_GDP'].data[i,:, :])], 
+                                         [Map_data['HDI_GDP'][i, :, :]], default = -3.3999999521443642e+38)
     
-    for j in range(len(Core_pars['Dist_pars']['Thresholds'][key])):
-        
-        Core_pars['Dist_pars']['Thresholds'][key][j] = pd.concat([Core_pars['Dist_pars']['Thresholds'][key][j][0:51] , 
-                                                        Core_pars['Dist_pars']['Thresholds'][key][j][51:100]])
-        
-    for j in range(len(Core_pars['Dist_pars']['Probs'][key])):
+    Map_data['W_flat'].data[i,:, :]  = np.select([Map_data['W_flat'].data[i,:, :] != 0], 
+                                         [Map_data['W_flat'][i, :, :]], default = -3.3999999521443642e+38)
 
-        Core_pars['Dist_pars']['Probs'][key][j] = pd.concat([Core_pars['Dist_pars']['Probs'][key][j][0:51], 
-                                                    Core_pars['Dist_pars']['Probs'][key][j][51:100]])
 
 
 ###########################################################################

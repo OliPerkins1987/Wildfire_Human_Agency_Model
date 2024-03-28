@@ -74,7 +74,7 @@ def predict_from_tree(dat, tree, struct, prob = 'yprob.TRUE',
     
        
     prob should be 'yprob.TRUE' for class
-    prob should be 'yval' for reg
+    prob should be 'yval' for regression
     
     na_return gives the value to be returned where data are missing
     skip_val gives a value for nc.Dataset.fill_value - defaults to R default val

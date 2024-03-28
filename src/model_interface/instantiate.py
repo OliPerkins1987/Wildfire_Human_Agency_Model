@@ -53,8 +53,8 @@ all_afts = [Swidden, SOSH, MOSH, Intense_arable,
 parameters = {
     
     ### Spatio-temporal limits
-    'xlen': 192, 
-    'ylen': 144,
+    'xlen': 1440, 
+    'ylen': 720,
     'start_run': 0,
     'end_run' : 25,
     
@@ -70,7 +70,7 @@ parameters = {
                   'fire_control_measures': fire_control_measures, 
                   'deforestation': deforestation},    
     
-    'Fire_seasonality': Seasonality, ##defined in data load
+    #'Fire_seasonality': Seasonality, ##defined in data load
     
     ### AFT distribution parameter
     'theta'   : 0.1,
