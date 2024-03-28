@@ -2,6 +2,10 @@ Wildfire_Human_Agency_Model
 
 This repository contains code to run the Wildfire Human Agency Model, a global geospatial model of human fire use and management. 
 
+This is the development branch of version 2, which runs at a finer spatial resolution, includes seasonality and Nitrogen use by agents. 
+
+Use Main or empirical for current use.
+
 Installation instructions follow below. see /docs for user guidelines. All questions and bugs to oliver.perkins@kcl.ac.uk
 
 *** Installation guidelines ***
