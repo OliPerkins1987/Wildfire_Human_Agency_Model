@@ -9,7 +9,7 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 from copy import deepcopy
@@ -65,6 +65,17 @@ class land_system(ap.Agent):
             self.boot_Dist_pars['Thresholds']   = LS_dict['Dist_pars']['Thresholds'][self.pars_key]
             self.boot_Dist_pars['Probs']        = LS_dict['Dist_pars']['Probs'][self.pars_key]
         
+            ### filter number of bootstraps used
+            if self.p.numb_bootstrap != 'max':
+            
+                for i in range(len(self.boot_Dist_pars['Thresholds'])):
+                
+                    self.boot_Dist_pars['Thresholds'][i] = self.boot_Dist_pars['Thresholds'][i].iloc[0:self.p.numb_bootstrap, :]
+            
+                for i in range(len(self.boot_Dist_pars['Probs'])):
+                
+                    self.boot_Dist_pars['Probs'][i] = self.boot_Dist_pars['Probs'][i].iloc[0:self.p.numb_bootstrap, :]
+        
         elif self.dist_method == 'Prescribed':
             
             self.boot_Dist_pars = 'None'
@@ -102,7 +113,7 @@ class land_system(ap.Agent):
             ### do prediction - NB zeroing out not applied for ls
             self.Dist_vals = np.array(predict_from_tree_fast(dat = self.Dist_dat, 
                               tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
+                               prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0))
             
 
         elif self.dist_method == 'Competition' and self.model.p.bootstrap == True:
@@ -128,6 +139,7 @@ class land_system(ap.Agent):
             ### NB uses agent class name to identify map - second line removes missing
             self.Dist_vals  = self.model.p.Maps[type(self).__name__][self.model.timestep, :, :].reshape(self.model.p.xlen*self.model.p.ylen).data
             self.Dist_vals  = np.select([self.Dist_vals>0], [self.Dist_vals], default = 0)
+        
         
         elif self.dist_method == 'Specified':
             

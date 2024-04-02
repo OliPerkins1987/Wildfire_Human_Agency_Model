@@ -18,13 +18,15 @@ from Core_functionality.AFTs.agent_class import AFT
 ###########################################################################################
 
 
-class Hunter_gatherer(AFT):
+class Hunter_gatherer_n(AFT):
 
     def setup(self):
         AFT.setup(self)
         self.afr = 'Pre'
         self.ls  = 'Nonex'
-        self.sub_AFT = {'exists': False}    
+        self.Habitat = {'Map': 'NPP', 
+                        'Constraint': 6.805635, 
+                        'Constraint_type': 'gt'}     
 
         self.Fire_use = {'hg': {'bool': 'tree_mod', 
                                  'ba': 'lin_mod', 
@@ -54,8 +56,9 @@ class Recreationalist(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Nonex'
-        self.sub_AFT = {'exists': True, 'kind': 'Multiple', 
-                        'afr': ['Trans', 'Post'], 'ls': ['Nonex', 'Nonex']}
+        self.Habitat = {'Map': 'NPP', 
+                        'Constraint': 5.573843, 
+                        'Constraint_type': 'gt'} 
 
 
 
@@ -65,7 +68,9 @@ class SLM(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Nonex'
-        self.sub_AFT = {'exists': False} 
+        self.Habitat = {'Map': 'NPP', 
+                        'Constraint': 12.149564, 
+                        'Constraint_type': 'gt'} 
 
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
                                     'ba'  : 'tree_mod', 
@@ -78,9 +83,9 @@ class Conservationist(AFT):
         AFT.setup(self)
         self.afr = 'Post'
         self.ls  = 'Nonex'
-        self.sub_AFT = {'exists': True, 'kind': 'Multiple',
-                         'afr': ['Trans', 'Post'], 
-                         'ls': ['Nonex', 'Nonex']} 
+        self.Habitat = {'Map': 'NPP', 
+                        'Constraint': 9.831165, 
+                        'Constraint_type': 'gt'}
         
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 

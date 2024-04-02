@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 from Core_functionality.AFTs.land_system_class import land_system
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 from copy import deepcopy

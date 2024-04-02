@@ -8,16 +8,18 @@ Created on Wed Jun 30 10:25:15 2021
 import pytest 
 import pandas as pd
 import numpy as np
+from scipy import stats
 import netCDF4 as nc
 import os
+import random
+from dask.distributed import Client
+import agentpy as ap
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, predict_from_tree_fast
-from Core_functionality.AFTs.agent_class import AFT, dummy_agent
-from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
 from model_interface.wham import WHAM
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 
 #########################################################################
@@ -66,37 +68,17 @@ parameters = {
 
 ##########################################################################
 
-def test_AFR_compete():
+@pytest.mark.usefixtures("mod_pars")
+def test_prediction_frame(mod_pars):  
     
     errors = []
     
-    mod = WHAM(parameters)
-    mod.setup()
-    mod.agents.setup()
-    mod.agents.get_pars(mod.p.AFT_pars)
-    mod.agents.compete()
+    ### setup model
+    mod                  = WHAM(mod_pars)
+    mod.p.bootstrap      = True
+    mod.p.numb_bootstrap = 2
+    mod.timestep         = 0
+    mod.xlen             = mod_pars['xlen']
+    mod.ylen             = mod_pars['ylen']
     
-    if not len([x for x in mod.agents.Dist_vals[0] if x <= mod.p.theta and x > 0]) == 0:
-        errors.append("theta parameter did not function correctly")
     
-    if not [x for x in mod.agents.Dist_vals[0]][0:8] == [0.426087]*8:
-        errors.append("False negatives in model prediction tree")
-        
-    if not [x for x in mod.agents.Dist_vals[0]][8:] == [0]*27640:
-        errors.append("False positives in model prediction tree")
-        
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
-    
-
-def test_mod_Y():
-    
-    mod = WHAM(parameters)
-    mod.setup()
-    mod.agents.setup()
-    mod.agents.get_pars(mod.p.AFT_pars)
-    mod.X_axis = {'Test': np.array([1]*27648).reshape(144, 192)}
-    mod.agents.compete()
-    mod.allocate_Y_axis()
-    
-    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.Test.values.reshape(27648,)[0]]).reshape(144, 192), 
-            Map_test))

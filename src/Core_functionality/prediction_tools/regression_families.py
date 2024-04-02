@@ -7,6 +7,24 @@ Created on Tue Jun 22 10:41:39 2021
 
 import numpy as np 
 import pandas as pd
+
+def variable_transformation(X, trans):  
+    
+    if trans == 'log':
+        
+        return(np.log(X))
+    
+    elif trans == 'log1p':
+        
+        return(np.log(X+1))
+    
+    elif trans == 'sqrt':
+        
+        return(np.sqrt(X))
+        
+    else:
+
+        return(X)
                
        
 def regression_link(X, link):
@@ -38,6 +56,9 @@ def regression_transformation(X, transformation):
         
         return(X)
     
+    elif transformation == 'sqrt':
+        
+        return(X**2)
     
     elif transformation == 'log':
         

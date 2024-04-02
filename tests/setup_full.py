@@ -17,8 +17,8 @@ from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
 from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
-from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
-from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
+from Core_functionality.AFTs.forestry_afts  import Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
+from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer_n, Recreationalist, SLM, Conservationist
 
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
@@ -39,14 +39,14 @@ from copy import deepcopy
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
             Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
-            Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
-             Hunter_gatherer, Recreationalist, SLM, Conservationist]
+            Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
+             Hunter_gatherer_n, Recreationalist, SLM, Conservationist]
 
 parameters = {
     
     ### Model run limits
-    'xlen': 192, 
-    'ylen': 144,
+    'xlen': 1440, 
+    'ylen': 720,
     'start_run': 0,
     'end_run' : 0,
     
@@ -62,7 +62,7 @@ parameters = {
                   'fire_control_measures': fire_control_measures, 
                   'deforestation': deforestation},    
     
-    'Fire_seasonality': Seasonality,
+    #'Fire_seasonality': Seasonality,
     
     ### data
     'AFT_pars': Core_pars,

@@ -17,6 +17,17 @@ from Core_functionality.AFTs.agent_class import AFT
 
 ###########################################################################################
 
+class Hunter_gatherer_f(AFT):
+
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Pre'
+        self.ls  = 'Forestry'
+        
+        self.Habitat = {'Map': 'MA', 
+                        'Constraint': 0.5782851, 
+                        'Constraint_type': 'lt'} 
+        
 
 class Agroforestry(AFT):
     
@@ -24,10 +35,10 @@ class Agroforestry(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Forestry'
-        self.sub_AFT = {'exists': True, 'kind': 'Fraction',
-                         'afr': 'Trans', 'ls': 'Forestry'} 
-
         
+        self.Habitat = {'Map': 'MA', 
+                        'Constraint': 0.0059052876, 
+                        'Constraint_type': 'lt'} 
 
 class Logger(AFT):
     
@@ -35,24 +46,25 @@ class Logger(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Forestry'
-        self.sub_AFT = {'exists': True, 'kind': 'Fraction',
-                         'afr': 'Trans', 'ls': 'Forestry'} 
-   
         
+        self.Habitat = {'Map': 'MA', 
+                        'Constraint': 0.0140444132, 
+                        'Constraint_type': 'lt'} 
+
 class Managed_forestry(AFT):
     
     def setup(self):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Forestry'
-        self.sub_AFT = {'exists': True, 'kind': 'Addition', 
-                        'afr': 'Trans', 'ls': 'Forestry'} 
-
+        
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.3678384, 
+                        'Constraint_type': 'gt'} 
 
         self.Fire_use = {'pyrome':{'bool': 'tree_mod', 
                                    'ba': {'constant': 0.01}, 
                                    'size': 7.5}}
-
 
 class Abandoned_forestry(AFT):
     
@@ -60,7 +72,11 @@ class Abandoned_forestry(AFT):
         AFT.setup(self)
         self.afr = 'Post'
         self.ls  = 'Forestry'
-        self.sub_AFT = {'exists': False} 
+        
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.3678384, 
+                        'Constraint_type': 'gt'} 
+
 
 
 

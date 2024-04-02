@@ -11,9 +11,11 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.setup_tools.setup_funs import get_LU_pars
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
-from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+from Core_functionality.prediction_tools.predict_funs import get_LU_dat, predict_LU_behaviour
 
 
 class AFT(ap.Agent):
@@ -33,12 +35,18 @@ class AFT(ap.Agent):
         '''  
       
         self.ls = ''
+        self.Habitat = 'None'
         
         self.afr= ''        
         self.Fire_use = {}
         self.Fire_vars = {}
         
+        self.Nfer_use  = {}
+        self.Nfer_vars = {}
         
+        
+        
+    ### gets AFT distribution parameters
     def get_dist_pars(self, AFT_dict):
         
         file_key         = str(self.ls + '/' + type(self).__name__)
@@ -48,6 +56,7 @@ class AFT(ap.Agent):
         self.Dist_struct = define_tree_links(self.Dist_frame)
         self.Dist_vars   = [x for x in self.Dist_frame.iloc[:,1].tolist() if x != '<leaf>']
         
+        ### get numeric distributions of split thresholds and leaf probs
         if self.p.bootstrap == True:
             
             self.boot_Dist_pars   = {}
@@ -55,9 +64,20 @@ class AFT(ap.Agent):
                 
             self.boot_Dist_pars['Thresholds']  = AFT_dict['Dist_pars']['Thresholds'][file_key]
             self.boot_Dist_pars['Probs']       = AFT_dict['Dist_pars']['Probs'][file_key]
-               
         
-    ### Fire use parameters
+            ### select number of boot parameter sets to use
+            if self.p.numb_bootstrap != 'max':
+            
+                for i in range(len(self.boot_Dist_pars['Thresholds'])):
+                
+                    self.boot_Dist_pars['Thresholds'][i] = self.boot_Dist_pars['Thresholds'][i].iloc[0:self.model.p.numb_bootstrap, :]
+            
+                for i in range(len(self.boot_Dist_pars['Probs'])):
+                
+                    self.boot_Dist_pars['Probs'][i] = self.boot_Dist_pars['Probs'][i].iloc[0:self.model.p.numb_bootstrap, :]
+                
+        
+    ### get Fire use parameters
     def get_fire_pars(self):
                
         
@@ -67,6 +87,7 @@ class AFT(ap.Agent):
         
             #parameters can be specified in par dict directly either with a pandas
             # {'type': 'constant', 'pars':float} for a constant value
+            
             if self.Fire_use[par]['bool'] in ['lin_mod', 'tree_mod']: 
         
                 self.Fire_use[par]['bool'] = {'type': self.Fire_use[par]['bool'], 
@@ -77,40 +98,42 @@ class AFT(ap.Agent):
                 ###########################################
                 ### extract parameter names
                 ###########################################
-                
-                if self.Fire_use[par]['bool']['type'] == 'lin_mod':
-                
-                    self.Fire_vars[par]['bool'] = [x for x in self.Fire_use[par]['bool']['pars'].iloc[:,0].tolist() if x != 'Intercept']      
-                
-                elif self.Fire_use[par]['bool']['type'] == 'tree_mod':
-                    
-                    self.Fire_vars[par]['bool'] = [x for x in self.Fire_use[par]['bool']['pars'].iloc[:,1].tolist() if x != '<leaf>']
-            
-        
+                self.Fire_vars[par]['bool'] = get_LU_pars(self.Fire_use[par]['bool'])
+                        
             ### get parameters for fire use degree (target % burned area)
         
             if self.Fire_use[par]['ba'] in ['lin_mod', 'tree_mod']: 
             
                 self.Fire_use[par]['ba']   = {'type': self.Fire_use[par]['ba'], 
                                               'pars': self.p.AFT_pars['Fire_use']['ba'][par + '/' + type(self).__name__]}
-    
+                
+                ### case where fire use is a constant
                 self.Fire_vars[par] = {} if not par in self.Fire_vars.keys() else self.Fire_vars[par]
-    
-    
+                    
                 ###########################################
                 ### extract parameter names
                 ###########################################
-                if self.Fire_use[par]['ba']['type'] == 'lin_mod':
-                
-                    self.Fire_vars[par]['ba'] = [x for x in self.Fire_use[par]['ba']['pars'].iloc[:,0].tolist() if x != 'Intercept']   
-                
-                elif self.Fire_use[par]['ba']['type'] == 'tree_mod':
-                    
-                    self.Fire_vars[par]['ba'] = [x for x in self.Fire_use[par]['ba']['pars'].iloc[:,1].tolist() if x != '<leaf>']
+                self.Fire_vars[par]['ba'] = get_LU_pars(self.Fire_use[par]['ba'])
+     
+        
+    ### get parameters for nitrogen fertiliser use
+    def get_Nfer_pars(self):
+        
+        for key, value in self.Nfer_use.items(): 
             
+            if value in ['lin_mod', 'tree_mod']:
             
+                self.Nfer_use[key] = {'type': self.Nfer_use[key], 
+                                      'pars': self.p.AFT_pars['Nfer_use'][key][type(self).__name__]}
+            
+                self.Nfer_vars[key]= {}
+                
+                ###########################################
+                ### extract parameter names
+                ###########################################
+                self.Nfer_vars[key] = get_LU_pars(self.Nfer_use[key])
+        
 
-    
     ### Container for suppression pars
     def get_suppression_pars(self):
         
@@ -122,12 +145,34 @@ class AFT(ap.Agent):
 
     #########################################################################    
     
+    def get_habitat(self):
+    
+        ''' define habitat space of AFT'''    
+    
+        if self.Habitat != 'None':
+            
+            tmp = self.model.p.Maps[self.Habitat['Map']][self.model.timestep, :, :].data
+            
+            if self.Habitat['Constraint_type'] == 'lt':
+                
+                tmp = (tmp <= self.Habitat['Constraint']).reshape(self.model.xlen * self.model.ylen)
+                
+            elif self.Habitat['Constraint_type'] == 'gt':
+                
+                tmp = (tmp >= self.Habitat['Constraint']).reshape(self.model.xlen * self.model.ylen)
+            
+            ### stash values
+            self.Habitat_vals = tmp
+    
+    
+    
     def compete(self):
         
-        ''' 
-        Competition between LFS
+        self.get_habitat()
         
-        Can we find a way to stop predicting over duplicate parameter sets for LFS?
+        ''' 
+        Competition between AFTs
+        
         '''
         
             ### single set of parameter values
@@ -144,11 +189,16 @@ class AFT(ap.Agent):
             ### do prediction
             self.Dist_vals = predict_from_tree_fast(dat = self.Dist_dat, 
                               tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+                               prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0)
                 
         
             ### apply theta zero-ing out constraint
             self.Dist_vals = np.select([self.Dist_vals > self.model.p.theta], [self.Dist_vals], default = 0)
+            
+            ### apply habitat
+            if self.Habitat != 'None':
+                
+                self.Dist_vals = self.Dist_vals * self.Habitat_vals
             
             
             ### bootstrapped version
@@ -174,23 +224,15 @@ class AFT(ap.Agent):
     
     ### Fire
     
-    #######################################################################
+    #######################################################################  
     
-    ################
+    #######################
     ### Fire use
-    ################
-    
+    ####################### 
     
     def fire_use(self):
-        
-       
-    ####################################
-                
-    ### Prepare data
-                
-    ####################################
-        
-        self.Fire_dat = {}
+    
+        fire_dat = {}
         self.Fire_vals= {}
 
         probs_key     = {'bool': 'yprob.Presence', 
@@ -200,89 +242,11 @@ class AFT(ap.Agent):
         ### gather numpy arrays 4 predictor variables
         for x in self.Fire_use.keys():
             
-            for b in ['bool', 'ba']:  
-          
-              
-                if b in self.Fire_vars[x].keys(): 
-           
+            fire_dat[x]        = get_LU_dat(self, probs_key, self.Fire_vars[x])
+            self.Fire_vals[x]  = predict_LU_behaviour(self, probs_key, 
+                                 self.Fire_vars[x], fire_dat[x], 
+                                 self.Fire_use[x])
             
-                    ### containers for fire outputs
-                    self.Fire_dat[x]       = {} if not x in self.Fire_dat.keys() else self.Fire_dat[x]  
-                    self.Fire_dat[x][b]    = []
-                    self.Fire_vals[x]      = {} if not x in self.Fire_vals.keys() else self.Fire_vals[x]  
-                    self.Fire_vals[x][b]   = []
-            
-                    temp_key = self.Fire_vars[x][b]
-    
-    
-                    ### Gather relevant map data
-                    for y in range(len(temp_key)):
-            
-                        temp_val = self.model.p.Maps[temp_key[y]][self.model.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
-            
-                        self.Fire_dat[x][b].append(temp_val)
-
-                    ### combine predictor numpy arrays to a single pandas       
-                    self.Fire_dat[x][b]  = pd.DataFrame.from_dict(dict(zip(self.Fire_vars[x][b], 
-                           [z.reshape(self.model.p.xlen*self.model.p.ylen).data for z in self.Fire_dat[x][b]])))
-        
-        
-    ####################################
-                
-    ### Make predictions
-                
-    ####################################
-                
-                ##########
-                ### Tree
-                ##########
-                
-                    if self.Fire_use[x][b]['type'] == 'tree_mod':
-      
-        
-                        Fire_struct = define_tree_links(self.Fire_use[x][b]['pars'])
-
-                        self.Fire_vals[x][b] = predict_from_tree_fast(dat =  self.Fire_dat[x][b], 
-                              tree = self.Fire_use[x][b]['pars'], struct = Fire_struct, 
-                               prob = probs_key[b], skip_val = -3.3999999521443642e+38, na_return = 0)
-    
-                ################
-                ### Regression
-                ################
-                
-                    elif self.Fire_use[x][b]['type'] == 'lin_mod':
-    
-                        self.Fire_vals[x][b] = deepcopy(self.Fire_dat[x][b])
-                    
-                        ### Mulitply data by regression coefs
-                        for coef in self.Fire_vars[x][b]:
-                        
-                            self.Fire_vals[x][b][coef] = self.Fire_vals[x][b][coef] * self.Fire_use[x][b]['pars']['coef'].iloc[np.where(self.Fire_use[x][b]['pars']['var'] == coef)[0][0]]
-                    
-                        ### Add intercept
-                        self.Fire_vals[x][b] = self.Fire_vals[x][b].sum(axis = 1) + self.Fire_use[x][b]['pars']['coef'].iloc[np.where(self.Fire_use[x][b]['pars']['var'] == 'Intercept')[0][0]]
-                    
-                        ### Link function
-                        self.Fire_vals[x][b] = regression_transformation(regression_link(self.Fire_vals[x][b], 
-                                                  link = self.Fire_use[x][b]['pars']['link'][0]), 
-                                                                     transformation = self.Fire_use[x][b]['pars']['transformation'][0])
-                        ### control for negative values
-                        self.Fire_vals[x][b] = pd.Series([x if x > 0 else 0 for x in self.Fire_vals[x][b]])
-                        
-                #################################
-                ### specified
-                #################################
-                    
-                elif 'constant' in self.Fire_use[x][b].keys():              
-                  
-                    self.Fire_vals[x]      = {} if not x in self.Fire_vals.keys() else self.Fire_vals[x]  
-                    self.Fire_vals[x][b]   = []
-                    self.Fire_vals[x][b] = pd.Series([self.Fire_use[x][b]['constant']] * (self.model.p.ylen * self.model.p.xlen))
-                    
-                else:
-                        
-                    pass
-              
             ### calculate burned area through bool & ba%
             self.Fire_vals[x] = self.Fire_vals[x]['bool'] * self.Fire_vals[x]['ba']
             
@@ -297,9 +261,7 @@ class AFT(ap.Agent):
         pass
     
     #######################
-    
     ### Fire suppression
-    
     #######################   
                
     def fire_suppression(self):
@@ -310,9 +272,29 @@ class AFT(ap.Agent):
 
 
  
-
-
-
+    ##############################################################
+    
+    ### Nitrogen
+    
+    ##############################################################
+    
+    def nfer_use(self):
+        
+        if self.Nfer_use != {}:
+        
+            probs_key     = {'tree': 'yval', 
+                         'lm'  : 'yval'}   
+          
+            nfer_dat       = get_LU_dat(self, probs_key, self.Nfer_vars)
+        
+            self.Nfer_vals = predict_LU_behaviour(aft = self, probs_dict = probs_key, 
+                          vars_dict = self.Nfer_vars, dat = nfer_dat,
+                          pars = self.Nfer_use)
+        
+            ### combine
+            self.Nfer_vals = pd.DataFrame(self.Nfer_vals).mean(axis = 1)
+        
+            ### apply correction?
 
 
 ##################################################################
@@ -327,20 +309,8 @@ class dummy_agent(AFT):
         AFT.setup(self)
         self.afr = 'Test'
         self.ls  = 'Test'
-        
-        self.sub_AFT = {'exists': True, 'kind': 'Addition',  
-                        'afr': 'Test', 'ls': 'Test'}    
 
 
-class multiple_agent(AFT):
-    
-    def setup(self):
-        AFT.setup(self)
-        self.afr = 'Test'
-        self.ls  = 'Test'
-        
-        self.sub_AFT = {'exists': True, 'kind': 'Multiple',  
-                        'afr': ['Test', 'Test'], 'ls': ['Test', 'Test']}    
         
         
         

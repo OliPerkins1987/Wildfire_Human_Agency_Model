@@ -17,8 +17,8 @@ from collections import defaultdict
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
 from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
-from Core_functionality.AFTs.forestry_afts import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
-from Core_functionality.AFTs.nonex_afts import Hunter_gatherer, Recreationalist, SLM, Conservationist
+from Core_functionality.AFTs.forestry_afts import Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
+from Core_functionality.AFTs.nonex_afts import Hunter_gatherer_n, Recreationalist, SLM, Conservationist
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
 
@@ -26,7 +26,7 @@ from Core_functionality.top_down_processes.arson import arson
 from Core_functionality.top_down_processes.background_ignitions import background_rate
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
 from output_analysis.utility import get_afr_vals
@@ -65,9 +65,11 @@ class WHAM(ap.Model):
         # Create AFTs
         self.agents = ap.AgentList(self, 
                        [y[0] for y in [ap.AgentList(self, 1, x) for x in self.p.AFTs]])
-
-        # Create Observers
-        self.Observers = dict(zip([x for x in self.p.Observers.keys()], 
+        
+        if self.p.Observers == True:
+        
+            # Create Observers
+            self.Observers = dict(zip([x for x in self.p.Observers.keys()], 
                                   [ap.AgentList(self, 1, y) for y in self.p.Observers.values()]))
         
 
@@ -83,20 +85,27 @@ class WHAM(ap.Model):
         ### AFTs
         self.agents.setup()
         self.agents.get_dist_pars(self.p.AFT_pars)
-        self.agents.get_fire_pars()
+        
+        if self.p.AFT_fire == True:
+        
+            self.agents.get_fire_pars()
     
-        ### Observers
-        for observer in self.Observers.keys():
+            ### Observers
+            for observer in self.Observers.keys():
             
-            self.Observers[observer].setup()
+                self.Observers[observer].setup()
         
-        if 'background_rate' in self.Observers.keys():
+            if 'background_rate' in self.Observers.keys():
             
-            self.Observers['background_rate'].get_fire_pars()
+                self.Observers['background_rate'].get_fire_pars()
         
-        if 'arson' in self.Observers.keys():
+            if 'arson' in self.Observers.keys():
             
-            self.Observers['arson'].get_fire_pars()
+                self.Observers['arson'].get_fire_pars()
+        
+        if self.p.AFT_Nfer == True:
+            
+            self.agents.get_Nfer_pars()
         
         
         ### Results containers
@@ -161,6 +170,8 @@ class WHAM(ap.Model):
                
     def allocate_AFT(self):
         
+        ''' combines AFT competitiveness scores to allocate cell space'''""
+        
         self.AFT_scores = {}
         
         ### Gather competitiveness scores from AFTs
@@ -187,8 +198,12 @@ class WHAM(ap.Model):
                 self.AFT_scores[k] = aft_scores[l][k]
         
         self.calc_AFR(aft_scores)
-         
+       
+       
+       
     def calc_AFR(self, aft_dist_by_ls):
+        
+        '''' voting mechanism by AFT to define AFR coverage '''
         
         self.LFS = {}
         
@@ -347,7 +362,7 @@ class WHAM(ap.Model):
     
     #######################################################################
     
-    ### Background fire
+    ### Unmanaged fire
     
     #######################################################################
     
@@ -436,6 +451,30 @@ class WHAM(ap.Model):
     
         pass
     
+    
+    ###############################################
+    
+    ### Nitrogen
+    
+    ###############################################
+    
+    def calc_Nfer(self):
+        
+        Nfer_scores   = {}
+            
+        for l in ['Cropland', 'Pasture']:
+            
+            ### get predictions
+            Nfer_scores[l] = dict(zip([type(x).__name__ for x in self.agents if x.ls == l], 
+                                     [x.Nfer_vals for x in self.agents if x.ls == l]))
+            
+            ### calculate total by land system by cell
+            Nfer_scores[l] = np.add.reduce([x for x in Nfer_scores[l].values()])
+            
+        self.Nitrogen_fertiliser = Nfer_scores
+    
+    
+    
     #####################################################################################
     
     ### scheduler
@@ -451,30 +490,43 @@ class WHAM(ap.Model):
         ### afr distribution
         self.agents.compete()
         self.allocate_AFT()
-
+        
+        ####################################################
         ### Fire use
-        self.agents.fire_use()
-        self.calc_BA(group_lc = False)
+        ####################################################
         
-        #################################################
-        ### Background & arson ignitions
-        #################################################
+        if self.p.AFT_fire == True:
+            
+            self.agents.fire_use()
+            self.calc_BA(group_lc = False)
         
-        if 'background_rate' in self.Observers.keys():
+            #################################################
+            ### Background & arson ignitions
+            #################################################
         
-            self.Observers['background_rate'].ignite()
-            self.calc_background_ignitions()
+            if 'background_rate' in self.Observers.keys():
+        
+                self.Observers['background_rate'].ignite()
+                self.calc_background_ignitions()
                 
-        if 'arson' in self.Observers.keys():
+            if 'arson' in self.Observers.keys():
         
-            self.Observers['arson'].ignite()
-            self.calc_arson()
-               
+                self.Observers['arson'].ignite()
+                self.calc_arson()
+                       
+            ### Suppression
+            self.agents.fire_suppression()
+            self.suppress_fire()
+            self.calc_escaped_fires()
         
-        ### Suppression
-        self.agents.fire_suppression()
-        self.suppress_fire()
-        self.calc_escaped_fires()
+        ####################################################
+        ### Nitrogen
+        ####################################################
+        
+        if self.p.AFT_Nfer == True:
+        
+            self.agents.nfer_use()
+            self.calc_Nfer()
         
         ### update
         self.update()

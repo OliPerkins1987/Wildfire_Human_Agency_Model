@@ -63,53 +63,6 @@ def define_tree_links(tree):
     return(tree_struct)
 
 
-def predict_from_tree(dat, tree, struct, prob = 'yprob.TRUE', 
-                      na_return = 0, skip_val = -3.3999999521443642e+38):
-    
-    ''' 
-    
-    data to predict on
-    tree frame from R
-    structure object from define_tree_links
-    
-       
-    prob should be 'yprob.TRUE' for class
-    prob should be 'yval' for regression
-    
-    na_return gives the value to be returned where data are missing
-    skip_val gives a value for nc.Dataset.fill_value - defaults to R default val
-    
-    '''
-        
-    
-    if any(dat == skip_val):
-        
-        return(na_return)
-    
-    tree_key = 0
-    tree_type= 'Node'
-    
-    while(tree_type == 'Node'):
-    
-        var = tree.iloc[tree_key, 1]
-    
-        if(dat[var] < float(tree.iloc[tree_key, 5][1:])):
-            
-            tree_key  = struct[tree_key]['Dest'][0]
-            tree_type = struct[tree_key]['Type']
-        
-        else:
-            
-            tree_key  = struct[tree_key]['Dest'][1]
-            tree_type = struct[tree_key]['Type']
-            
-    
-    pred = tree[prob][tree_key]
-    
-    return(pred)
-
-
-
 def update_pars(tree, thresholds, probs, method = str, 
                 target = 'yprob.TRUE', source = 'TRUE.', boot_int = 0):
        
@@ -166,10 +119,10 @@ def update_pars(tree, thresholds, probs, method = str,
 #######################################################################
 
 def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE', 
-                      na_return = 0, skip_val = -3.3999999521443642e+38):
+                      na_return = 0, skip_val = -1e+10):
 
     
-    dat['missing'] = dat.apply(lambda y: skip_val in [float(x) for x in y], axis = 1)
+    dat['missing'] = dat.apply(lambda y: any([float(x)< skip_val for x in y]), axis = 1)
     
     ncol           = dat.shape[1]
     
@@ -216,7 +169,7 @@ def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE',
     dat.loc[dat['missing'] == True, 'Probability_out'] = na_return
     
     res = dat.loc[:, 'Probability_out']
-    dat = dat.iloc[:, 0:(ncol+1)]
+    dat = dat.iloc[:, 0:(ncol)]
     
     return(res)
         

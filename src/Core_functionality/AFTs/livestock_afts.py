@@ -23,7 +23,9 @@ class Pastoralist(AFT):
         AFT.setup(self)
         self.afr = 'Pre'
         self.ls  = 'Rangeland'
-        self.sub_AFT = {'exists': False}    
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.7691141, 
+                        'Constraint_type': 'lt'}  
 
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': 'tree_mod', 
@@ -57,7 +59,9 @@ class Ext_LF_r(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Rangeland'
-        self.sub_AFT = {'exists': False} 
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.8886984, 
+                        'Constraint_type': 'lt'}  
         
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': 'tree_mod', 
@@ -91,11 +95,14 @@ class Int_LF_r(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Rangeland'
-        self.sub_AFT = {'exists': False} 
+        self.Habitat = {'Map': 'Market.Inf', 
+                        'Constraint': 247.08758316, 
+                        'Constraint_type': 'gt'}   
 
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 
                                  'size': 11.5}}
+               
         
 
 class Abandoned_LF_r(AFT):
@@ -104,7 +111,9 @@ class Abandoned_LF_r(AFT):
         AFT.setup(self)
         self.afr = 'Post'
         self.ls  = 'Rangeland'
-        self.sub_AFT = {'exists': False} 
+        self.Habitat = {'Map': 'Market.Inf', 
+                        'Constraint': 537.68313303, 
+                        'Constraint_type': 'gt'} 
         self.Fire_use = {}
         
         
@@ -120,13 +129,15 @@ class Ext_LF_p(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Pasture'
-        self.sub_AFT = {'exists': False} 
-       
+              
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': 'tree_mod', 
                                  'size': 14.03571}}
         
         self.Defor_size = 44.83549
+        
+        self.Nfer_use = {'tree': 'tree_mod', 
+                         'lm'  : 'lin_mod'}
         
         
 class Int_LF_p(AFT):
@@ -135,13 +146,18 @@ class Int_LF_p(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Pasture'
-        self.sub_AFT = {'exists': False} 
+        self.Habitat = {'Map': 'Market.Inf', 
+                        'Constraint': 247.08758316, 
+                        'Constraint_type': 'gt'}  
         
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 
                                  'size': 11.5}}
         
         self.Defor_size = 65.35
+        
+        self.Nfer_use = {'tree': 'tree_mod', 
+                         'lm'  : 'lin_mod'}
 
         
         

@@ -13,76 +13,22 @@ import netCDF4 as nc
 import os
 import random
 from dask.distributed import Client
+import agentpy as ap
+
+
+from model_interface.wham import WHAM
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+
 
 random.seed(1987)
-
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
-from Core_functionality.AFTs.agent_class import AFT
-from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
-from model_interface.wham import WHAM
-
 
 #########################################################################
 
 ### Load test data
 
 #########################################################################
-
-class dummy_agent(AFT):
-    
-    def setup(self):
-        AFT.setup(self)
-        self.afr = 'Test'
-        self.ls  = 'Test'
-        
-        self.sub_AFT = {'exists': False}    
-
-
-
-
-os.chdir(str(wd + '/test_data/AFTs').replace('\\', '/'))
-Dummy_frame   = pd.read_csv('Dummy_pars.csv')
-Dummy_dat     = nc.Dataset('Test.nc')
-Dummy_dat     = Dummy_dat['Forest_frac'][:]
-Dummy_dat2    = 27647 - np.arange(27648)
-Map_data      = {'Test': Dummy_dat, 'Test2': Dummy_dat2}
-Map_test      = np.array(pd.read_csv('Test_raster.csv'))
-Map_data['Area'] = np.array([1]*27648)
-
-### Mock load up
-dummy_pars = {'AFT_dist': {}, 
-             'Fire_use': {}, 
-             'Dist_pars':{'Thresholds': {}, 
-                          'Probs': {}}} 
-
-dummy_pars['AFT_dist']['Test/Test']          = Dummy_frame
-dummy_pars['AFT_dist']['Sub_AFTs/Test_Test'] = Dummy_frame
-dummy_pars['Dist_pars']['Thresholds']['Test/Test']  = [pd.DataFrame(np.random.normal(8.5, 10, 10)), 
-                                                              pd.DataFrame(np.random.normal(240, 10, 10))]
-
-dummy_pars['Dist_pars']['Probs']['Test/Test']       = [pd.DataFrame(pd.Series([np.random.beta(1, 1) for x in range(10)]), 
-                                                        columns = ['TRUE.']) for x in range(3)]
-
-### Mock model
-parameters = {
-    
-    'xlen': 192, 
-    'ylen': 144,
-    'AFTs': [dummy_agent],
-    'LS'  : [],
-    'AFT_pars': dummy_pars,
-    'Maps'    : Map_data,
-    'start_run': 0,
-    'theta'    : 0.1, 
-    'bootstrap': True, 
-    'Observers': {},
-    'reporters': [],
-    'n_cores'  : 4
-    
-    }
 
 
 ##########################################################################
@@ -91,21 +37,94 @@ parameters = {
 
 ##########################################################################
 
-def test_AFR_boot():
-    
-    client = Client(n_workers=2)
+@pytest.mark.usefixtures("mod_pars")
+def test_prediction_frame(mod_pars):  
     
     errors = []
     
-    mod = WHAM(parameters)
-    mod.setup()
+    ### setup model
+    mod                  = WHAM(mod_pars)
+    mod.p.bootstrap      = True
+    mod.p.numb_bootstrap = 2
+    mod.timestep         = 0
+    mod.xlen             = mod_pars['xlen']
+    mod.ylen             = mod_pars['ylen']
+    
+    mod.agents           = ap.AgentList(mod, 
+                       [y[0] for y in [ap.AgentList(mod, 1, x) for x in mod.p.AFTs]])
+    
+    ### setup agents
     mod.agents.setup()
-    mod.agents.get_pars(mod.p.AFT_pars)
-    mod.agents.get_boot_vals(mod.p.AFT_pars)
-    mod.agents.compete()
+    mod.agents.get_dist_pars(mod.p.AFT_pars)
+        
+    boot_frame = {}
     
-    probs = mod.agents[0].Dist_frame['yprob.TRUE'][mod.agents[0].Dist_frame['var'] == '<leaf>'].to_list()
+    ### run agent actions
+    for aft in mod.agents:
+        
+        aft.Dist_vals = []
+            
+        ### gather correct numpy arrays 4 predictor variables
+        aft.Dist_dat  = [aft.model.p.Maps[x][aft.model.timestep, :, :] if len(aft.model.p.Maps[x].shape) == 3 else aft.model.p.Maps[x] for x in aft.Dist_vars]
+
+        ### combine numpy arrays to single pandas       
+        aft.Dist_dat  = pd.DataFrame.from_dict(dict(zip(aft.Dist_vars, 
+                              [x.reshape(aft.model.p.xlen*aft.model.p.ylen).data for x in aft.Dist_dat])))
+        
+        ### Parallel prediction
+        boot_frame[type(aft).__name__] = make_boot_frame(aft)
     
+    
+    #########################################################################################
+    ### check all split val updates coorespond to a split not a leaf
+    #########################################################################################
+    
+    for aft in boot_frame.keys():
+        
+        tmp = boot_frame[aft]['df'][1]
+        tmp = np.select([tmp['var'] != '<leaf>'], [tmp['splits.cutleft']], 'leaf')[tmp['var'] == '<leaf>']
+        
+        if any(tmp != 'leaf'):
+            
+            errors.append("split parameters updated incorrectly")
+    
+    #########################################################################################
+    ### check all split values come from correct file
+    #########################################################################################
+    
+    for aft in boot_frame.keys():
+        
+        tmp = boot_frame[aft]['df'][1]
+        val = tmp.iloc[np.max(np.where(np.select(
+               [tmp['var'] != '<leaf>'], [tmp['splits.cutleft']], 'leaf') != 'leaf')), 5]
+        split_vals = [a.boot_Dist_pars['Thresholds'] for a in mod.agents if type(a).__name__ == aft][0]
+        
+        if not float(val[1:len(val)]) == split_vals[len(split_vals)-1].iloc[1, 0]:
+            
+            errors.append("split parameters updated incorrectly")
+    
+    
+    #########################################################################################
+    ### check all probabiliities come from correct file
+    #########################################################################################
+    
+    for aft in boot_frame.keys():
+        
+        tmp = boot_frame[aft]['df'][1]
+        val = tmp.iloc[np.min(np.where(np.select(
+               [tmp['var'] == '<leaf>'], [tmp['yprob.TRUE']], 'split') != 'split')), 8]
+        leaf_vals = [a.boot_Dist_pars['Probs'] for a in mod.agents if type(a).__name__ == aft][0]
+        
+        if not val == leaf_vals[0].iloc[1, 1]:
+            
+            errors.append("output probabilities updated incorrectly")
+    
+    
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+    
+    
+    
+'''
     if not probs == [float(x.iloc[-1]) for x in mod.agents[0].boot_Dist_pars['Probs']]:
         errors.append("Bootstrapped parameters not loaded properly")
     
@@ -115,8 +134,4 @@ def test_AFR_boot():
     if not gt_thresh_1 == len(np.where(mod.agents[0].Dist_vals != stats.mode(np.array(mod.agents[0].Dist_vals))[0][0])[0]):
     
         errors.append("Bootstrapped prediction error")
-    
-    client.close()
-    
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
-    
+'''

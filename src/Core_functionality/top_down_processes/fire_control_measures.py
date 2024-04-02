@@ -11,7 +11,7 @@ import pandas as pd
 from copy import deepcopy
 
 from Core_functionality.AFTs.agent_class import AFT
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
 

@@ -11,8 +11,8 @@ from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
 from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
-from Core_functionality.AFTs.forestry_afts  import Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
-from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer, Recreationalist, SLM, Conservationist
+from Core_functionality.AFTs.forestry_afts import Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
+from Core_functionality.AFTs.nonex_afts import Hunter_gatherer_n, Recreationalist, SLM, Conservationist
 
 from Core_functionality.AFTs.land_system_class import land_system
 from Core_functionality.AFTs.land_systems import Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex
@@ -23,9 +23,9 @@ from Core_functionality.top_down_processes.fire_constraints import fuel_ct, domi
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
-from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 ### Load data
 import os
@@ -47,10 +47,16 @@ exec(open("local_load_up.py").read())
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
             Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
-            Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
-             Hunter_gatherer, Recreationalist, SLM, Conservationist]
+            Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
+             Hunter_gatherer_n, Recreationalist, SLM, Conservationist]
 
 parameters = {
+    
+    #################
+    
+    ### meta pars
+    
+    #################
     
     ### Spatio-temporal limits
     'xlen': 1440, 
@@ -63,21 +69,36 @@ parameters = {
     
     'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
     
+    ### AFT distribution parameter
+    'theta'   : 0.1,
+    
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures, 
                   'deforestation': deforestation},    
-    
-    #'Fire_seasonality': Seasonality, ##defined in data load
-    
-    ### AFT distribution parameter
-    'theta'   : 0.1,
-    
+       
     ### data
     'AFT_pars': Core_pars, ##defined in data load
     'Maps'    : Map_data,  ##defined in data load
+    
+    ### which AFT aspects are being modelled?
+    'AFT_fire': False,
+    'AFT_Nfer': True,
+    'Observers': False, ## policy
+    
+    ################################
+    
+    ### Nitrogen pars
+    
+    ################################
+    
+    ################################
+    
+    ### Fire pars
+    
+    ################################
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
@@ -98,19 +119,21 @@ parameters = {
     
     
     ### fire meta pars
+    #'Fire_seasonality': Seasonality, ##defined in data load 
     'Seasonality'  : False, 
     'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
     
 
     ### reporters
-    'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],
+    'reporters': ['Nitrogen_fertiliser'],
     
-    ### house keeping
+    ### switch and parameters for bootstrap version of model
     'bootstrap': False,
+    'numb_bootstrap': 3, #either int or 'max' for all available
     'n_cores'  : 3,
         
     'write_annual': False,
-    'write_fp': r'C:/Users/'  
+    'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results/'  
         
     }
 

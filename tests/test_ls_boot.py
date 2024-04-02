@@ -12,20 +12,14 @@ from scipy import stats
 import netCDF4 as nc
 import os
 import random
-from copy import deepcopy
+from dask.distributed import Client
+import agentpy as ap
 
-random.seed(1987)
-
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
-
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars
-from Core_functionality.AFTs.agent_class import AFT, dummy_agent
-from Core_functionality.AFTs.land_system_class import land_system
-from Core_functionality.AFTs.land_systems import Nonex
 
 from model_interface.wham import WHAM
-
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 #########################################################################
 
@@ -34,90 +28,125 @@ from model_interface.wham import WHAM
 #########################################################################
 
 
-
-os.chdir((str(os.getcwd()) + '/test_data/AFTs').replace('\\', '/'))
-Dummy_frame   = pd.read_csv('Dummy_pars.csv')
-Dummy_dat     = nc.Dataset('Test.nc')
-Dummy_dat     = Dummy_dat['Forest_frac'][:]
-Dummy_dat2    = 27647 - np.arange(27648)
-Map_data      = {'Test': Dummy_dat, 'Test2': Dummy_dat2}
-Map_test      = np.array(pd.read_csv('Test_raster.csv'))
-Map_data['Area'] = np.array([1]*27648)
-
-### Mock load up
-dummy_pars = {'AFT_dist': {}, 
-             'Fire_use': {}, 
-             'Dist_pars':{'Thresholds': {}, 
-                          'Probs': {}}} 
-
-dummy_pars['AFT_dist']['Xaxis/Forest']       = deepcopy(Dummy_frame)
-dummy_pars['AFT_dist']['Xaxis/Other']        = deepcopy(Dummy_frame)
-
-dummy_pars['Dist_pars']['Thresholds']['Xaxis/Forest']  = [pd.DataFrame(np.random.normal(8.5, 10, 10)), 
-                                                              pd.DataFrame(np.random.normal(240, 10, 10))]
-
-dummy_pars['Dist_pars']['Probs']['Xaxis/Forest']       = [pd.DataFrame(pd.Series([np.random.beta(1, 1) for x in range(10)]), 
-                                                        columns = ['TRUE.']) for x in range(3)]
-
-dummy_pars['Dist_pars']['Thresholds']['Xaxis/Other']  = dummy_pars['Dist_pars']['Thresholds']['Xaxis/Forest']
-
-dummy_pars['Dist_pars']['Probs']['Xaxis/Other']       = dummy_pars['Dist_pars']['Probs']['Xaxis/Forest']
-
-
-
-
-### Mock model
-parameters = {
-    
-    'xlen': 192, 
-    'ylen': 144,
-    'AFTs': [],
-    'LS'  : [Nonex],
-    'AFT_pars': dummy_pars,
-    'Maps'    : Map_data,
-    'start_run': 0,
-    'theta'    : 0.1, 
-    'bootstrap': True, 
-    'Observers': {},
-    'reporters': [],
-    'n_cores'  : 4
-    
-    }
-
-
 ##########################################################################
 
 ### tests
 
 ##########################################################################
 
-def test_LS_boot():
+@pytest.mark.usefixtures("mod_pars")
+def test_ls_prediction(mod_pars):  
     
     errors = []
     
-    mod = WHAM(parameters)
-    mod.setup()
+    ### setup model
+    mod                  = WHAM(mod_pars)
+    mod.p.bootstrap      = True
+    mod.p.numb_bootstrap = 2
+    mod.timestep         = 0
+    mod.xlen             = mod_pars['xlen']
+    mod.ylen             = mod_pars['ylen']
+    
+    mod.ls     = ap.AgentList(mod, 
+                       [y[0] for y in [ap.AgentList(mod, 1, x) for x in mod.p.LS]])
+    
+    ### setup agents
     mod.ls.setup()
     mod.ls.get_pars(mod.p.AFT_pars)
     mod.ls.get_boot_vals(mod.p.AFT_pars)
-    mod.ls.get_vals()
-    
-    if not mod.ls[0].Dist_vals['Forest'] == mod.ls[0].Dist_vals['Other']:
         
-        errors.append("Bootstrapped X-axis predictions for Nonex shold be identical")
+    boot_frame = {}
     
-    probs = mod.ls[0].Dist_frame['Forest']['yprob.TRUE'][mod.ls[0].Dist_frame['Forest']['var'] == '<leaf>'].to_list()
-    
-    if not probs == [float(x.iloc[-1]) for x in mod.ls[0].boot_Dist_pars['Forest']['Probs']]:
+    ### run agent actions
+    for ls in mod.ls:
         
-        errors.append("Bootstrapped parameters not loaded properly")
+        if ls.dist_method == 'Competition':
+        
+            ls.Dist_vals = []
+            
+            ### gather correct numpy arrays 4 predictor variables
+            ls.Dist_dat  = [ls.model.p.Maps[x][ls.model.timestep, :, :] if len(ls.model.p.Maps[x].shape) == 3 else ls.model.p.Maps[x] for x in ls.Dist_vars]
+
+            ### combine numpy arrays to single pandas       
+            ls.Dist_dat  = pd.DataFrame.from_dict(dict(zip(ls.Dist_vars, 
+                              [x.reshape(ls.model.p.xlen*ls.model.p.ylen).data for x in ls.Dist_dat])))
+        
+            ### Parallel prediction
+            boot_frame[type(ls).__name__] = make_boot_frame(ls)
     
-    ### which values do not equal the mode?
-    gt_thresh_1 = len(pd.concat([pd.Series(np.arange(0, x)) if x >= 1 else pd.Series(0) for x in mod.ls[0].boot_Dist_pars['Forest']['Thresholds'][0][0]]).unique())-1
     
-    if not gt_thresh_1 == len(np.where(mod.ls[0].Dist_vals['Forest'] != stats.mode(np.array(mod.ls[0].Dist_vals['Forest']))[0][0])[0]):
+    #########################################################################################
+    ### check all split val updates coorespond to a split not a leaf
+    #########################################################################################
     
-        errors.append("Bootstrapped prediction error")
+    for ls in boot_frame.keys():
+        
+        tmp = boot_frame[ls]['df'][1]
+        tmp = np.select([tmp['var'] != '<leaf>'], [tmp['splits.cutleft']], 'leaf')[tmp['var'] == '<leaf>']
+        
+        if any(tmp != 'leaf'):
+            
+            errors.append("split parameters updated incorrectly")
+    
+    #########################################################################################
+    ### check all split values come from correct file
+    #########################################################################################
+    
+    for ls in boot_frame.keys():
+        
+        tmp = boot_frame[ls]['df'][1]
+        val = tmp.iloc[np.max(np.where(np.select(
+               [tmp['var'] != '<leaf>'], [tmp['splits.cutleft']], 'leaf') != 'leaf')), 5]
+        split_vals = [a.boot_Dist_pars['Thresholds'] for a in mod.ls if type(a).__name__ == ls][0]
+        
+        if not float(val[1:len(val)]) == split_vals[len(split_vals)-1].iloc[1, 0]:
+            
+            errors.append("split parameters updated incorrectly")
+    
+    
+    #########################################################################################
+    ### check all probabiliities come from correct file
+    #########################################################################################
+    
+    for ls in boot_frame.keys():
+        
+        tmp = boot_frame[ls]['df'][1]
+        val = tmp.iloc[np.min(np.where(np.select(
+               [tmp['var'] == '<leaf>'], [tmp['yprob.TRUE']], 'split') != 'split')), :].loc['yprob.TRUE']
+        leaf_vals = [a.boot_Dist_pars['Probs'] for a in mod.ls if type(a).__name__ == ls][0]
+        
+        if not val == leaf_vals[0].iloc[1, len(leaf_vals[0].columns)-1]:
+            
+            errors.append("output probabilities updated incorrectly")
+    
     
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
+    ########################################################################
+    
+    ### check boostrapped prediction
+    
+    ########################################################################
+    
+    c       = Client(n_workers=2)
+    futures = []
+    x       = make_boot_frame(mod.ls[5])
+    p       = 'yprob.TRUE'
+    
+    for i in range(len(x['df'])):
+        
+        future = c.submit(predict_from_tree_fast, dat = x['dd'], 
+                              tree = x['df'][i], struct = x['ds'], 
+                               prob = p, skip_val = -1e+10, na_return = 0)
+                
+        futures.append(future)
+
+    results = c.gather(futures)
+    
+    for i in range(len(results)):
+        
+        if not results[i].round(6).isin(x['df'][i]['yprob.TRUE'].round(6).append(pd.Series(0))).all():
+            
+            errors.append('boostrapped prediction failure')
+            
+    c.close()
