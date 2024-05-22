@@ -30,8 +30,8 @@ def write_nc(fn, vals, mod, annual = True):
     value = ds.createVariable('value', 'f4', ('time', 'lat', 'lon',))
     value.units = 'ba_fraction'
 
-    lats[:] = np.arange(-90, 90, 1.25)
-    lons[:] = np.arange(-180, 180, 1.875)
+    lats[:] = np.arange(-90, 90, 0.25)
+    lons[:] = np.arange(-180, 180, 0.25)
     
     if annual == True:
     

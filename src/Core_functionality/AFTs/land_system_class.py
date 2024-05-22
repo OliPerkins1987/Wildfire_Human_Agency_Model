@@ -9,7 +9,7 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast, predict_from_tree_numpy
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 from copy import deepcopy
@@ -101,18 +101,21 @@ class land_system(ap.Agent):
         
         if self.dist_method == 'Competition' and self.model.p.bootstrap == False:
                 
-        
+            
             ### gather correct numpy arrays 4 predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
-
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            #self.Dist_dat  = np.array(list(zip(self.Dist_vars, 
+            #                  [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+        
+            # combine to a single numpy
+            
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
             ### do prediction - NB zeroing out not applied for ls
-            self.Dist_vals = np.array(predict_from_tree_fast(dat = self.Dist_dat, 
-                              tree = self.Dist_frame, struct = self.Dist_struct, 
+            self.Dist_vals = np.array(predict_from_tree_numpy(dat = self.Dist_dat, 
+                              tree = self.Dist_frame, split_vars = self.Dist_vars, struct = self.Dist_struct,
                                prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0))
             
 

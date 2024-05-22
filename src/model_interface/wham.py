@@ -66,7 +66,7 @@ class WHAM(ap.Model):
         self.agents = ap.AgentList(self, 
                        [y[0] for y in [ap.AgentList(self, 1, x) for x in self.p.AFTs]])
         
-        if self.p.Observers == True:
+        if self.p.Policy == True:
         
             # Create Observers
             self.Observers = dict(zip([x for x in self.p.Observers.keys()], 
@@ -86,9 +86,15 @@ class WHAM(ap.Model):
         self.agents.setup()
         self.agents.get_dist_pars(self.p.AFT_pars)
         
+        ### Fire use
+        
         if self.p.AFT_fire == True:
         
             self.agents.get_fire_pars()
+        
+        ### Fire observers
+        
+        if self.p.Policy == True:
     
             ### Observers
             for observer in self.Observers.keys():
@@ -102,6 +108,9 @@ class WHAM(ap.Model):
             if 'arson' in self.Observers.keys():
             
                 self.Observers['arson'].get_fire_pars()
+        
+        
+        ### Nitrogen use
         
         if self.p.AFT_Nfer == True:
             
@@ -145,10 +154,17 @@ class WHAM(ap.Model):
         ### Perform calculation to get X_axis
         #################################################
         
-        ### Forestry
-        ls_scores['Forestry'] =  ls_scores['Forestry'] * (self.p.Maps['Forest'].data[self.timestep, :, :]).reshape(self.xlen * self.ylen)
+        ### 1) Competition between Unoccupied and forestry
+        unoc_habitat            =  (ls_scores['Cropland'] + ls_scores['Pasture'] + ls_scores['Rangeland'] + ls_scores['Urban']) <= self.p.theta
+        ls_scores['Unoccupied'] =  ls_scores['Unoccupied'] * unoc_habitat
+        forest_frac             = ls_scores['Forestry'] / (ls_scores['Forestry'] + ls_scores['Unoccupied'])
+        forest_frac             = np.select([forest_frac>0], [forest_frac], default = 0)
+        
+        ### Calc forestry
+        ls_scores['Forestry'] =  forest_frac * ls_scores['Forestry'] * (self.p.Maps['Forest'].data[self.timestep, :, :]).reshape(self.xlen * self.ylen)
         ls_scores['Forestry'] =  np.select([ls_scores['Forestry']>0], [ls_scores['Forestry']], default = 0)
         
+        ### 2) Competition between Unoccupied and nonex
         ### Get remaining vegetation fraction
         Open_vegetation                =  self.p.Maps['Mask'] - ls_scores['Cropland'] - ls_scores['Pasture'] - ls_scores['Rangeland'] - ls_scores['Forestry'] - ls_scores['Urban']
         Open_vegetation                =  np.array([x if x >=0 else 0 for x in Open_vegetation])
@@ -156,9 +172,8 @@ class WHAM(ap.Model):
         ### calc nonex & unoccupied
         ls_scores['Unoccupied']        =  Open_vegetation * ls_scores['Unoccupied']
         ls_scores['Nonex']             =  Open_vegetation - ls_scores['Unoccupied']
-        
-        
-        ### re-scale against Mask: coastal pixels
+                
+        ### 3) re-scale against Mask: coastal pixels
         ls_frame                       = pd.DataFrame(ls_scores)
         ls_frame['tot']                = self.p.Maps['Mask'] / ls_frame.sum(axis = 1) 
         ls_frame.iloc[:, 0:-1  ]       = ls_frame.iloc[:,0:-1].multiply(ls_frame.tot, axis="index")                            
@@ -227,8 +242,12 @@ class WHAM(ap.Model):
             self.LFS[l] = dict(afr_dict)
                 
         ### stash afr scores
-        #self.AFR      = get_afr_vals(self.LFS)
-
+        self.AFR        = get_afr_vals(self.LFS)
+        
+        ### adjust for SOSH
+        self.AFR['Pre']   = self.AFR['Pre'] + 0.5*self.AFT_scores['SOSH']
+        self.AFR['Trans'] = self.AFR['Trans'] - 0.5*self.AFT_scores['SOSH']
+    
     
     ###################################################################################
     
@@ -289,49 +308,7 @@ class WHAM(ap.Model):
                 self.Managed_fire[i] = self.p.Fire_seasonality[i].data * self.Managed_fire[i]
                 self.Managed_igs[i]  = self.p.Fire_seasonality[i].data * self.Managed_igs[i]
         
-        
-        ################################################################
-        
-        ### Group outputs beyond fire use type?
-            
-        ################################################################
-        
-        if group_lc == True:
-            
-            regrouped_fire = {}
-            
-            ### new grouping mechanism given by Fire_types dictionary
-            
-            for i in set(self.p.Fire_types.values()):
-            
-                if i not in regrouped_fire.keys():    
-            
-                    regrouped_fire[i] = []
-                
-                for j in self.Managed_fire.keys():
-                    
-                    if self.p.Fire_types[j] == i:
-                
-                        regrouped_fire[i].append(self.Managed_fire[j])
-                
-                
-                ### sum where more than one fire type grouped
-                
-                if len(regrouped_fire[i]) > 1:    
-                
-                    regrouped_fire[i] = np.nansum(np.stack(regrouped_fire[i], axis = 0), axis = 0)
-                    regrouped_fire[i] = list(regrouped_fire[i])
-                    
-                ### Else choose first object
-                
-                else:
-                    
-                    regrouped_fire[i] = regrouped_fire[i][0]
-            
-            self.Managed_fire = regrouped_fire
-
-
-        
+          
         #################################
         ### apply constraints
         #################################
@@ -470,7 +447,8 @@ class WHAM(ap.Model):
             
             ### calculate total by land system by cell
             Nfer_scores[l] = np.add.reduce([x for x in Nfer_scores[l].values()])
-            
+        
+        ### add linear correction?
         self.Nitrogen_fertiliser = Nfer_scores
     
     

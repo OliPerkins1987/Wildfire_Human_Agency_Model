@@ -38,7 +38,7 @@ class Agroforestry(AFT):
         
         self.Habitat = {'Map': 'MA', 
                         'Constraint': 0.0059052876, 
-                        'Constraint_type': 'lt'} 
+                        'Constraint_type': 'gt'} 
 
 class Logger(AFT):
     
@@ -49,7 +49,7 @@ class Logger(AFT):
         
         self.Habitat = {'Map': 'MA', 
                         'Constraint': 0.0140444132, 
-                        'Constraint_type': 'lt'} 
+                        'Constraint_type': 'gt'} 
 
 class Managed_forestry(AFT):
     

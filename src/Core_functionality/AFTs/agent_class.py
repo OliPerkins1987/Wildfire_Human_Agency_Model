@@ -80,7 +80,6 @@ class AFT(ap.Agent):
     ### get Fire use parameters
     def get_fire_pars(self):
                
-        
         for par in self.Fire_use.keys():
         
         ### get parameters for fire use bool (yes/no)    
@@ -99,7 +98,12 @@ class AFT(ap.Agent):
                 ### extract parameter names
                 ###########################################
                 self.Fire_vars[par]['bool'] = get_LU_pars(self.Fire_use[par]['bool'])
-                        
+            
+            elif 'constant' in self.Fire_use[par]['bool'].keys():
+                
+                self.Fire_vars[par]         = {}
+                self.Fire_vars[par]['bool'] = 'constant'
+            
             ### get parameters for fire use degree (target % burned area)
         
             if self.Fire_use[par]['ba'] in ['lin_mod', 'tree_mod']: 
@@ -107,13 +111,14 @@ class AFT(ap.Agent):
                 self.Fire_use[par]['ba']   = {'type': self.Fire_use[par]['ba'], 
                                               'pars': self.p.AFT_pars['Fire_use']['ba'][par + '/' + type(self).__name__]}
                 
-                ### case where fire use is a constant
-                self.Fire_vars[par] = {} if not par in self.Fire_vars.keys() else self.Fire_vars[par]
-                    
                 ###########################################
                 ### extract parameter names
                 ###########################################
                 self.Fire_vars[par]['ba'] = get_LU_pars(self.Fire_use[par]['ba'])
+                
+            elif 'constant' in self.Fire_use[par]['ba'].keys():
+                
+                self.Fire_vars[par]['ba'] = 'constant'
      
         
     ### get parameters for nitrogen fertiliser use
@@ -293,8 +298,7 @@ class AFT(ap.Agent):
         
             ### combine
             self.Nfer_vals = pd.DataFrame(self.Nfer_vals).mean(axis = 1)
-        
-            ### apply correction?
+
 
 
 ##################################################################

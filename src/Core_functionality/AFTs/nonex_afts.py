@@ -29,7 +29,7 @@ class Hunter_gatherer_n(AFT):
                         'Constraint_type': 'gt'}     
 
         self.Fire_use = {'hg': {'bool': 'tree_mod', 
-                                 'ba': 'lin_mod', 
+                                 'ba': 'tree_mod', 
                                  'size': 1.27}, 
                          'pyrome': {'bool': 'tree_mod', 
                                     'ba': 'lin_mod', 
@@ -45,7 +45,7 @@ class Hunter_gatherer_n(AFT):
         
         
         threshold            = self.model.p.Constraint_pars['HG_Market_constraint']
-        MI_constraint        = self.model.p.Maps['Market_influence'][self.model.timestep, :, :].data
+        MI_constraint        = self.model.p.Maps['Market.Inf'][self.model.timestep, :, :].data
         self.Fire_vals['hg'] = self.Fire_vals['hg'] * (MI_constraint.reshape(self.model.p.xlen * self.model.p.ylen) < threshold)
 
 
@@ -59,8 +59,10 @@ class Recreationalist(AFT):
         self.Habitat = {'Map': 'NPP', 
                         'Constraint': 5.573843, 
                         'Constraint_type': 'gt'} 
-
-
+        
+        self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
+                                    'ba'  : 'lin_mod', 
+                                    'size': 150}}
 
 class SLM(AFT):
     

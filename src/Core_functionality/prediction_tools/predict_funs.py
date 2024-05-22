@@ -23,22 +23,28 @@ def get_LU_dat(aft, probs_dict, vars_dict):
        
     for b in probs_dict.keys():  
           
-        if b in vars_dict.keys(): 
+        if b in vars_dict.keys():
             
-            ### containers for data
-            dat[b]   = []
-            temp_key = vars_dict[b]
+            if vars_dict[b] != 'constant':
+            
+                ### containers for data
+                dat[b]   = []
+                temp_key = vars_dict[b]
         
-            ### Gather relevant map data
-            for y in range(len(temp_key)):
+                ### Gather relevant map data
+                for y in range(len(temp_key)):
             
-                temp_val = aft.model.p.Maps[temp_key[y]][aft.model.timestep, :, :] if len(aft.model.p.Maps[temp_key[y]].shape) == 3 else aft.model.p.Maps[temp_key[y]]
+                    temp_val = aft.model.p.Maps[temp_key[y]][aft.model.timestep, :, :] if len(aft.model.p.Maps[temp_key[y]].shape) == 3 else aft.model.p.Maps[temp_key[y]]
             
-                dat[b].append(temp_val.data)
+                    dat[b].append(temp_val.data)
 
-            ### combine predictor numpy arrays to a single pandas       
-            dat[b]  = pd.DataFrame.from_dict(dict(zip(vars_dict[b], 
+                ### combine predictor numpy arrays to a single pandas       
+                dat[b]  = pd.DataFrame.from_dict(dict(zip(vars_dict[b], 
                           [z.reshape(aft.model.p.xlen*aft.model.p.ylen).data for z in dat[b]])))
+        
+            else:
+            
+                dat[b] = 'None'
         
     return(dat)
         
@@ -49,7 +55,7 @@ def get_LU_dat(aft, probs_dict, vars_dict):
     ####################################
 
 def predict_LU_behaviour(aft, probs_dict, vars_dict, dat, pars, 
-                         skip_thresh = -1e+10, remove_neg = True):
+                         skip_thresh = -1e+10, remove_neg = True, normalise = True):
     
     vals = {}
        
@@ -57,7 +63,14 @@ def predict_LU_behaviour(aft, probs_dict, vars_dict, dat, pars,
           
         if b in vars_dict.keys(): 
     
-            if pars[b]['type'] == 'tree_mod':
+            if 'constant' in pars[b].keys():              
+                  
+                vals[b] = pd.Series([pars[b]['constant']] * (aft.model.p.ylen * aft.model.p.xlen))
+                
+                ### mask for land areas
+                vals[b] = pd.Series(aft.p.Maps['Mask'] >0) * vals[b]        
+    
+            elif pars[b]['type'] == 'tree_mod':
                 
                 struct = define_tree_links(pars[b]['pars'])
 
@@ -91,26 +104,19 @@ def predict_LU_behaviour(aft, probs_dict, vars_dict, dat, pars,
                 ### control for negative values
                 if remove_neg == True:
                     vals[b] = pd.Series([x if x > 0 else 0 for x in vals[b]])
+                    
+                if normalise == True:
+                    vals[b] = pd.Series([x if x < 1 else 1 for x in vals[b]])
                      
                 ### mask for land areas
                 vals[b] = pd.Series(aft.p.Maps['Mask'] >0) * vals[b]
+                                
                 
-                #################################
-                ### specified
-                #################################
-                    
-            elif 'constant' in pars[b].keys():              
-                  
-                vals[b] = pd.Series([pars[b]['constant']] * (aft.model.p.ylen * aft.model.p.xlen))
-                
-                ### mask for land areas
-                vals[b] = pd.Series(aft.p.Maps['Mask'] >0) * vals[b]    
-                
-                
-            else:
+        else:
                         
-                pass
-            
+            pass
+         
+        
     return(vals)
             
     

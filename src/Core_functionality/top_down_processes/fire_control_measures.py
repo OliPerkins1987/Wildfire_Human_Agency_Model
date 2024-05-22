@@ -13,6 +13,7 @@ from copy import deepcopy
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+from Core_functionality.prediction_tools.predict_funs import get_LU_dat, predict_LU_behaviour
 
 
 class fire_control_measures(AFT):
@@ -26,22 +27,16 @@ class fire_control_measures(AFT):
         
     def get_afr(self):
     
-        afr_res = {}
-    
-        for afr in ['Pre', 'Trans', 'Intense', 'Post']:
-    
-            afr_vals = []
-    
-            for ls in ['Cropland', 'Rangeland', 'Pasture', 'Forestry', 'Nonex']:
+        tmp_dict = deepcopy(self.model.AFR)
+        tmp_dict.update((x, np.array(y).reshape(self.model.ylen *  
+                                   self.model.xlen)) for x, y in tmp_dict.items())
         
-                if afr in self.model.LFS[ls].keys():
-                
-                    afr_vals.append(self.model.LFS[ls][afr])
-               
-            afr_res[afr] = np.sum(afr_vals, axis = 0).reshape(self.model.p.xlen*self.model.p.ylen)
-    
-        self.Control_dat = pd.DataFrame(afr_res)
-            
+        self.Control_dat = pd.DataFrame(tmp_dict)
+        
+        ### make column for max fire regime
+        self.Control_dat['Regime_max'] = np.argmax(self.Control_dat.values,axis=1)
+        self.Control_dat['Regime_max'] = np.select([self.Control_dat['Regime_max'] % 2 == 0], 
+                                                   [1], default = 0)   
     
     def control(self):
         

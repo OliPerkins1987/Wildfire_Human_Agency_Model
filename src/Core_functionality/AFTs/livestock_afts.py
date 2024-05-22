@@ -95,9 +95,9 @@ class Int_LF_r(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Rangeland'
-        self.Habitat = {'Map': 'Market.Inf', 
-                        'Constraint': 247.08758316, 
-                        'Constraint_type': 'gt'}   
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.838, 
+                        'Constraint_type': 'lt'}   
 
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 
@@ -146,9 +146,7 @@ class Int_LF_p(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Pasture'
-        self.Habitat = {'Map': 'Market.Inf', 
-                        'Constraint': 247.08758316, 
-                        'Constraint_type': 'gt'}  
+        self.Habitat = 'None'
         
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 

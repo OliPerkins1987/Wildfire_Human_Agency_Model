@@ -144,35 +144,93 @@ def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE',
     dat['Destination']     = 0 #number of nodes / leaf in structure dictionary object
     dat['Probability_out'] = np.nan #captures output probs - runs until all filled
     
+    dat_vals = dat.loc[dat['missing'] == False, :]
+    
     ### Run prediction
-    while len(np.where(np.isnan(dat['Probability_out']) == True)[0]) > 0:
+    while len(np.where(np.isnan(dat_vals['Probability_out']) == True)[0]) > 0:
         
         ### how to look for nodes that have found their prob?
-        left = [struct[z]['Dest'][0] for x, y, z in zip(dat['Next_node'], dat['Probability_out'], dat['Destination']) if x == True and np.isnan(y)]
-        right= [struct[z]['Dest'][1] for x, y, z in zip(dat['Next_node'], dat['Probability_out'], dat['Destination']) if x == False  and np.isnan(y)]
+        left = [struct[z]['Dest'][0] for x, y, z in zip(dat_vals['Next_node'], dat_vals['Probability_out'], dat_vals['Destination']) if x == True and np.isnan(y)]
+        right= [struct[z]['Dest'][1] for x, y, z in zip(dat_vals['Next_node'], dat_vals['Probability_out'], dat_vals['Destination']) if x == False  and np.isnan(y)]
         
         ### update destination
-        dat.loc[np.logical_and(dat['Next_node'] == True, np.isnan(dat['Probability_out'])), 'Destination']  = left
-        dat.loc[np.logical_and(dat['Next_node'] == False, np.isnan(dat['Probability_out'])), 'Destination'] = right
+        dat_vals.loc[np.logical_and(dat_vals['Next_node'] == True, np.isnan(dat_vals['Probability_out'])), 'Destination']  = left
+        dat_vals.loc[np.logical_and(dat_vals['Next_node'] == False, np.isnan(dat_vals['Probability_out'])), 'Destination'] = right
         
         ### update output probs
-        out_bool  = [struct[x]['Type'] == '<leaf>' for x in dat['Destination']]
-        out_probs = [tree.loc[:, prob].iloc[int(x)] for x in dat['Destination'] if struct[int(x)]['Type'] == '<leaf>']
-        dat.loc[out_bool, 'Probability_out'] = out_probs
+        out_bool  = [struct[x]['Type'] == '<leaf>' for x in dat_vals['Destination']]
+        out_probs = [tree[prob].iat[x] for x in dat_vals['Destination'] if struct[x]['Type'] == '<leaf>']
+        dat_vals.loc[out_bool, 'Probability_out'] = out_probs
 
         ### update Next node
-        Node_update                                            = [ncol+x for x, y in zip(dat['Destination'], dat['Probability_out']) if np.isnan(y)]
-        Node_update_key                                        = [x for x in np.where(np.isnan(dat['Probability_out']))[0]]
-        dat.loc[np.isnan(dat['Probability_out']), 'Next_node'] = [dat.iloc[int(x), int(y)] for x, y in zip(Node_update_key, Node_update)]
+        Node_update                                            = [ncol+x for x, y in zip(dat_vals['Destination'], dat_vals['Probability_out']) if np.isnan(y)]
+        Node_update_key                                        = [x for x in np.where(np.isnan(dat_vals['Probability_out']))[0]]
         
-               
+        dat_vals.loc[np.isnan(dat_vals['Probability_out']), 'Next_node'] = [dat_vals.iat[int(x), int(y)] for x, y in zip(Node_update_key, Node_update)]
+    
+        
+    dat.loc[dat['missing'] == False, 'Probability_out']= dat_vals.loc[:, 'Probability_out']
     dat.loc[dat['missing'] == True, 'Probability_out'] = na_return
     
     res = dat.loc[:, 'Probability_out']
     dat = dat.iloc[:, 0:(ncol)]
     
     return(res)
+
+
+def predict_from_tree_numpy(dat, tree, struct, split_vars, prob = 'yprob.TRUE',
+                      na_return = 0, skip_val = -1e+10):
+
+    ### remove missing data    
+    missing        = np.any(np.less(dat, skip_val), axis=1)
+    dat_vals       = dat[missing == False, :]
+    
+    ### dictionary containing the splits and output probabilities for the tree
+    
+    split_vals     = []
+    
+    for i in range(tree.shape[0]):
         
-
-
-
+        if tree.iloc[i, 1] != '<leaf>':
+            
+            col_key = np.where([x == tree.iloc[i, 1] for x in split_vars])[0][0]
+            split_vals.append(dat_vals[:, col_key] < float(tree.iloc[i, 5][1:]))
+                        
+        elif tree.iloc[i, 1] == '<leaf>':
+                   
+            split_vals.append(tree[prob].iloc[i])
+         
+            
+    ### dictionary containing destination of pixel
+    
+    pixel_loc     = {'Next_node': split_vals[0], 
+                     'Destination': np.array([0] * len(split_vals[0])), 
+                     'Probability_out': np.array([-9999] * len(split_vals[0]))}
+    
+    ### make tree predictions
+    while len(np.where(np.less(pixel_loc['Probability_out'], 0))[0]) > 0:
+        
+        ### which split route are we heading down?
+        left = [struct[z]['Dest'][0] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == True and y == -9999]
+        right= [struct[z]['Dest'][1] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == False and y == -9999]
+        
+        ### where in the tree structure do data points now go
+        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == True, np.array(pixel_loc['Probability_out']) == -9999)] = left
+        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == False, np.array(pixel_loc['Probability_out']) == -9999)] = right
+    
+        ### give output probs for terminal nodes
+        pixel_loc['Probability_out'] = [split_vals[x] if (type(
+            split_vals[x]) != np.ndarray) else -9999 for x in pixel_loc['Destination']]
+                
+        for i in range(len(pixel_loc['Next_node'])):
+            
+            if pixel_loc['Probability_out'] == -9999:
+                
+                pixel_loc['Next_node'][i] = split_vals[pixel_loc['Destination'][i]][i]
+                
+    ### compile and return    
+    res = dat[:, 0]
+    res[missing == True]  = na_return
+    res[missing == False] = pixel_loc['Probability_out']
+    
+    return(res)

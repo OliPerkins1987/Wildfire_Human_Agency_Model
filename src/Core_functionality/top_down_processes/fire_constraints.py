@@ -84,32 +84,6 @@ class dominant_afr_ct(ap.Agent):
         
     def constrain_arson(self):
 
-        afr_res = {}
-    
-        for afr in ['Pre', 'Trans', 'Intense', 'Post']:
-    
-            afr_vals = []
-    
-            for ls in ['Cropland', 'Rangeland', 'Pasture', 'Forestry', 'Nonex']:
-        
-                if afr in self.model.LFS[ls].keys():
-                
-                    afr_vals.append(self.model.LFS[ls][afr])
-               
-            afr_res[afr] = np.nansum(afr_vals, axis = 0)
-            
-        
-        ### Zero intensive cases below dominance threshold
-        afr_res['Intense'] = np.select([afr_res['Intense'] >= self.model.p.Constraint_pars['Dominant_afr_threshold']], 
-                            [afr_res['Intense']], default = 0)
-        
-        ### calculate impact of dominant exclusionary afr
-        Intense = np.nanargmax([x for x in afr_res.values()], axis = 0)
-        Intense = ((Intense==2) * (1 - afr_res['Intense'])) + (Intense!=2 * 1)
-        Intense = Intense.reshape(self.model.p.ylen * self.model.p.xlen)
-                
-        self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals*Intense
-
         ### Impact of Unoccupied regions 
         Unoc = np.array(1 - self.model.X_axis['Unoccupied']).reshape(self.model.p.ylen*self.model.p.xlen)
         self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals * Unoc

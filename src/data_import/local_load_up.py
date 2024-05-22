@@ -80,42 +80,26 @@ if Dist == True:
 ###########################################################################
 
 if Fire == True:
+    
+    ### Fire use pars
+    Fire_pars                     = [s.replace('\\', '/') for s in file_list if "Fire use" in s]
 
-    Core_pars['Fire_use']['bool'] = ''
-    Core_pars['Fire_use']['ba']   = ''
+    Core_pars['Fire_use']['bool'] = mk_par_dict(dat = Fire_pars, filt = 'bool', 
+                                      kind = 'single', name_key = [Rlen, 25, 9])
+    
+    Core_pars['Fire_use']['ba']   = mk_par_dict(dat = Fire_pars, filt = 'ba', 
+                                      kind = 'single', name_key = [Rlen, 25, 7])
+    
+    ### Fire escape pars
+    Escape_pars                            = [s.replace('\\', '/') for s in file_list if "Fire escape" in s]
 
-'''
+    escape_dict                            = {}
+    escape_dict['fire_types']              = mk_par_dict(dat = Escape_pars, filt = 'tree', 
+                                            kind = 'single', name_key = [Rlen, 16, 9])
 
-Fire_pars             = [s.replace('\\', '/') for s in file_list if "Fire use" in s]
-bool_pars             = [s for s in Fire_pars if "bool.csv" in s]
-ba_pars               = [s for s in Fire_pars if "ba.csv" in s]
+    escape_dict['Overall']   = {'Overall': [pd.read_csv(s) for s in Escape_pars if 'pars' in s]}
+    Core_pars['Fire_escape'] = escape_dict
 
-
-bool_pars             = dict(zip([x[(Rlen+9):-9] for x in bool_pars], 
-                                 [pd.read_csv(x) for x in bool_pars]))
-
-ba_pars               = dict(zip([x[(Rlen+9):-7] for x in ba_pars], 
-                                 [pd.read_csv(x) for x in ba_pars]))
-
-Core_pars['Fire_use']['bool'] = bool_pars
-Core_pars['Fire_use']['ba']   = ba_pars
-
-
-### Fire escape
-escape_pars                = [s.replace('\\', '/') for s in file_list if "Fire escape" in s]
-escape_rate                = [pd.read_csv(s) for s in escape_pars if "pars" in s]
-escape_pars                = [s for s in escape_pars if "tree" in s]
-
-
-escape_dict                = {'Overall': escape_rate[0]}
-escape_dict['fire_types']  = dict(zip([x[(Rlen+12):-16] for x in escape_pars], 
-                                 [pd.read_csv(x) for x in escape_pars]))
-
-
-Core_pars['Fire_escape'] = escape_dict
-
-
-'''
 
 ###########################################################################
 
@@ -156,12 +140,12 @@ if Maps == True:
         for name in files:
             Map_list.append(os.path.join(path, name))
 
-    Maps       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
+    Map_files       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
     Mask       = [s.replace('\\', '/') for s in Map_list if "Mask.csv" in s]
     Area       = [s.replace('\\', '/') for s in Map_list if "Area.csv" in s]
 
-    Map_data = dict(zip([x[Mlen:-3] for x in Maps], 
-            [nc.Dataset(Map_folder + x[Mlen:-3] + '.nc') for x in Maps]))
+    Map_data = dict(zip([x[Mlen:-3] for x in Map_files], 
+            [nc.Dataset(Map_folder + x[Mlen:-3] + '.nc') for x in Map_files]))
 
     var_key  = zip([x for x in Map_data.values()], 
                [[x for x in y.variables.keys()][len(y.variables.keys()) -2 ] for y in Map_data.values()])
@@ -182,7 +166,9 @@ if Maps == True:
     Map_data['Market.Inf']       = Map_data['GDP'] * Map_data['MA']
     Map_data['HDI_GDP']          = np.log(Map_data['GDP']) * Map_data['HDI']
     Map_data['W_flat']           = (1/Map_data['TRI']) * Map_data['GDP']
-
+    Map_data['Veg']              = Map_data['LUH2_secdf'] + Map_data['LUH2_secdn'] + Map_data['Other_vegetation']
+    Map_data['NPP_mountain']     = Map_data['NPP'] * Map_data['TRI']
+    Map_data['NPP_lpop']         = Map_data['NPP'][0:27, :, :] * np.log(Map_data['Pop'])
 
     ### handle missing values in processed data
     for i in range(Map_data['HDI_GDP'].shape[0]):

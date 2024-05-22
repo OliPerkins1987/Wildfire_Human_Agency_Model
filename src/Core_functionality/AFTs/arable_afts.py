@@ -28,7 +28,7 @@ class Swidden(AFT):
                         'Constraint_type': 'lt'}
         
         self.Fire_use = {'cfp': {'bool': 'tree_mod', 
-                                 'ba':   'tree_mod', 
+                                 'ba':   'lin_mod', 
                                  'size': 0.728455277}}
         
         self.Defor_size = 0.833333333
@@ -60,9 +60,9 @@ class MOSH(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Cropland'
-        self.Habitat = {'Map': 'Market.Inf', 
-                        'Constraint': 10.666, 
-                        'Constraint_type': 'gt'}
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.84, 
+                        'Constraint_type': 'lt'}
         
         
         self.Fire_use = {'crb': {'bool': {'constant':1}, 
@@ -80,8 +80,8 @@ class Intense_arable(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Cropland'
-        self.Habitat = {'Map': 'Market.Inf', 
-                        'Constraint': 21.233, 
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.5, 
                         'Constraint_type': 'gt'}
         
         
