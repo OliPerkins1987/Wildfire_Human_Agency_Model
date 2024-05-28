@@ -12,7 +12,7 @@ import numpy as np
 from copy import deepcopy
 
 from Core_functionality.setup_tools.setup_funs import get_LU_pars
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 from Core_functionality.prediction_tools.predict_funs import get_LU_dat, predict_LU_behaviour
@@ -156,8 +156,14 @@ class AFT(ap.Agent):
     
         if self.Habitat != 'None':
             
-            tmp = self.model.p.Maps[self.Habitat['Map']][self.model.timestep, :, :].data
+            if len(self.model.p.Maps[self.Habitat['Map']].shape) == 2:
+                
+                tmp = self.model.p.Maps[self.Habitat['Map']].data
+                
+            elif len(self.model.p.Maps[self.Habitat['Map']].shape) == 3:
             
+                tmp = self.model.p.Maps[self.Habitat['Map']][self.model.timestep, :, :].data
+        
             if self.Habitat['Constraint_type'] == 'lt':
                 
                 tmp = (tmp <= self.Habitat['Constraint']).reshape(self.model.xlen * self.model.ylen)
@@ -188,12 +194,11 @@ class AFT(ap.Agent):
 
 
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                           [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
             ### do prediction
-            self.Dist_vals = predict_from_tree_fast(dat = self.Dist_dat, 
-                              tree = self.Dist_frame, struct = self.Dist_struct, 
+            self.Dist_vals = predict_from_tree_numpy(dat = self.Dist_dat, 
+                              tree = self.Dist_frame, split_vars = self.Dist_vars, struct = self.Dist_struct,
                                prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0)
                 
         

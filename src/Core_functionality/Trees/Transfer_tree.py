@@ -203,28 +203,30 @@ def predict_from_tree_numpy(dat, tree, struct, split_vars, prob = 'yprob.TRUE',
             
     ### dictionary containing destination of pixel
     
+    miss_mask     = -9999999
+    
     pixel_loc     = {'Next_node': split_vals[0], 
                      'Destination': np.array([0] * len(split_vals[0])), 
-                     'Probability_out': np.array([-9999] * len(split_vals[0]))}
+                     'Probability_out': np.array([miss_mask] * len(split_vals[0]))}
     
     ### make tree predictions
     while len(np.where(np.less(pixel_loc['Probability_out'], 0))[0]) > 0:
         
         ### which split route are we heading down?
-        left = [struct[z]['Dest'][0] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == True and y == -9999]
-        right= [struct[z]['Dest'][1] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == False and y == -9999]
+        left = [struct[z]['Dest'][0] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == True and y == miss_mask]
+        right= [struct[z]['Dest'][1] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == False and y == miss_mask]
         
         ### where in the tree structure do data points now go
-        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == True, np.array(pixel_loc['Probability_out']) == -9999)] = left
-        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == False, np.array(pixel_loc['Probability_out']) == -9999)] = right
+        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == True, np.array(pixel_loc['Probability_out']) == miss_mask)] = left
+        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == False, np.array(pixel_loc['Probability_out']) == miss_mask)] = right
     
         ### give output probs for terminal nodes
         pixel_loc['Probability_out'] = [split_vals[x] if (type(
-            split_vals[x]) != np.ndarray) else -9999 for x in pixel_loc['Destination']]
+            split_vals[x]) != np.ndarray) else miss_mask for x in pixel_loc['Destination']]
                 
         for i in range(len(pixel_loc['Next_node'])):
             
-            if pixel_loc['Probability_out'] == -9999:
+            if pixel_loc['Probability_out'][i] == miss_mask:
                 
                 pixel_loc['Next_node'][i] = split_vals[pixel_loc['Destination'][i]][i]
                 

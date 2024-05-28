@@ -17,7 +17,7 @@ from Core_functionality.AFTs.agent_class import AFT
 
 ###########################################################################################
 
-class Pastoralist(AFT):
+class Pastoralist_r(AFT):
 
     def setup(self):
         AFT.setup(self)
@@ -96,8 +96,8 @@ class Int_LF_r(AFT):
         self.afr = 'Intense'
         self.ls  = 'Rangeland'
         self.Habitat = {'Map': 'HDI', 
-                        'Constraint': 0.838, 
-                        'Constraint_type': 'lt'}   
+                        'Constraint': 0.59, 
+                        'Constraint_type': 'gt'}   
 
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
                                  'ba': {'constant': 0.025}, 
@@ -111,8 +111,8 @@ class Abandoned_LF_r(AFT):
         AFT.setup(self)
         self.afr = 'Post'
         self.ls  = 'Rangeland'
-        self.Habitat = {'Map': 'Market.Inf', 
-                        'Constraint': 537.68313303, 
+        self.Habitat = {'Map': 'TRI', 
+                        'Constraint': 38.19444, 
                         'Constraint_type': 'gt'} 
         self.Fire_use = {}
         
@@ -122,6 +122,21 @@ class Abandoned_LF_r(AFT):
 ### Livestock AFTs - Pasture
 
 ###########################################################################################
+
+class Pastoralist_p(AFT):
+
+    def setup(self):
+        AFT.setup(self)
+        self.afr = 'Pre'
+        self.ls  = 'Pasture'
+        self.Habitat = {'Map': 'HDI', 
+                        'Constraint': 0.7691141, 
+                        'Constraint_type': 'lt'}  
+
+        self.Fire_use = {'pasture': {'bool': 'tree_mod', 
+                                 'ba': 'tree_mod', 
+                                 'size': 6.55}}
+
 
 class Ext_LF_p(AFT):
     

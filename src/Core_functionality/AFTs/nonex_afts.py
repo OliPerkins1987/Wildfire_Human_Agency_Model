@@ -56,9 +56,9 @@ class Recreationalist(AFT):
         AFT.setup(self)
         self.afr = 'Trans'
         self.ls  = 'Nonex'
-        self.Habitat = {'Map': 'NPP', 
-                        'Constraint': 5.573843, 
-                        'Constraint_type': 'gt'} 
+        self.Habitat = {'Map': 'Pop', 
+                        'Constraint': 400, 
+                        'Constraint_type': 'lt'} 
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
                                     'ba'  : 'lin_mod', 

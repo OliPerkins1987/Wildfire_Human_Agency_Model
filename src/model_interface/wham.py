@@ -16,7 +16,7 @@ from collections import defaultdict
 
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
+from Core_functionality.AFTs.livestock_afts import Pastoralist_r, Pastoralist_p,Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
 from Core_functionality.AFTs.forestry_afts import Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
 from Core_functionality.AFTs.nonex_afts import Hunter_gatherer_n, Recreationalist, SLM, Conservationist
 from Core_functionality.AFTs.land_system_class import land_system
@@ -157,8 +157,8 @@ class WHAM(ap.Model):
         ### 1) Competition between Unoccupied and forestry
         unoc_habitat            =  (ls_scores['Cropland'] + ls_scores['Pasture'] + ls_scores['Rangeland'] + ls_scores['Urban']) <= self.p.theta
         ls_scores['Unoccupied'] =  ls_scores['Unoccupied'] * unoc_habitat
-        forest_frac             = ls_scores['Forestry'] / (ls_scores['Forestry'] + ls_scores['Unoccupied'])
-        forest_frac             = np.select([forest_frac>0], [forest_frac], default = 0)
+        forest_frac             =  ls_scores['Forestry'] / (ls_scores['Forestry'] + ls_scores['Unoccupied'])
+        forest_frac             =  np.select([forest_frac>0], [forest_frac], default = 0)
         
         ### Calc forestry
         ls_scores['Forestry'] =  forest_frac * ls_scores['Forestry'] * (self.p.Maps['Forest'].data[self.timestep, :, :]).reshape(self.xlen * self.ylen)
@@ -401,8 +401,8 @@ class WHAM(ap.Model):
                     ctl_filt = control_impact.loc[control_impact['Intention'] == f,:]
                     
                     # combine impact of controlled & uncontrolled
-                    controlled = a.Control_vals[f] *  ctl_filt.loc[ctl_filt['Controlled'] == True, 'Escape_weight'].iloc[0]
-                    no_control = (1-a.Control_vals[f]) *  ctl_filt.loc[ ctl_filt['Controlled'] == False, 'Escape_weight'].iloc[0]
+                    controlled = (1-a.Control_vals[f]) *  ctl_filt.loc[ctl_filt['Controlled'] == True, 'Escape_weight'].iloc[0]
+                    no_control = (a.Control_vals[f]) *  ctl_filt.loc[ ctl_filt['Controlled'] == False, 'Escape_weight'].iloc[0]
                     
                     # sum and stash
                     ctl_w              = controlled+no_control
@@ -465,7 +465,7 @@ class WHAM(ap.Model):
         self.ls.get_vals()
         self.allocate_X_axis()
 
-        ### afr distribution
+        ### aft distribution
         self.agents.compete()
         self.allocate_AFT()
         

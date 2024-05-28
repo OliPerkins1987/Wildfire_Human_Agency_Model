@@ -4,6 +4,7 @@ Created on Sun Jan 17 16:16:40 2021
 
 @author: Oli
 """
+
 import pandas as pd
 import numpy as np
 import netCDF4 as nc
@@ -97,7 +98,7 @@ if Fire == True:
     escape_dict['fire_types']              = mk_par_dict(dat = Escape_pars, filt = 'tree', 
                                             kind = 'single', name_key = [Rlen, 16, 9])
 
-    escape_dict['Overall']   = {'Overall': [pd.read_csv(s) for s in Escape_pars if 'pars' in s]}
+    escape_dict['Overall']   = [pd.read_csv(s) for s in Escape_pars if 'pars' in s]
     Core_pars['Fire_escape'] = escape_dict
 
 

@@ -10,7 +10,7 @@ from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.AFTs.livestock_afts import Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
+from Core_functionality.AFTs.livestock_afts import Pastoralist_r, Pastoralist_p, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
 from Core_functionality.AFTs.forestry_afts import Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
 from Core_functionality.AFTs.nonex_afts import Hunter_gatherer_n, Recreationalist, SLM, Conservationist
 
@@ -23,7 +23,7 @@ from Core_functionality.top_down_processes.fire_constraints import fuel_ct, domi
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
@@ -46,7 +46,7 @@ exec(open("local_load_up.py").read())
 #################################################
 
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
-            Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
+            Pastoralist_r, Pastoralist_p, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
             Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
              Hunter_gatherer_n, Recreationalist, SLM, Conservationist]
 
@@ -74,10 +74,10 @@ parameters = {
     
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
+                  #'deforestation': deforestation,
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
-                  'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'fire_control_measures': fire_control_measures},    
        
     ### data
     'AFT_pars': Core_pars, ##defined in data load
@@ -85,8 +85,8 @@ parameters = {
     
     ### which AFT aspects are being modelled?
     'AFT_fire': False,
-    'AFT_Nfer': True,
-    'Observers': False, ## policy
+    'AFT_Nfer': False,
+    'Policy': True, ## policy
     
     ################################
     
@@ -102,7 +102,7 @@ parameters = {
     
     ### Fire parameters
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
-                   'pasture': 'Pasture', 'pyrome': 'Vegetation', 'defor': 'Vegetation'}, 
+                   'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
 
     ### constraints
     'Constraint_pars': {'Soil_threshold': 0.1325, 
@@ -121,18 +121,18 @@ parameters = {
     ### fire meta pars
     #'Fire_seasonality': Seasonality, ##defined in data load 
     'Seasonality'  : False, 
-    'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
+    'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
     
 
     ### reporters
-    'reporters': ['Nitrogen_fertiliser'],
+    'reporters': ['X_axis', 'AFT_scores'],
     
     ### switch and parameters for bootstrap version of model
     'bootstrap': False,
     'numb_bootstrap': 3, #either int or 'max' for all available
     'n_cores'  : 3,
         
-    'write_annual': False,
+    'write_annual': True,
     'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results/'  
         
     }

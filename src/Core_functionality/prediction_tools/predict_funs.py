@@ -104,7 +104,8 @@ def predict_LU_behaviour(aft, probs_dict, vars_dict, dat, pars,
                 ### control for negative values
                 if remove_neg == True:
                     vals[b] = pd.Series([x if x > 0 else 0 for x in vals[b]])
-                    
+                
+                ### control for output probs / coverage > 1
                 if normalise == True:
                     vals[b] = pd.Series([x if x < 1 else 1 for x in vals[b]])
                      
