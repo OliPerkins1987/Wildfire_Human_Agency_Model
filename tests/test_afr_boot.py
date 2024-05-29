@@ -17,7 +17,7 @@ import agentpy as ap
 
 
 from model_interface.wham import WHAM
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
@@ -122,16 +122,3 @@ def test_prediction_frame(mod_pars):
     
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
-    
-    
-'''
-    if not probs == [float(x.iloc[-1]) for x in mod.agents[0].boot_Dist_pars['Probs']]:
-        errors.append("Bootstrapped parameters not loaded properly")
-    
-    ### which values do not equal the mode?
-    gt_thresh_1 = len(pd.concat([pd.Series(np.arange(0, x)) if x >= 1 else pd.Series(0) for x in mod.agents[0].boot_Dist_pars['Thresholds'][0][0]]).unique())-1
-    
-    if not gt_thresh_1 == len(np.where(mod.agents[0].Dist_vals != stats.mode(np.array(mod.agents[0].Dist_vals))[0][0])[0]):
-    
-        errors.append("Bootstrapped prediction error")
-'''

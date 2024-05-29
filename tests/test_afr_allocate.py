@@ -17,49 +17,9 @@ import agentpy as ap
 
 
 from model_interface.wham import WHAM
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
-
-
-#########################################################################
-
-### Load test data
-
-#########################################################################
-
-os.chdir((str(os.getcwd()) + '/test_data/AFTs').replace('\\', '/'))
-Dummy_frame   = pd.read_csv('Dummy_pars.csv')
-Dummy_dat     = nc.Dataset('Test.nc')
-Dummy_dat     = Dummy_dat['Forest_frac'][:]
-Dummy_dat2    = 27647 - np.arange(27648)
-Map_data      = {'Test': Dummy_dat, 'Test2': Dummy_dat2}
-Map_test      = np.array(pd.read_csv('Test_raster.csv'))
-Map_data['Area'] = np.array([1]*27648)
-
-### Mock load up
-Core_pars = {'AFT_dist': {}, 
-             'Fire_use': {}} 
-
-Core_pars['AFT_dist']['Test/Test']          = Dummy_frame
-Core_pars['AFT_dist']['Sub_AFTs/Test_Test'] = Dummy_frame
-
-### Mock model
-parameters = {
-    
-    'xlen': 192, 
-    'ylen': 144,
-    'AFTs': [dummy_agent, dummy_agent],
-    'LS'  : [],
-    'AFT_pars': Core_pars,
-    'Maps'    : Map_data,
-    'start_run': 0,
-    'theta'    : 0.1, 
-    'bootstrap': False, 
-    'Observers': {}, 
-    'reporters': []
-    
-    }
 
 
 ##########################################################################
@@ -69,16 +29,53 @@ parameters = {
 ##########################################################################
 
 @pytest.mark.usefixtures("mod_pars")
-def test_prediction_frame(mod_pars):  
+def test_afr_allocate(mod_pars):  
     
     errors = []
     
     ### setup model
     mod                  = WHAM(mod_pars)
-    mod.p.bootstrap      = True
+    mod.p.bootstrap      = False
     mod.p.numb_bootstrap = 2
     mod.timestep         = 0
     mod.xlen             = mod_pars['xlen']
     mod.ylen             = mod_pars['ylen']
     
+    ### make ls list
+    mod.ls     = ap.AgentList(mod, 
+                       [y[0] for y in [ap.AgentList(mod, 1, x) for x in mod.p.LS]])
+    
+    ### setup ls
+    mod.ls.setup()
+    mod.ls.get_pars(mod.p.AFT_pars)
+    
+    ### make agent list
+    mod.agents           = ap.AgentList(mod, 
+                       [y[0] for y in [ap.AgentList(mod, 1, x) for x in mod.p.AFTs]])
+    
+    ### setup agents
+    mod.agents.setup()
+    mod.agents.get_dist_pars(mod.p.AFT_pars)
+    
+    ### run aft allocation 
+    mod.ls.get_vals()
+    mod.allocate_X_axis()
+    mod.agents.compete()
+    mod.allocate_AFT()
+    
+    
+    #############################
+    
+    ### test allocation correct
+    
+    #############################
+    
+    Pre = (mod.AFT_scores['Swidden'] + mod.AFT_scores['Pastoralist_r'] + mod.AFT_scores['Pastoralist_p'] +
+           mod.AFT_scores['SOSH']*0.5 + mod.AFT_scores['Hunter_gatherer_f'] + mod.AFT_scores['Hunter_gatherer_n'])
+
+    if not(np.nanmax(Pre - mod.AFR['Pre']) == pytest.approx(0)):
+            
+            errors.append("AFR calculated incorrectly")
+            
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
     

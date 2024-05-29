@@ -17,7 +17,7 @@ import agentpy as ap
 
 
 from model_interface.wham import WHAM
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
@@ -65,8 +65,7 @@ def test_prediction_frame(mod_pars):
         aft.Dist_dat  = [aft.model.p.Maps[x][aft.model.timestep, :, :] if len(aft.model.p.Maps[x].shape) == 3 else aft.model.p.Maps[x] for x in aft.Dist_vars]
 
         ### combine numpy arrays to single pandas       
-        aft.Dist_dat  = pd.DataFrame.from_dict(dict(zip(aft.Dist_vars, 
-                              [x.reshape(aft.model.p.xlen*aft.model.p.ylen).data for x in aft.Dist_dat])))
+        aft.Dist_dat  = np.array([x.reshape(aft.model.p.xlen*aft.model.p.ylen).data for x in aft.Dist_dat]).transpose()
         
         ### Parallel prediction
         boot_frame[type(aft).__name__] = make_boot_frame(aft)
@@ -117,8 +116,6 @@ def test_prediction_frame(mod_pars):
             errors.append("output probabilities updated incorrectly")
     
     
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
-    
     ########################################################################
     
     ### check boostrapped prediction
@@ -127,13 +124,15 @@ def test_prediction_frame(mod_pars):
     
     c       = Client(n_workers=2)
     futures = []
-    x       = make_boot_frame(mod.agents[random.randint(0, len(mod.agents)-1)])
+    rand_aft= random.randint(0, len(mod.agents)-1)
+    x       = make_boot_frame(mod.agents[rand_aft])
     p       = 'yprob.TRUE'
     
     for i in range(len(x['df'])):
         
-        future = c.submit(predict_from_tree_fast, dat = x['dd'], 
+        future = c.submit(predict_from_tree_numpy, dat = x['dd'], 
                               tree = x['df'][i], struct = x['ds'], 
+                               split_vars = mod.agents[rand_aft].Dist_vars,
                                prob = p, skip_val = -1e+10, na_return = 0)
                 
         futures.append(future)
@@ -142,8 +141,10 @@ def test_prediction_frame(mod_pars):
     
     for i in range(len(results)):
         
-        if not results[i].round(6).isin(x['df'][i]['yprob.TRUE'].round(6).append(pd.Series(0))).all():
+        if not pd.Series(results[i]).round(6).isin(x['df'][i]['yprob.TRUE'].round(6).append(pd.Series(0))).all():
             
             errors.append('boostrapped prediction failure')
             
     c.close()
+    
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))

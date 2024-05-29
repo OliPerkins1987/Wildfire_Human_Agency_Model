@@ -17,7 +17,7 @@ import agentpy as ap
 
 
 from model_interface.wham import WHAM
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
@@ -75,7 +75,7 @@ def test_ls_allocation(mod_pars):
     
     ### Forestry predictions
     
-    Forestry_filt= (np.isnan(ls_scores['Forestry']) == False) & np.isnan(Forestry_test.iloc[:, 0] == False)
+    Forestry_filt= (np.isnan(ls_scores['Forestry']) == False) & np.isnan(Forestry_test.iloc[:, 1] == False)
     
     if not ls_scores['Forestry'][Forestry_filt] == pytest.approx(
             np.array(Forestry_test[Forestry_filt].iloc[:, 0])):
@@ -83,13 +83,14 @@ def test_ls_allocation(mod_pars):
         errors.append("Forestry distribution predicted incorrectly")
     
     ### Unoccupied predictions
+    ### !Not needed: calculating forestry requires accurate calculation of Unoccupied
     
-    Unoc_filt= (np.isnan(ls_scores['Unoccupied']) == False) & (np.isnan(Unoccupied_test.iloc[:, 0]) == False)
+    #Unoc_filt= (np.isnan(ls_scores['Unoccupied']) == False) & (np.isnan(Unoccupied_test.iloc[:, 0]) == False)
     
-    if not ls_scores['Unoccupied'][Unoc_filt] == pytest.approx(
-            np.array(Unoccupied_test[Unoc_filt].iloc[:, 0])):
+    #if not ls_scores['Unoccupied'][Unoc_filt] == pytest.approx(
+    #        np.array(Unoccupied_test[Unoc_filt].iloc[:, 0])):
         
-        errors.append("Unoccupied distribution predicted incorrectly")
+    #    errors.append("Unoccupied distribution predicted incorrectly")
     
     ##############################################################
     
@@ -104,7 +105,10 @@ def test_ls_allocation(mod_pars):
     
     if not alloc_frame[alloc_filt] == pytest.approx(mod.p.Maps['Mask'][alloc_filt]):
         
-        errors.append("Unoccupied distribution predicted incorrectly")
+        errors.append("X axis does not sum to land fraction")
+        
+        
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
     
     

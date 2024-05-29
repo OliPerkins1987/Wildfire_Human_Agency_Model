@@ -17,7 +17,7 @@ import agentpy as ap
 
 
 from model_interface.wham import WHAM
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
@@ -68,8 +68,7 @@ def test_ls_prediction(mod_pars):
             ls.Dist_dat  = [ls.model.p.Maps[x][ls.model.timestep, :, :] if len(ls.model.p.Maps[x].shape) == 3 else ls.model.p.Maps[x] for x in ls.Dist_vars]
 
             ### combine numpy arrays to single pandas       
-            ls.Dist_dat  = pd.DataFrame.from_dict(dict(zip(ls.Dist_vars, 
-                              [x.reshape(ls.model.p.xlen*ls.model.p.ylen).data for x in ls.Dist_dat])))
+            ls.Dist_dat  = np.array([x.reshape(ls.model.p.xlen*ls.model.p.ylen).data for x in ls.Dist_dat]).transpose()
         
             ### Parallel prediction
             boot_frame[type(ls).__name__] = make_boot_frame(ls)
@@ -118,9 +117,7 @@ def test_ls_prediction(mod_pars):
         if not val == leaf_vals[0].iloc[1, len(leaf_vals[0].columns)-1]:
             
             errors.append("output probabilities updated incorrectly")
-    
-    
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+
     
     ########################################################################
     
@@ -135,8 +132,9 @@ def test_ls_prediction(mod_pars):
     
     for i in range(len(x['df'])):
         
-        future = c.submit(predict_from_tree_fast, dat = x['dd'], 
+        future = c.submit(predict_from_tree_numpy, dat = x['dd'], 
                               tree = x['df'][i], struct = x['ds'], 
+                              split_vars = mod.ls[5].Dist_vars,
                                prob = p, skip_val = -1e+10, na_return = 0)
                 
         futures.append(future)
@@ -145,8 +143,10 @@ def test_ls_prediction(mod_pars):
     
     for i in range(len(results)):
         
-        if not results[i].round(6).isin(x['df'][i]['yprob.TRUE'].round(6).append(pd.Series(0))).all():
+        if not pd.Series(results[i]).round(6).isin(x['df'][i]['yprob.TRUE'].round(6).append(pd.Series(0))).all():
             
             errors.append('boostrapped prediction failure')
             
     c.close()
+    
+    assert not errors, "errors occured:\n{}".format("\n".join(errors))
