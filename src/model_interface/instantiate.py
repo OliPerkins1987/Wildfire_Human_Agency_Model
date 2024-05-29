@@ -125,11 +125,11 @@ parameters = {
     
 
     ### reporters
-    'reporters': ['X_axis', 'AFT_scores'],
+    'reporters': ['AFT_scores', 'X_axis'],
     
     ### switch and parameters for bootstrap version of model
-    'bootstrap': False,
-    'numb_bootstrap': 3, #either int or 'max' for all available
+    'bootstrap': True,
+    'numb_bootstrap': 20, #either int or 'max' for all available
     'n_cores'  : 3,
         
     'write_annual': True,

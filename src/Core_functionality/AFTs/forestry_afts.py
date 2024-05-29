@@ -25,7 +25,7 @@ class Hunter_gatherer_f(AFT):
         self.ls  = 'Forestry'
         
         self.Habitat = {'Map': 'MA', 
-                        'Constraint': 0.5782851, 
+                        'Constraint': 0.524, 
                         'Constraint_type': 'lt'} 
         
 
@@ -37,7 +37,7 @@ class Agroforestry(AFT):
         self.ls  = 'Forestry'
         
         self.Habitat = {'Map': 'MA', 
-                        'Constraint': 0.0059052876, 
+                        'Constraint': 0.004087522, 
                         'Constraint_type': 'gt'} 
 
 class Logger(AFT):
@@ -48,7 +48,7 @@ class Logger(AFT):
         self.ls  = 'Forestry'
         
         self.Habitat = {'Map': 'MA', 
-                        'Constraint': 0.0140444132, 
+                        'Constraint': 0.0133182, 
                         'Constraint_type': 'gt'} 
 
 class Managed_forestry(AFT):

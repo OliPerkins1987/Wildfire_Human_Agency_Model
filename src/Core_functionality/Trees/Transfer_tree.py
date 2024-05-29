@@ -223,7 +223,8 @@ def predict_from_tree_numpy(dat, tree, struct, split_vars, prob = 'yprob.TRUE',
         ### give output probs for terminal nodes
         pixel_loc['Probability_out'] = [split_vals[x] if (type(
             split_vals[x]) != np.ndarray) else miss_mask for x in pixel_loc['Destination']]
-                
+        
+        ### set destination of non-terminal nodes
         for i in range(len(pixel_loc['Next_node'])):
             
             if pixel_loc['Probability_out'][i] == miss_mask:

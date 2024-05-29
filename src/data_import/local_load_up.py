@@ -96,9 +96,9 @@ if Fire == True:
 
     escape_dict                            = {}
     escape_dict['fire_types']              = mk_par_dict(dat = Escape_pars, filt = 'tree', 
-                                            kind = 'single', name_key = [Rlen, 16, 9])
+                                            kind = 'single', name_key = [Rlen, 28, 9])
 
-    escape_dict['Overall']   = [pd.read_csv(s) for s in Escape_pars if 'pars' in s]
+    escape_dict['Overall']   = [pd.read_csv(s) for s in Escape_pars if 'pars' in s][0]
     Core_pars['Fire_escape'] = escape_dict
 
 
@@ -170,6 +170,7 @@ if Maps == True:
     Map_data['Veg']              = Map_data['LUH2_secdf'] + Map_data['LUH2_secdn'] + Map_data['Other_vegetation']
     Map_data['NPP_mountain']     = Map_data['NPP'] * Map_data['TRI']
     Map_data['NPP_lpop']         = Map_data['NPP'][0:27, :, :] * np.log(Map_data['Pop'])
+    Map_data['ET_pop']           = Map_data['ET'][0:27, :, :] / np.select([Map_data['Pop'] >= 1], [Map_data['Pop']], default = 1)
 
     ### handle missing values in processed data
     for i in range(Map_data['HDI_GDP'].shape[0]):

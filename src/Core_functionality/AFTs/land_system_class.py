@@ -104,12 +104,6 @@ class land_system(ap.Agent):
             
             ### gather correct numpy arrays 4 predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
-
-            ### combine numpy arrays to single pandas       
-            #self.Dist_dat  = np.array(list(zip(self.Dist_vars, 
-            #                  [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
-        
-            # combine to a single numpy
             
             self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
@@ -123,18 +117,16 @@ class land_system(ap.Agent):
             
             self.Dist_vals = []
             
-            ### gather correct numpy arrays 4 predictor variables
+            ### gather numpy arrays of predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
-
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
-            
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
+        
             ### Parallel prediction - no zeroing out for ls
             boot_frame     = make_boot_frame(self)
-            dv             = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE')
-            self.Dist_vals = np.array(pd.DataFrame(np.column_stack(dv)).mean(axis = 1))
+            dv             = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE', self.Dist_vars)
+            self.Dist_vals = np.nanmean(dv, axis = 0)  
             
             
         elif self.dist_method == 'Prescribed':

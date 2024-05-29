@@ -185,13 +185,14 @@ class AFT(ap.Agent):
         Competition between AFTs
         
         '''
-        
+            ###########################################
             ### single set of parameter values
+            ###########################################
+            
         if self.p.bootstrap != True:
         
-            ### gather correct numpy arrays 4 predictor variables
+            ### gather numpy arrays of predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
-
 
             ### combine numpy arrays to single pandas       
             self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
@@ -205,30 +206,34 @@ class AFT(ap.Agent):
             ### apply theta zero-ing out constraint
             self.Dist_vals = np.select([self.Dist_vals > self.model.p.theta], [self.Dist_vals], default = 0)
             
-            ### apply habitat
-            if self.Habitat != 'None':
-                
-                self.Dist_vals = self.Dist_vals * self.Habitat_vals
-            
-            
+            ############################################
             ### bootstrapped version
+            ############################################
+            
         elif self.p.bootstrap == True:
             
             self.Dist_vals = []
-            
-            ### gather correct numpy arrays 4 predictor variables
+                        
+            ### gather numpy arrays of predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
             ### Parallel prediction
             boot_frame     = make_boot_frame(self)
-            self.Dist_vals = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE')
-            self.Dist_vals = combine_bootstrap(self)
+            self.Dist_vals = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE', self.Dist_vars)
+            self.Dist_vals = np.nanmean(self.Dist_vals, axis = 0)  
+            self.Dist_vals = np.select([self.Dist_vals > self.model.p.theta], [self.Dist_vals], default = 0)
+        
+            #######################################
+            ### apply habitat
+            #######################################
             
-
+        if self.Habitat != 'None':
+                
+            self.Dist_vals = self.Dist_vals * self.Habitat_vals
+        
     
     #######################################################################
     

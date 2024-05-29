@@ -157,11 +157,11 @@ class WHAM(ap.Model):
         ### 1) Competition between Unoccupied and forestry
         unoc_habitat            =  (ls_scores['Cropland'] + ls_scores['Pasture'] + ls_scores['Rangeland'] + ls_scores['Urban']) <= self.p.theta
         ls_scores['Unoccupied'] =  ls_scores['Unoccupied'] * unoc_habitat
-        forest_frac             =  ls_scores['Forestry'] / (ls_scores['Forestry'] + ls_scores['Unoccupied'])
-        forest_frac             =  np.select([forest_frac>0], [forest_frac], default = 0)
-        
+        ls_scores['Forestry']   =  np.select([ls_scores['Unoccupied'] > 0.5, ls_scores['Unoccupied'] <= 0.5], 
+                                    [ls_scores['Forestry'] * 0.5, ls_scores['Forestry']], default = 0)
+            
         ### Calc forestry
-        ls_scores['Forestry'] =  forest_frac * ls_scores['Forestry'] * (self.p.Maps['Forest'].data[self.timestep, :, :]).reshape(self.xlen * self.ylen)
+        ls_scores['Forestry'] =  ls_scores['Forestry'] * (self.p.Maps['Forest'].data[self.timestep, :, :]).reshape(self.xlen * self.ylen)
         ls_scores['Forestry'] =  np.select([ls_scores['Forestry']>0], [ls_scores['Forestry']], default = 0)
         
         ### 2) Competition between Unoccupied and nonex
