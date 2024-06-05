@@ -75,7 +75,7 @@ parameters = {
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
                   #'deforestation': deforestation,
-                  'fuel_constraint': fuel_ct, 
+                  #'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures},    
        
@@ -84,7 +84,7 @@ parameters = {
     'Maps'    : Map_data,  ##defined in data load
     
     ### which AFT aspects are being modelled?
-    'AFT_fire': False,
+    'AFT_fire': True,
     'AFT_Nfer': False,
     'Policy': True, ## policy
     
@@ -112,6 +112,9 @@ parameters = {
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
     
+    ### switch for constraints
+    'apply_fire_constraints': True,
+    
     ### Deforestation fire fraction
     'Defor_pars': {'Pre'    : 1, 
                    'Trans'  : 0.84, 
@@ -123,17 +126,24 @@ parameters = {
     'Seasonality'  : False, 
     'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
     
-
+    
+    ##########################################################
+    
+    ### Model output & computational pars
+    
+    ##########################################################
+    
     ### reporters
-    'reporters': ['AFT_scores', 'X_axis'],
+    'reporters': ['AFT_scores', 'X_axis', 'Managed_fire'],
     
     ### switch and parameters for bootstrap version of model
     'bootstrap': True,
     'numb_bootstrap': 20, #either int or 'max' for all available
     'n_cores'  : 3,
-        
+    
+    ### write model outputs at each timestep?
     'write_annual': True,
-    'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results/'  
+    'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results'  
         
     }
 

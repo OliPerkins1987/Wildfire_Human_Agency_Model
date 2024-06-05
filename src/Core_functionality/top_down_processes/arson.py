@@ -25,41 +25,21 @@ from Core_functionality.prediction_tools.predict_funs import get_LU_dat, predict
 
 class arson(AFT):
     
+    
     def setup(self):
         AFT.setup(self)
         
-        self.Fire_use = {'arson':{'bool': 'tree_mod', 
-                                   'ba': 'lin_mod', 
-                                   'size': np.nan}}
         
     def ignite(self):
-
-       
-    ####################################
+    
+    ###############################################################
                 
-    ### Prepare data
+    ### Define plausible space
                 
-    ####################################
-        
-        fire_dat = {}
-        self.Fire_vals= {}
-
-        probs_key     = {'bool': 'yprob.TRUE', 
-                         'ba'  : 'yval'} ### used for gathering final results
-        
-       ### gather numpy arrays 4 predictor variables
-        for x in self.Fire_use.keys():
-            
-            fire_dat[x]        = get_LU_dat(self, probs_key, self.Fire_vars[x])
-            self.Fire_vals[x]  = predict_LU_behaviour(self, probs_key, 
-                                 self.Fire_vars[x], fire_dat[x], 
-                                 self.Fire_use[x], remove_neg= True, normalise = False)
-        
-        self.Fire_vals[x].update((x, np.array(y).reshape(self.model.ylen, 
-                                   self.model.xlen)) for x, y in self.Fire_vals[x].items())
-                    
-        ### calculate burned area through DT and LM combination
-        self.Fire_vals[x] = np.array(list(self.Fire_vals[x].values())).mean(axis = 0)     
+    ###############################################################    
+    
+        fire_hab = ((self.model.Maps['NPP'].data[self.model.timestep, :, :] > 55.1) *
+                    (self.model.Maps['ET'].data[self.model.timestep, :, :] > 641))
         
         
     ###############################################################
@@ -76,20 +56,17 @@ class arson(AFT):
             if 'Trans' in self.model.LFS[ls].keys():
                 
                 afr_vals.append(self.model.LFS[ls]['Trans'])
-                
-            if 'Pre' in self.model.LFS[ls].keys():
-                
-                afr_vals.append(self.model.LFS[ls]['Pre'])
         
         ### remove agroforestry from logging contribution to arson
         if 'Agroforestry' in self.model.AFT_scores.keys():
             
             afr_vals.append(0 - self.model.AFT_scores['Agroforestry'])
-        
-        
+                
         afr_vals = np.nansum(afr_vals, axis = 0)
         
+        ###############################################################
         ### adjust for protected areas
+        ###############################################################
         if 'Recreationalist' in self.model.AFT_scores.keys():
             
             afr_vals = afr_vals * self.model.AFT_scores['Recreationalist']
@@ -97,9 +74,12 @@ class arson(AFT):
         afr_vals = np.select([afr_vals > 0], [afr_vals], default = 0)
         
         ### Multiply by regression of n-ignitions against Transition AFR
-        self.Fire_vals = self.Fire_vals['arson'] * (1/(1+np.exp(0-(afr_vals*4.673 - 4.346))))
+        MI             = self.model.p.Maps['Market.Inf'].data[self.timestep, :, :]
+        ig_rate        = (afr_vals * 267.2335) - 4.052840 - (8.684472e-05 * MI) - (0.1301143 * MI * afr_vals)  
+        self.Fire_vals = (1/(1+np.exp(0-ig_rate)))
         
-        ### adjust for land area of pixel
+        ### adjust for land area of pixel & ecological limits
+        self.Fire_vals = self.Fire_vals * fire_hab
         self.Fire_vals = self.Fire_vals * self.model.p.Maps['Mask'].reshape(self.model.ylen, self.model.xlen)
         
         

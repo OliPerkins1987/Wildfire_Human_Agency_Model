@@ -260,7 +260,7 @@ class AFT(ap.Agent):
             fire_dat[x]        = get_LU_dat(self, probs_key, self.Fire_vars[x])
             self.Fire_vals[x]  = predict_LU_behaviour(self, probs_key, 
                                  self.Fire_vars[x], fire_dat[x], 
-                                 self.Fire_use[x])
+                                 self.Fire_use[x], normalise = False)
             
             ### calculate burned area through bool & ba%
             self.Fire_vals[x] = self.Fire_vals[x]['bool'] * self.Fire_vals[x]['ba']

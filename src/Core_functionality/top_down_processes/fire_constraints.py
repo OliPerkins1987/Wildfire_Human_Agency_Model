@@ -85,7 +85,7 @@ class dominant_afr_ct(ap.Agent):
     def constrain_arson(self):
 
         ### Impact of Unoccupied regions 
-        Unoc = np.array(1 - self.model.X_axis['Unoccupied']).reshape(self.model.p.ylen*self.model.p.xlen)
+        Unoc = np.array(1 - self.model.X_axis['Unoccupied'])
         self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals * Unoc
 
 

@@ -11,7 +11,7 @@ import numpy as np
 from copy import deepcopy
 
 from Core_functionality.AFTs.agent_class import AFT
-from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.prediction_tools.predict_funs import get_LU_dat, predict_LU_behaviour
 
@@ -52,16 +52,14 @@ class background_rate(AFT):
         self.Fire_vals[x].update((x, np.array(y).reshape(self.model.ylen, 
                                    self.model.xlen)) for x, y in self.Fire_vals[x].items())
         
-        #teg = np.exp(self.model.p.Maps['ET'][self.model.timestep, :, :].data*2.044e-01 + self.model.p.Maps['MA'][self.model.timestep, :, :].data*2.553e+02 - 1.107e+02 + self.model.p.Maps['MA'][self.model.timestep, :, :].data**2*-5.213e+02 + self.model.p.Maps['ET'][self.model.timestep, :, :].data**2*-1.310e-04)
-        
         ### polynomial correction
-        self.Fire_vals[x]['ba'] = self.Fire_vals[x]['ba'] + (self.model.p.Maps['ET'][self.model.timestep, :, :].data**2)*-1.310211e-04
-        self.Fire_vals[x]['ba'] = self.Fire_vals[x]['ba'] + (self.model.p.Maps['MA'][self.model.timestep, :, :].data**2)*-5.212816e+02
+        self.Fire_vals[x]['ba'] = self.Fire_vals[x]['ba'] + ((self.model.p.Maps['ET'][self.model.timestep, :, :].data**2)*-1.310211e-04)
+        self.Fire_vals[x]['ba'] = self.Fire_vals[x]['ba'] + ((self.model.p.Maps['MA'][self.model.timestep, :, :].data**2)*-5.212816e+02)
         self.Fire_vals[x]['ba'] = np.exp(self.Fire_vals[x]['ba'])
         self.Fire_vals[x]['ba'] = np.select([self.Fire_vals[x]['ba'] > 0], [self.Fire_vals[x]['ba']], default = 0)
             
         ### calculate burned area through bool & ba%
-        self.Fire_vals[x] = np.array(list(self.Fire_vals[x].values())).mean(axis = 0)      
+        self.Fire_vals = np.array(list(self.Fire_vals[x].values())).mean(axis = 0)      
         
         ### adjust for land area of pixel
         self.Fire_vals = self.Fire_vals * self.model.p.Maps['Mask'].reshape(self.model.ylen, self.model.xlen)

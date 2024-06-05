@@ -23,8 +23,8 @@ class Swidden(AFT):
         AFT.setup(self)
         self.afr = 'Pre'
         self.ls  = 'Cropland'
-        self.Habitat = {'Map': 'HDI_GDP', 
-                        'Constraint': 7.877355, 
+        self.Habitat = {'Map': 'Cropland', 
+                        'Constraint': 0.5776, 
                         'Constraint_type': 'lt'}
         
         self.Fire_use = {'cfp': {'bool': 'tree_mod', 
@@ -80,9 +80,9 @@ class Intense_arable(AFT):
         AFT.setup(self)
         self.afr = 'Intense'
         self.ls  = 'Cropland'
-        self.Habitat = {'Map': 'HDI', 
-                        'Constraint': 0.5, 
-                        'Constraint_type': 'gt'}
+        self.Habitat = {'Map': 'Pop', 
+                        'Constraint': 900, 
+                        'Constraint_type': 'lt'}
         
         
         self.Fire_use = {'crb': {'bool': 'tree_mod', 

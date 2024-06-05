@@ -243,10 +243,6 @@ class WHAM(ap.Model):
                 
         ### stash afr scores
         self.AFR        = get_afr_vals(self.LFS)
-        
-        ### adjust for SOSH
-        self.AFR['Pre']   = self.AFR['Pre'] + 0.5*self.AFT_scores['SOSH']
-        self.AFR['Trans'] = self.AFR['Trans'] - 0.5*self.AFT_scores['SOSH']
     
     
     ###################################################################################
@@ -313,7 +309,9 @@ class WHAM(ap.Model):
         ### apply constraints
         #################################
         
-        self.fire_constraints()
+        if self.p.apply_fire_constraints == True:
+            
+            self.fire_constraints()
 
 
         ### Total up managed fire

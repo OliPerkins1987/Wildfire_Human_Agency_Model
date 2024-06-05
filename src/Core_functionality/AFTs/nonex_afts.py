@@ -30,26 +30,20 @@ class Hunter_gatherer_n(AFT):
 
         self.Fire_use = {'hg': {'bool': 'tree_mod', 
                                  'ba': 'tree_mod', 
-                                 'size': 1.27}, 
-                         'pyrome': {'bool': 'tree_mod', 
-                                    'ba': 'lin_mod', 
-                                    'size': 1}}
+                                 'size': 1.34}}
 
     def fire_constraints(self):
         
         ### constrain fire use by forest cover
-        Forest_mask              = 1 - (0.5 * self.model.p.Maps['Forest'][self.model.timestep, :, :].data)
+        Forest_mask              = 1 - self.model.p.Maps['Forest'][self.model.timestep, :, :].data
         Forest_mask              = np.select([Forest_mask > 1], [0], Forest_mask)
         self.Fire_vals['hg']     = self.Fire_vals['hg'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
-        self.Fire_vals['pyrome'] = self.Fire_vals['pyrome'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
-        
         
         threshold            = self.model.p.Constraint_pars['HG_Market_constraint']
         MI_constraint        = self.model.p.Maps['Market.Inf'][self.model.timestep, :, :].data
         self.Fire_vals['hg'] = self.Fire_vals['hg'] * (MI_constraint.reshape(self.model.p.xlen * self.model.p.ylen) < threshold)
-
-
-
+        
+        
 class Recreationalist(AFT):
     
     def setup(self):
@@ -61,8 +55,20 @@ class Recreationalist(AFT):
                         'Constraint_type': 'lt'} 
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
-                                    'ba'  : 'lin_mod', 
+                                    'ba'  : 'tree_mod', 
                                     'size': 150}}
+        
+    def fire_constraints(self):
+        
+        ### constrain ontologically: limited management
+        ### based on fire use frequency by AFR in DAFI
+        self.Fire_vals['pyrome'] = self.Fire_vals['pyrome'] * 0.285
+        
+        ### constrain fire use by forest cover
+        Forest_mask              = 1 - (self.model.p.Maps['Forest'][self.model.timestep, :, :].data)
+        Forest_mask              = np.select([Forest_mask > 1], [0], Forest_mask)
+        self.Fire_vals['pyrome'] = self.Fire_vals['pyrome'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
+        
 
 class SLM(AFT):
     
@@ -91,7 +97,7 @@ class Conservationist(AFT):
         
         
         self.Fire_use = {'pyrome': {'bool': 'tree_mod', 
-                                    'ba'  : 'lin_mod', 
+                                    'ba'  : 'tree_mod', 
                                     'size': 150}}
 
 
@@ -99,7 +105,7 @@ class Conservationist(AFT):
     def fire_constraints(self):
         
         ### constrain fire use by forest cover
-        Forest_mask              = 1 - (0.5 * self.model.p.Maps['Forest'][self.model.timestep, :, :].data)
+        Forest_mask              = 1 - (self.model.p.Maps['Forest'][self.model.timestep, :, :].data)
         Forest_mask              = np.select([Forest_mask > 1], [0], Forest_mask)
         self.Fire_vals['pyrome'] = self.Fire_vals['pyrome'] * Forest_mask.reshape(self.model.p.xlen * self.model.p.ylen)
         
