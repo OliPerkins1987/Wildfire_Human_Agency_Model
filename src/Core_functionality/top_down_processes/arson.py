@@ -74,9 +74,7 @@ class arson(AFT):
         afr_vals = np.select([afr_vals > 0], [afr_vals], default = 0)
         
         ### Multiply by regression of n-ignitions against Transition AFR
-        MI             = self.model.p.Maps['Market.Inf'].data[self.timestep, :, :]
-        ig_rate        = (afr_vals * 267.2335) - 4.052840 - (8.684472e-05 * MI) - (0.1301143 * MI * afr_vals)  
-        self.Fire_vals = (1/(1+np.exp(0-ig_rate)))
+        self.Fire_vals = self.Fire_vals['arson'] * (1/(1+np.exp(0-(afr_vals*4.695 - 4.372))))
         
         ### adjust for land area of pixel & ecological limits
         self.Fire_vals = self.Fire_vals * fire_hab
