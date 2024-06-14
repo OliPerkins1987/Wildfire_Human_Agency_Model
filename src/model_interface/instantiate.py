@@ -124,7 +124,7 @@ parameters = {
     ### fire meta pars
     #'Fire_seasonality': Seasonality, ##defined in data load 
     'Seasonality'  : False, 
-    'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
+    'escaped_fire' : True, ##if True add 'Escaped_fire' to reporters
     
     
     ##########################################################
@@ -134,15 +134,15 @@ parameters = {
     ##########################################################
     
     ### reporters
-    'reporters': ['AFT_scores', 'X_axis', 'Managed_fire'],
+    'reporters': ['Background_ignitions', 'Arson', 'Escaped_fire'],
     
     ### switch and parameters for bootstrap version of model
-    'bootstrap': True,
+    'bootstrap': False,
     'numb_bootstrap': 20, #either int or 'max' for all available
     'n_cores'  : 3,
     
     ### write model outputs at each timestep?
-    'write_annual': True,
+    'write_annual': False,
     'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results'  
         
     }

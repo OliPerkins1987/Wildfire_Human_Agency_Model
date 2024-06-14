@@ -38,10 +38,8 @@ class arson(AFT):
                 
     ###############################################################    
     
-        fire_hab = ((self.model.Maps['NPP'].data[self.model.timestep, :, :] > 55.1) *
-                    (self.model.Maps['ET'].data[self.model.timestep, :, :] > 641))
-        
-        
+        fire_hab = (self.model.p.Maps['ET'].data[self.model.timestep, :, :] > 641)
+
     ###############################################################
                 
     ### Adjust arson ignitions for specific land use conflicts
@@ -73,8 +71,13 @@ class arson(AFT):
         
         afr_vals = np.select([afr_vals > 0], [afr_vals], default = 0)
         
-        ### Multiply by regression of n-ignitions against Transition AFR
-        self.Fire_vals = self.Fire_vals['arson'] * (1/(1+np.exp(0-(afr_vals*4.695 - 4.372))))
+        ### Simple representation of land conflict
+        self.Fire_vals = (1/(1+np.exp(
+            0-(afr_vals*21.8860313 - 1.8968080 -0.0009795 * self.model.p.Maps['Market.Inf'].data[self.model.timestep, :, :])))) 
+        
+        ### account for higher HDI regions
+        self.Fire_vals = self.Fire_vals * (
+            1/(1+np.exp(0-(3.999-10.416*self.model.p.Maps['HDI'].data[self.model.timestep, :, :])))) 
         
         ### adjust for land area of pixel & ecological limits
         self.Fire_vals = self.Fire_vals * fire_hab
