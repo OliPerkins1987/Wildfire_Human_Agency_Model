@@ -67,6 +67,7 @@ class Ext_LF_r(AFT):
                                  'ba': 'tree_mod', 
                                  'size': 14.03571}}
         
+                
     def fire_constraints(self):
         
         ### rangeland stocking constraint
@@ -151,8 +152,7 @@ class Ext_LF_p(AFT):
         
         self.Defor_size = 44.83549
         
-        self.Nfer_use = {'tree': 'tree_mod', 
-                         'lm'  : 'lin_mod'}
+        self.Nfer_use = {'tree': 'tree_mod'}
         
         
 class Int_LF_p(AFT):
@@ -169,8 +169,7 @@ class Int_LF_p(AFT):
         
         self.Defor_size = 65.35
         
-        self.Nfer_use = {'tree': 'tree_mod', 
-                         'lm'  : 'lin_mod'}
+        self.Nfer_use = {'tree': 'tree_mod'}
 
         
         

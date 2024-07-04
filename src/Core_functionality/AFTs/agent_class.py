@@ -308,6 +308,7 @@ class AFT(ap.Agent):
         
             ### combine
             self.Nfer_vals = pd.DataFrame(self.Nfer_vals).mean(axis = 1)
+          
 
 
 

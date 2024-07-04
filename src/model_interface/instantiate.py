@@ -84,9 +84,9 @@ parameters = {
     'Maps'    : Map_data,  ##defined in data load
     
     ### which AFT aspects are being modelled?
-    'AFT_fire': True,
-    'AFT_Nfer': False,
-    'Policy': True, ## policy
+    'AFT_fire': False,
+    'AFT_Nfer': True,
+    'Policy': False, ## policy
     
     ################################
     
@@ -134,15 +134,15 @@ parameters = {
     ##########################################################
     
     ### reporters
-    'reporters': ['Background_ignitions', 'Arson', 'Escaped_fire'],
+    'reporters': ['Nitrogen_fertiliser'],
     
     ### switch and parameters for bootstrap version of model
     'bootstrap': False,
     'numb_bootstrap': 20, #either int or 'max' for all available
-    'n_cores'  : 3,
+    'n_cores'  : 2,
     
     ### write model outputs at each timestep?
-    'write_annual': False,
+    'write_annual': True,
     'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results'  
         
     }

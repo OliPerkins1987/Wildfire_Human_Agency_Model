@@ -436,15 +436,22 @@ class WHAM(ap.Model):
     def calc_Nfer(self):
         
         Nfer_scores   = {}
+        AFT_Nuser     = [x for x in self.agents if x.Nfer_use != {}]
+        
+        for a in AFT_Nuser:
             
+            a.Nfer_vals = (np.array(a.Nfer_vals).reshape(self.ylen, self.xlen) * 
+                                self.AFT_scores[type(a).__name__])
+                        
         for l in ['Cropland', 'Pasture']:
             
             ### get predictions
-            Nfer_scores[l] = dict(zip([type(x).__name__ for x in self.agents if x.ls == l], 
-                                     [x.Nfer_vals for x in self.agents if x.ls == l]))
+            Nfer_scores[l] = dict(zip([type(x).__name__ for x in AFT_Nuser if x.ls == l], 
+                                     [x.Nfer_vals for x in AFT_Nuser if x.ls == l]))
+                        
             
             ### calculate total by land system by cell
-            Nfer_scores[l] = np.add.reduce([x for x in Nfer_scores[l].values()])
+            Nfer_scores[l] = np.nansum([x for x in Nfer_scores[l].values()], axis = 0)
         
         ### add linear correction?
         self.Nitrogen_fertiliser = Nfer_scores
