@@ -9,14 +9,13 @@ import netCDF4 as nc
 import numpy as np
 
 
-
-fn = r'C:\Users\Oli\Documents\PhD\wham\Model Calibration\Total_wdefor.nc'
+fn = r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results/tmp/SOSH.nc'
 ds = nc.Dataset(fn, 'w', format='NETCDF4')
 
 
-time = ds.createDimension('time', 25)
-lat = ds.createDimension('lat', 144)
-lon = ds.createDimension('lon', 192)
+time = ds.createDimension('time', 26)
+lat = ds.createDimension('lat', 180/0.25)
+lon = ds.createDimension('lon', 360/0.25)
 
 
 times = ds.createVariable('time', 'f4', ('time',))
@@ -26,10 +25,10 @@ value = ds.createVariable('value', 'f4', ('time', 'lat', 'lon',))
 value.units = 'ba_fraction'
 
 
-lats[:] = np.arange(-90, 90, 1.25)
-lons[:] = np.arange(-180, 180, 1.875)
+lats[:] = np.arange(-90, 90, 0.25)
+lons[:] = np.arange(-180, 180, 0.25)
 
-value[:, :, :] = np.stack([x['Total'] for x in mod.results['Managed_fire']])
+value[:, :, :] = np.array([x.reshape(720, 1440) for x in SOSH_fire])
 
 ds.close()
 

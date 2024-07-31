@@ -104,7 +104,26 @@ class Int_LF_r(AFT):
                                  'ba': {'constant': 0.025}, 
                                  'size': 11.5}}
                
+    def fire_constraints(self):
         
+        ### rangeland stocking constraint
+        
+        if self.model.p.Constraint_pars['Rangeland_stocking_contstraint'] == True:
+        
+            occupancy = [x.Dist_vals for x in self.model.agents if x.ls == self.ls] 
+            occupancy = np.nansum(occupancy[0:1], axis = 0)
+            
+            ### should stocking rates be able to increase fire?
+            if self.model.p.Constraint_pars['R_s_c_Positive'] == False:          
+                
+                occupancy = [x if x < 1 else 1.0 for x in occupancy.reshape(self.model.p.xlen*self.model.p.ylen)]
+                
+            self.Fire_vals['pasture'] = self.Fire_vals['pasture'] * occupancy
+        
+        else:
+            
+            pass
+
 
 class Abandoned_LF_r(AFT):
     

@@ -33,7 +33,6 @@ class fuel_ct(ap.Agent):
         ### Calculate soil constraint
         Soil = self.model.p.Maps['Baresoil'].data[self.model.timestep, :, :]
         Soil = 1 - (Soil * (Soil>= self.model.p.Constraint_pars['Soil_threshold']))
-        Soil = Soil.reshape(self.model.ylen * self.model.xlen)
         
         ### multiply arson by soil constraint
         self.model.Observers['arson'][0].Fire_vals = self.model.Observers['arson'][0].Fire_vals*Soil
@@ -55,7 +54,7 @@ class dominant_afr_ct(ap.Agent):
     
             afr_vals = []
     
-            for ls in ['Nonex']:
+            for ls in ['Cropland', 'Pasture', 'Rangeland', 'Forestry', 'Nonex']:
         
                 if afr in self.model.LFS[ls].keys():
                 
@@ -64,9 +63,8 @@ class dominant_afr_ct(ap.Agent):
             afr_res[afr] = np.nansum(afr_vals, axis = 0)
             
             ### divide by nonex fraction
-            afr_res[afr] = afr_res[afr] / self.model.X_axis['Nonex']
-        
-        
+            #afr_res[afr] = afr_res[afr] / self.model.X_axis['Nonex']
+                
         ### Zero intensive cases below dominance threshold
         afr_res['Intense'] = np.select([afr_res['Intense'] >= self.model.p.Constraint_pars['Dominant_afr_threshold']], 
                             [afr_res['Intense']], default = 0)

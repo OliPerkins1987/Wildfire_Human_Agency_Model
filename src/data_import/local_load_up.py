@@ -141,7 +141,7 @@ if Maps == True:
         for name in files:
             Map_list.append(os.path.join(path, name))
 
-    Map_files       = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
+    Map_files  = [s.replace('\\', '/') for s in Map_list if ".nc" in s]
     Mask       = [s.replace('\\', '/') for s in Map_list if "Mask.csv" in s]
     Area       = [s.replace('\\', '/') for s in Map_list if "Area.csv" in s]
 
