@@ -21,6 +21,8 @@ from Core_functionality.Trees.Transfer_tree import define_tree_links, update_par
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
 
 #########################################################################
 
@@ -28,9 +30,9 @@ from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_
 
 #########################################################################
 
-os.chdir(r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/tests/test_data/R_outputs')
+os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 Forestry_test   = pd.read_csv('Forestry_dist.csv')
-Unoccupied_test = pd.read_csv('Unoccupied_dist.csv')
+Unoccupied_test = pd.read_csv('Unoccupied.csv')
 
 ##########################################################################
 

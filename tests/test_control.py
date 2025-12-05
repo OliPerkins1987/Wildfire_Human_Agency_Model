@@ -44,7 +44,11 @@ def test_control_predict(mod_pars):
     
     errors = []
     
-    mod                  = WHAM(mod_pars)
+    mod                          = WHAM(mod_pars)
+    mod.p.AFT_fire               = True
+    mod.p.apply_fire_constraints = True
+    mod.p.escaped_fire           = True
+    
     mod.setup()
     mod.p.bootstrap      = False
     mod.timestep         = 0
@@ -106,31 +110,30 @@ def test_control_predict(mod_pars):
     ### test escaped rate calculation
     
     ########################################
-    
-    self = mod
-    self.calc_escaped_fires()
+
+    mod.calc_escaped_fires()
     
     Escaped_fire = {}
-    base = self.model.p.AFT_pars['Fire_escape']['Overall']
+    base = mod.p.AFT_pars['Fire_escape']['Overall']
     
     #############################################################
     ### conduct manually for hunter gatherer
     #############################################################
     
     base_rate = 0.0110
-    Escaped_fire['hg'] = self.Managed_igs['hg'] * base_rate  
+    Escaped_fire['hg'] = mod.Managed_igs['hg'] * base_rate  
     
-    control_impact = self.model.p.AFT_pars['Fire_escape']['Overall']
+    control_impact =  mod.p.AFT_pars['Fire_escape']['Overall']
     
     controlled = (1-out_probs) * 0.308000 
     no_control = (out_probs) * 3.246753
     
     Escaped_hg = Escaped_fire['hg'] * np.array(
-        controlled+no_control).reshape(self.ylen, self.xlen)
+        controlled+no_control).reshape(mod.ylen, mod.xlen)
     
     ### final test
     
-    if not(np.nanmax(abs(self.Escaped_fire['hg'] - Escaped_hg)) == pytest.approx(0, abs = 0.0001)):
+    if not(np.nanmax(abs(mod.Escaped_fire['hg'] - Escaped_hg)) == pytest.approx(0, abs = 0.0001)):
             
             errors.append("Escaped fires calculated incorrectly") 
     

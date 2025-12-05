@@ -192,6 +192,7 @@ class WHAM(ap.Model):
         ### Gather competitiveness scores from AFTs
         land_systems = [y for y in pd.Series([x for x in self.agents.ls]).unique()]
         aft_scores   = {}
+        aft_habitats = {}
     
         if type(land_systems) == str:
             land_systems = [land_systems] #catch the case where only 1 ls type
@@ -201,6 +202,13 @@ class WHAM(ap.Model):
             ### get predictions
             aft_scores[l] = dict(zip([type(x).__name__ for x in self.agents if x.ls == l], 
                                      [x.Dist_vals for x in self.agents if x.ls == l]))
+            
+            ### get aft habitats
+            aft_habitats[l] = dict(zip([type(x).__name__ for x in self.agents if x.ls == l], 
+                                     [x.Habitat_vals for x in self.agents if x.ls == l]))
+
+            ### apply giving in habitats
+            aft_scores[l] = self.giving_in(aft_scores[l], aft_habitats[l])
 
             ### calculate total by land system by cell
             tot_y         = np.add.reduce([x for x in aft_scores[l].values()])
@@ -214,8 +222,32 @@ class WHAM(ap.Model):
         
         self.calc_AFR(aft_scores)
        
-       
-       
+        
+    def giving_in(self, aft_dict, habitat_dict):
+        
+        ''' removes AFT distribution outside of boolean habitat
+        conditional on there being another AFT to occupy the space'''
+        
+        habitat_dist = {}
+        
+        for z in [x for x in aft_dict.keys()]:
+        
+            habitat_dist[z] = [aft_dict[z] * habitat_dict[z]]
+        
+        habitat_sum = np.nansum(np.array([x for x in habitat_dist.values()]), axis = 0)
+                
+        #######################################
+        ### apply habitat
+        #######################################
+        
+        for z in [x for x in aft_dict.keys()]:
+            
+            aft_dict[z] = np.select([habitat_sum > 0], habitat_dist[z], default = aft_dict[z])
+            
+        return(aft_dict)
+        
+            
+        
     def calc_AFR(self, aft_dist_by_ls):
         
         '''' voting mechanism by AFT to define AFR coverage '''

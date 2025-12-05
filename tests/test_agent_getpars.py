@@ -11,13 +11,6 @@ import numpy as np
 import agentpy as ap
 import os
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
-
-#### Load model
 from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
@@ -38,6 +31,17 @@ from Core_functionality.top_down_processes.deforestation import deforestation
 from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_fast, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
+
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
+
+###############################################################################################
+### load data
+###############################################################################################
+
+from data_import.local_load_up import load_local_data
+Core_pars, Map_data = load_local_data()
 
 
 #########################################################################
@@ -135,7 +139,7 @@ parameters = {
     'reporters': ['AFT_scores', 'X_axis'],
     
     ### switch and parameters for bootstrap version of model
-    'bootstrap': True,
+    'bootstrap': False,
     'numb_bootstrap': 3, #either int or 'max' for all available
     'n_cores'  : 3,
         
@@ -172,7 +176,7 @@ def test_Conservationist_pars_load(mod_pars):
     
     errors = []
     
-    mod        = WHAM(mod_pars)
+    mod        = WHAM(parameters)
     mod.agents = ap.AgentList(mod, 
                        [y[0] for y in [ap.AgentList(mod, 1, x) for x in mod.p.AFTs]])
     
@@ -190,7 +194,7 @@ def test_Intense_arable_pars_load(mod_pars):
     
     errors = []
     
-    mod        = WHAM(mod_pars)
+    mod        = WHAM(parameters)
     mod.agents = ap.AgentList(mod, 
                        [y[0] for y in [ap.AgentList(mod, 1, x) for x in mod.p.AFTs]])
     mod.agents.setup()

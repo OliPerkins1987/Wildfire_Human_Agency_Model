@@ -15,7 +15,7 @@ from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
 from Core_functionality.AFTs.arable_afts import Swidden, SOSH, MOSH, Intense_arable
-from Core_functionality.AFTs.livestock_afts import Pastoralist_r,Pastoralist_p, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p
+from Core_functionality.AFTs.livestock_afts import Pastoralist_r,Pastoralist_p, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r
 from Core_functionality.AFTs.forestry_afts  import Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry  
 from Core_functionality.AFTs.nonex_afts  import Hunter_gatherer_n, Recreationalist, SLM, Conservationist
 
@@ -40,12 +40,8 @@ from copy import deepcopy
 ### load data
 ###############################################################################################
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
-    
+from data_import.local_load_up import load_local_data
+Core_pars, Map_data = load_local_data()
 
 ###############################################################################################
 ### make parameters dictionary for WHAM! object
@@ -55,7 +51,7 @@ exec(open("local_load_up.py").read())
 def mod_pars():
     
     all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
-            Pastoralist_r, Pastoralist_p, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
+            Pastoralist_r, Pastoralist_p, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p, Abandoned_LF_r,
             Hunter_gatherer_f, Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 
              Hunter_gatherer_n, Recreationalist, SLM, Conservationist]
 
@@ -131,6 +127,8 @@ def mod_pars():
     #'Fire_seasonality': Seasonality, ##defined in data load 
     'Seasonality'  : False, 
     'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
+    'apply_fire_constraints' : False,
+    
     ### reporters
     'reporters': ['Managed_fire', 'Background_ignitions', 'Arson', 'Escaped_fire'],
     

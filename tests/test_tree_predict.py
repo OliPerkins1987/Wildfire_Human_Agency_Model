@@ -87,7 +87,7 @@ def test_tree_predict(mod_pars):
     
     if not(np.nanmax(aft.Dist_vals - Cons_pred.reshape(mod.xlen*mod.ylen)) == pytest.approx(0, abs = 0.0001)):
             
-            errors.append("AFR calculated incorrectly")
+            errors.append("Tree prediction error: conservationist")
             
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     
@@ -100,6 +100,8 @@ def test_tree_predict(mod_pars):
     
     aft = mod.agents[16]
     HG_frame = aft.Dist_frame
+    
+    ### Read this in as a .csv
     
     HG_pred = np.select([(mod_pars['Maps']['Pop'][0, :, ].mask) == True, 
                            mod_pars['Maps']['Market.Inf'][0, :, ].data >= float(HG_frame['splits.cutleft'][0][1:]), 
@@ -133,7 +135,7 @@ def test_tree_predict(mod_pars):
     
     if not(np.nanmean(aft.Dist_vals) - np.nanmean(HG_pred) == pytest.approx(0, abs = 0.01)):
             
-            errors.append("AFR calculated incorrectly")
+            errors.append("Tree prediction error: HG")
             
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
     

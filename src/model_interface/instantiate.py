@@ -5,7 +5,6 @@ Created on Wed Jun 30 10:38:02 2021
 @author: Oli
 """
 
-#### Load model
 from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
@@ -27,16 +26,29 @@ from Core_functionality.Trees.Transfer_tree import define_tree_links, update_par
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
-### Load data
+############################################################################
+# Load data
+############################################################################
+
 import os
-from dask.distributed import Client
 from copy import deepcopy
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-os.chdir((wd[0:-16] + '/data_import'))
+# Try to import the loader from the package location; if not available, fall back to proposed_edits cleaned loader
+try:
+    # Preferred: package provides a `load_local_data` function
+    from data_import.local_load_up import load_local_data
+    Core_pars, Map_data = load_local_data()
 
-exec(open("local_load_up.py").read())
+except Exception:
+    # Last resort: preserve original behaviour by attempting the old exec pattern
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    wd = os.getcwd().replace('\\', '/')
+    os.chdir((wd[0:-16] + '/data_import'))
+
+    exec(open("local_load_up.py").read())
+            
+finally:
+    RuntimeError("Data load failed")
 
 
 #################################################
@@ -51,101 +63,44 @@ all_afts = [Swidden, SOSH, MOSH, Intense_arable,
              Hunter_gatherer_n, Recreationalist, SLM, Conservationist]
 
 parameters = {
-    
-    #################
-    
-    ### meta pars
-    
-    #################
-    
-    ### Spatio-temporal limits
     'xlen': 1440, 
     'ylen': 720,
     'start_run': 0,
     'end_run' : 25,
-    
-    ### Agents
     'AFTs': all_afts,
-    
     'LS'  : [Cropland, Pasture, Rangeland, Forestry, Urban, Unoccupied, Nonex],
-    
-    ### AFT distribution parameter
     'theta'   : 0.1,
-    
     'Observers': {'background_rate': background_rate, 
                   'arson': arson, 
-                  #'deforestation': deforestation,
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
                   'fire_control_measures': fire_control_measures},    
-       
-    ### data
-    'AFT_pars': Core_pars, ##defined in data load
-    'Maps'    : Map_data,  ##defined in data load
-    
-    ### which AFT aspects are being modelled?
+    'AFT_pars': Core_pars,
+    'Maps'    : Map_data,
     'AFT_fire': True,
-    'AFT_Nfer': True,
-    'Policy': True, ## policy
-    
-    ################################
-    
-    ### Nitrogen pars
-    
-    ################################
-    
-    ################################
-    
-    ### Fire pars
-    
-    ################################
-    
-    ### Fire parameters
+    'AFT_Nfer': False,
+    'Policy': True,
     'Fire_types': {'cfp': 'Vegetation', 'crb': 'Arable', 'hg': 'Vegetation', 
                    'pasture': 'Pasture', 'pyrome': 'Vegetation'}, 
-
-    ### constraints
     'Constraint_pars': {'Soil_threshold': 0.1325, 
                         'Dominant_afr_threshold': 0.5, 
                         'Rangeland_stocking_contstraint': True, 
                         'R_s_c_Positive' : False, 
                         'HG_Market_constraint': 7800, 
                         'Arson_threshold': 0.5},
-    
-    ### switch for constraints
     'apply_fire_constraints': True,
-    
-    ### Deforestation fire fraction
     'Defor_pars': {'Pre'    : 1, 
                    'Trans'  : 0.84, 
                    'Intense': 0.31},
-    
-    
-    ### fire meta pars
-    #'Fire_seasonality': Seasonality, ##defined in data load 
     'Seasonality'  : False, 
-    'escaped_fire' : False, ##if True add 'Escaped_fire' to reporters
-    
-    
-    ##########################################################
-    
-    ### Model output & computational pars
-    
-    ##########################################################
-    
-    ### reporters
-    'reporters': ['Nitrogen_fertiliser', 'Managed_fire', 'AFT_scores'],
-    
-    ### switch and parameters for bootstrap version of model
+    'escaped_fire' : False, 
+    'reporters': ['Managed_fire', 'AFT_scores'],
     'bootstrap': True,
-    'numb_bootstrap': 20, #either int or 'max' for all available
+    'numb_bootstrap': 20,
     'n_cores'  : 2,
-    
-    ### write model outputs at each timestep?
     'write_annual': True,
-    'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results/boot'  
-        
-    }
+    'write_fp': r'C:/Users/Oli/Documents/PIES/WHAMv2/mod/initial_results'  
+}
 
 
 #####################################################
@@ -155,14 +110,7 @@ parameters = {
 #####################################################
 
 if __name__ == "__main__":
-
-    ### instantiate
     mod = WHAM(parameters)
-
-    ### setup
     mod.setup()
-
-    ### go
     mod.go()
-
 

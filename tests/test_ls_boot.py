@@ -143,7 +143,7 @@ def test_ls_prediction(mod_pars):
     
     for i in range(len(results)):
         
-        if not pd.Series(results[i]).round(6).isin(x['df'][i]['yprob.TRUE'].round(6).append(pd.Series(0))).all():
+        if not pd.Series(results[i]).round(6).isin(pd.concat([x['df'][i]['yprob.TRUE'].round(6), pd.Series(0)])).all():
             
             errors.append('boostrapped prediction failure')
             

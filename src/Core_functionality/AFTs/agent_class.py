@@ -174,6 +174,10 @@ class AFT(ap.Agent):
             
             ### stash values
             self.Habitat_vals = tmp
+            
+        elif self.Habitat == 'None':
+            
+            self.Habitat_vals = np.ones(self.model.xlen * self.model.ylen)
     
     
     
@@ -226,14 +230,7 @@ class AFT(ap.Agent):
             self.Dist_vals = np.nanmean(self.Dist_vals, axis = 0)  
             self.Dist_vals = np.select([self.Dist_vals > self.model.p.theta], [self.Dist_vals], default = 0)
         
-            #######################################
-            ### apply habitat
-            #######################################
-            
-        if self.Habitat != 'None':
-                
-            self.Dist_vals = self.Dist_vals * self.Habitat_vals
-        
+           
     
     #######################################################################
     

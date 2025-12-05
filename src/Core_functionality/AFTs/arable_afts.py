@@ -117,6 +117,6 @@ class Intense_arable(AFT):
         
         self.Defor_size = 81.95727
         
-        self.Nfer_use = {'tree': 'tree_mod'
+        self.Nfer_use = {'tree': 'tree_mod',
                          'lm'  : 'lm'}
 

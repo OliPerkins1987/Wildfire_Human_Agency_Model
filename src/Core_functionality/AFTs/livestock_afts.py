@@ -64,7 +64,7 @@ class Ext_LF_r(AFT):
                         'Constraint_type': 'lt'}  
         
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
-                                 'ba': 'tree_mod', 
+                                 'ba': 'lin_mod', 
                                  'size': 14.03571}}
         
                 
@@ -166,7 +166,7 @@ class Ext_LF_p(AFT):
         self.ls  = 'Pasture'
               
         self.Fire_use = {'pasture': {'bool': 'tree_mod', 
-                                 'ba': 'tree_mod', 
+                                 'ba': 'lin_mod', 
                                  'size': 14.03571}}
         
         self.Defor_size = 44.83549

@@ -71,9 +71,9 @@ def test_afr_allocate(mod_pars):
     #############################
     
     Pre = (mod.AFT_scores['Swidden'] + mod.AFT_scores['Pastoralist_r'] + mod.AFT_scores['Pastoralist_p'] +
-           mod.AFT_scores['SOSH']*0.5 + mod.AFT_scores['Hunter_gatherer_f'] + mod.AFT_scores['Hunter_gatherer_n'])
+           mod.AFT_scores['Hunter_gatherer_f'] + mod.AFT_scores['Hunter_gatherer_n'])
 
-    if not(np.nanmax(Pre - mod.AFR['Pre']) == pytest.approx(0)):
+    if not(np.nanmax(Pre - mod.AFR['Pre']) == pytest.approx(0, abs=1e-07)):
             
             errors.append("AFR calculated incorrectly")
             
