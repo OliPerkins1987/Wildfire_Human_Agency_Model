@@ -32,11 +32,8 @@ import os
 from dask.distributed import Client
 from copy import deepcopy
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-os.chdir((wd[0:-16] + '/data_import'))
-
-exec(open("local_load_up.py").read())
+from data_import.local_load_up_func import load_local_data
+Core_pars, Map_data, Seasonality = load_local_data()
 
 
 #################################################

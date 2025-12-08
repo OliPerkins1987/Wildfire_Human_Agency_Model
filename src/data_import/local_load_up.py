@@ -6,12 +6,15 @@ Created on Sun Jan 17 16:16:40 2021
 """
 
 
+import os
+from copy import deepcopy
+import re
+
 import pandas as pd
 import numpy as np
 import netCDF4 as nc
-import os
-import re
-from copy import deepcopy
+
+from data_import.load_funs import mk_par_dict
 
 
 ##########################################################################
