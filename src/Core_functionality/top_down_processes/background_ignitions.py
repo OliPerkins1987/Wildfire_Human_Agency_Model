@@ -11,7 +11,7 @@ import numpy as np
 from copy import deepcopy
 
 from Core_functionality.AFTs.agent_class import AFT
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
 
@@ -72,10 +72,6 @@ class background_rate(AFT):
             
                     self.Fire_dat[x][b].append(temp_val)
 
-                ### combine predictor numpy arrays to a single pandas       
-                self.Fire_dat[x][b]  = pd.DataFrame.from_dict(dict(zip(self.Fire_vars[x][b], 
-                           [z.reshape(self.model.p.xlen*self.model.p.ylen).data for z in self.Fire_dat[x][b]])))
-        
         
     ####################################
                 
@@ -88,20 +84,28 @@ class background_rate(AFT):
                 ##########
                 
                 if self.Fire_use[x][b]['type'] == 'tree_mod':
-      
+                    
+                    ### gather into numpy
+                    self.Fire_dat[x][b]  = np.array([x.reshape(
+                        self.model.p.xlen*self.model.p.ylen).data for x in self.Fire_dat[x][b]]).transpose() 
         
                     Fire_struct = define_tree_links(self.Fire_use[x][b]['pars'])
 
-                    self.Fire_vals[x][b] = predict_from_tree_fast(dat =  self.Fire_dat[x][b], 
+                    self.Fire_vals[x][b] = predict_from_tree_numpy(dat =  self.Fire_dat[x][b], 
                               tree = self.Fire_use[x][b]['pars'], struct = Fire_struct, 
-                               prob = probs_key[b], skip_val = -3.3999999521443642e+38, na_return = 0)
+                              split_vars = temp_key,
+                               prob = probs_key[b], skip_val = -1e+10, na_return = 0)
     
                 #############################################
                 ### Regression aginst residuals of DT
                 #############################################
                 
                 elif self.Fire_use[x][b]['type'] == 'lin_mod':
-    
+                    
+                    ### combine predictor numpy arrays to a single pandas       
+                    self.Fire_dat[x][b]  = pd.DataFrame.from_dict(dict(zip(self.Fire_vars[x][b], 
+                               [z.reshape(self.model.p.xlen*self.model.p.ylen).data for z in self.Fire_dat[x][b]])))
+                    
                     self.Fire_vals[x][b] = deepcopy(self.Fire_dat[x][b])
                     
                     ### Mulitply data by regression coefs

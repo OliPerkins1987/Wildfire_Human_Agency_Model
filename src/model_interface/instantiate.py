@@ -27,13 +27,19 @@ from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_fr
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
-### Load data
-import os
 from dask.distributed import Client
+
+#####################################################################
+
+### Load data
+
+#####################################################################
+
+import os
 from copy import deepcopy
 
 from data_import.local_load_up_func import load_local_data
-Core_pars, Map_data, Seasonality = load_local_data()
+Core_pars, Map_data, Seasonality = load_local_data(Nboot = 'max')
 
 
 #################################################
@@ -102,11 +108,11 @@ parameters = {
     'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],
     
     ### house keeping
-    'bootstrap': True,
+    'bootstrap': False,
     'n_cores'  : 3,
         
-    'write_annual': False,
-    'write_fp': r'C:/Users/'  
+    'write_annual': True,
+    'write_fp': r'C:/Users/olive/Documents/WHAM_Postdoc/WHAM/v1/OliPerkins1987-Wildfire_Human_Agency_Model-4854cfe/results/'  
         
     }
 

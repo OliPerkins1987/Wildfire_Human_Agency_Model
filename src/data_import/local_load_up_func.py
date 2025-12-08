@@ -16,7 +16,8 @@ import netCDF4 as nc
 from data_import.load_funs import mk_par_dict
 
 
-def load_local_data(root=None, map_folder=None, Dist=True, Maps=True, Fire=True, Monthly_fire = True):
+def load_local_data(root=None, map_folder=None, Dist=True, Maps=True, Fire=True, Monthly_fire = True, 
+                    Nboot = 'max'):
     """Load all local parameter and map data and return (Core_pars, Map_data).
 
     Args:
@@ -78,7 +79,16 @@ def load_local_data(root=None, map_folder=None, Dist=True, Maps=True, Fire=True,
         Core_pars['Dist_pars']['Probs'] = mk_par_dict(
             dat=AFT_dist, filt='Probs', kind='multiple', name_key=[Rlen, 19, 12]
         )
-
+    
+    if Nboot != 'max':
+        
+        Core_pars['Dist_pars']['Thresholds'] = dict(zip(Core_pars['Dist_pars']['Thresholds'].keys(), 
+                                                [x[0:Nboot] for y in Core_pars['Dist_pars']['Thresholds'].values() for x in y]))
+    
+        Core_pars['Dist_pars']['Probs}'] = dict(zip(Core_pars['Dist_pars']['Probs'].keys(), 
+                                                [x[0:Nboot] for y in Core_pars['Dist_pars']['Probs'].values() for x in y]))
+    
+    
     # ----- Fire use parameters -----
     if Fire:
         Fire_pars = [s.replace('\\', '/') for s in file_list if 'Fire use' in s]

@@ -11,7 +11,7 @@ import pandas as pd
 from copy import deepcopy
 
 from Core_functionality.AFTs.agent_class import AFT
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
 
@@ -40,7 +40,7 @@ class fire_control_measures(AFT):
                
             afr_res[afr] = np.sum(afr_vals, axis = 0).reshape(self.model.p.xlen*self.model.p.ylen)
     
-        self.Control_dat = pd.DataFrame(afr_res)
+        self.Control_dat = np.array([x for x in afr_res.values()]).transpose()
             
     
     def control(self):
@@ -53,11 +53,12 @@ class fire_control_measures(AFT):
         
             Control_struct       = define_tree_links(self.control_pars[f])
 
-            self.Control_vals[f] = predict_from_tree_fast(dat =  self.Control_dat, 
-                                    tree = self.control_pars[f], struct = Control_struct, 
-                                     prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+            self.Control_vals[f] = predict_from_tree_numpy(dat =  self.Control_dat, 
+                                    tree = self.control_pars[f], split_vars = ['Pre', 'Trans', 'Intense', 'Post'], 
+                                     struct = Control_struct, prob = 'yprob.TRUE', 
+                                     skip_val = -1e+10, na_return = 0)
         
-            self.Control_dat     = self.Control_dat.iloc[:, 0:(n_col+1)]
+            self.Control_dat     = self.Control_dat[:, 0:(n_col+1)]
         
        
         
