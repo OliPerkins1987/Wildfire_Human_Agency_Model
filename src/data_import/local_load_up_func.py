@@ -83,10 +83,10 @@ def load_local_data(root=None, map_folder=None, Dist=True, Maps=True, Fire=True,
     if Nboot != 'max':
         
         Core_pars['Dist_pars']['Thresholds'] = dict(zip(Core_pars['Dist_pars']['Thresholds'].keys(), 
-                                                [x[0:Nboot] for y in Core_pars['Dist_pars']['Thresholds'].values() for x in y]))
+                                                [[x[0:Nboot] for x in y] for y in Core_pars['Dist_pars']['Thresholds'].values()]))
     
         Core_pars['Dist_pars']['Probs}'] = dict(zip(Core_pars['Dist_pars']['Probs'].keys(), 
-                                                [x[0:Nboot] for y in Core_pars['Dist_pars']['Probs'].values() for x in y]))
+                                                [[x[0:Nboot] for x in y] for y in Core_pars['Dist_pars']['Probs'].values()]))
     
     
     # ----- Fire use parameters -----
@@ -188,6 +188,6 @@ def load_local_data(root=None, map_folder=None, Dist=True, Maps=True, Fire=True,
 
 if __name__ == '__main__':
     # when run as a script, load with defaults and display summary
-    Core_pars, Map_data = load_local_data()
+    Core_pars, Map_data, Seasonality = load_local_data()
     print('Loaded Core_pars keys:', list(Core_pars.keys()))
     print('Loaded Map_data keys:', list(Map_data.keys()))
