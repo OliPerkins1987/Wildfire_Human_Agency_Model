@@ -11,7 +11,7 @@ import pandas as pd
 from copy import deepcopy
 
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 
 
@@ -77,7 +77,7 @@ def make_boot_frame_AFT(a, par_set = 'none'):
 ########################################## 
 
 
-def parallel_predict(x, c, p):
+def parallel_predict(x, c, p, v):
     
     '''run a parallel prediction'''
     
@@ -85,8 +85,8 @@ def parallel_predict(x, c, p):
     
     for i in range(len(x['df'])):
         
-        future = c.submit(predict_from_tree_fast, dat = x['dd'], 
-                              tree = x['df'][i], struct = x['ds'], 
+        future = c.submit(predict_from_tree_numpy, dat = x['dd'], 
+                              tree = x['df'][i], struct = x['ds'], split_vars = v,
                                prob = p, skip_val = -3.3999999521443642e+38, na_return = 0)
         
         
@@ -107,7 +107,7 @@ def combine_bootstrap(a):
                               a.p.ylen, a.p.xlen)
             
     ### Combine
-    dv = pd.Series(np.nanmean(dv, axis = 0).reshape(a.model.p.ylen*a.model.p.xlen)).to_list()
+    dv = np.nanmean(dv, axis = 0).reshape(a.model.p.ylen*a.model.p.xlen)
     
     return(dv)
   

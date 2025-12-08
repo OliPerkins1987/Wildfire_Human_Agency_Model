@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
@@ -201,22 +201,20 @@ class AFT(ap.Agent):
             ### single set of parameter values
         if self.p.bootstrap != True:
         
-            ### gather correct numpy arrays 4 predictor variables
+            ### gather numpy arrays of predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
-
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                           [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
             ### do prediction
-            self.Dist_vals = predict_from_tree_fast(dat = self.Dist_dat, 
-                              tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
+            self.Dist_vals = predict_from_tree_numpy(dat = self.Dist_dat, 
+                              tree = self.Dist_frame, split_vars = self.Dist_vars, struct = self.Dist_struct,
+                               prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0)
                 
         
             ### apply theta zero-ing out constraint
-            self.Dist_vals = [0 if x <= self.p.theta else x for x in self.Dist_vals]
+            self.Dist_vals = np.select([self.Dist_vals > self.model.p.theta], [self.Dist_vals], default = 0)
             
             
             ### bootstrapped version
@@ -228,12 +226,11 @@ class AFT(ap.Agent):
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
             ### Parallel prediction
             boot_frame     = make_boot_frame(self)
-            self.Dist_vals = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE')
+            self.Dist_vals = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE', self.Dist_vars)
             self.Dist_vals = combine_bootstrap(self)
             
         
@@ -247,19 +244,18 @@ class AFT(ap.Agent):
         
             if self.sub_AFT['kind'] != 'Multiple':    
         
-                ### gather correct numpy arrays 4 predictor variables
-                self.AFT_dat   = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
-        
+                ### gather numpy arrays of predictor variables
+                self.AFT_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
+
                 ### combine numpy arrays to single pandas       
-                self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 
-                                  [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
+                self.AFT_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat]).transpose()
             
                 ### do prediction
-                self.AFT_vals  = predict_from_tree_fast(self.AFT_dat, tree = self.AFT_frame, 
-                                 struct = self.AFT_struct, prob = type(self).__name__, 
-                                  skip_val = -3.3999999521443642e+38, na_return = 0)
-
-            
+                self.AFT_vals = predict_from_tree_numpy(dat = self.AFT_dat, 
+                                  tree = self.AFT_frame, split_vars = self.AFT_vars, struct = self.AFT_struct,
+                                   prob = type(self).__name__, skip_val = -1e+10, na_return = 0)
+ 
+    
             elif self.sub_AFT['kind'] == 'Multiple':
                 
                 self.AFT_dat  = []
@@ -271,15 +267,13 @@ class AFT(ap.Agent):
                     self.AFT_dat.append([self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[i]])
         
                     ### combine numpy arrays to single pandas       
-                    self.AFT_dat[i]   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[i], 
-                                         [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat[i]])))
+                    self.AFT_dat[i]   = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat[i]]).transpose()
             
                     ### do prediction - these are added together in the WHAM AFT allocate routine
-                    self.AFT_vals.append(predict_from_tree_fast(self.AFT_dat[i], tree = self.AFT_frame[i], 
-                                 struct = self.AFT_struct[i], prob = type(self).__name__, 
-                                  skip_val = -3.3999999521443642e+38, na_return = 0))
-
-        
+                    self.AFT_vals.append(predict_from_tree_numpy(dat = self.AFT_dat[i], 
+                                      tree = self.AFT_frame[i], split_vars = self.AFT_vars[i], struct = self.AFT_struct[i],
+                                       prob = type(self).__name__, skip_val = -1e+10, na_return = 0))
+       
         
         ### bootstrapped parameters
         
@@ -291,12 +285,11 @@ class AFT(ap.Agent):
                 self.AFT_dat   = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars]
         
                 ### combine numpy arrays to single pandas       
-                self.AFT_dat   = pd.DataFrame.from_dict(dict(zip(self.AFT_vars, 
-                                  [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
+                self.AFT_dat   = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat]).transpose()
             
                 ### Parallel prediction, no theta threshold for sub-splits           
                 boot_frame      = make_boot_frame_AFT(self)
-                av              = parallel_predict(boot_frame, self.model.client, type(self).__name__)
+                av              = parallel_predict(boot_frame, self.model.client, type(self).__name__, self.AFT_vars)
                 self.AFT_vals   = pd.DataFrame(np.column_stack(av)).mean(axis = 1).to_list()
                        
         
@@ -313,12 +306,11 @@ class AFT(ap.Agent):
                     self.AFT_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.AFT_vars[z]]
         
                     ### combine numpy arrays to single pandas       
-                    self.AFT_dat  = pd.DataFrame.from_dict(dict(zip(self.AFT_vars[z], 
-                                         [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat])))
+                    self.AFT_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.AFT_dat]).transpose()
                     
                     ### do parallel prediction
                     boot_frame      = make_boot_frame_AFT(self, par_set = z)
-                    av              = parallel_predict(boot_frame, self.model.client, type(self).__name__)
+                    av              = parallel_predict(boot_frame, self.model.client, type(self).__name__, self.AFT_vars[z])
                     self.AFT_vals[z]= pd.DataFrame(np.column_stack(av)).mean(axis = 1).to_list()
                     
         else:
@@ -377,37 +369,41 @@ class AFT(ap.Agent):
                         temp_val = self.model.p.Maps[temp_key[y]][self.model.timestep, :, :] if len(self.model.p.Maps[temp_key[y]].shape) == 3 else self.model.p.Maps[temp_key[y]]
             
                         self.Fire_dat[x][b].append(temp_val)
+       
 
-                    ### combine predictor numpy arrays to a single pandas       
-                    self.Fire_dat[x][b]  = pd.DataFrame.from_dict(dict(zip(self.Fire_vars[x][b], 
-                           [z.reshape(self.model.p.xlen*self.model.p.ylen).data for z in self.Fire_dat[x][b]])))
-        
-        
     ####################################
                 
     ### Make predictions
                 
     ####################################
-                
+
                 ##########
                 ### Tree
                 ##########
                 
                     if self.Fire_use[x][b]['type'] == 'tree_mod':
-      
+        
+                        ### combine predictor numpy arrays to a single pandas       
+                        self.Fire_dat[x][b]  = np.array([x.reshape(
+                            self.model.p.xlen*self.model.p.ylen).data for x in self.Fire_dat[x][b]]).transpose()                
         
                         Fire_struct = define_tree_links(self.Fire_use[x][b]['pars'])
 
-                        self.Fire_vals[x][b] = predict_from_tree_fast(dat =  self.Fire_dat[x][b], 
-                              tree = self.Fire_use[x][b]['pars'], struct = Fire_struct, 
-                               prob = probs_key[b], skip_val = -3.3999999521443642e+38, na_return = 0)
+                        self.Fire_vals[x][b] = predict_from_tree_numpy(dat =  self.Fire_dat[x][b], 
+                          tree = self.Fire_use[x][b]['pars'], split_vars = self.Fire_vars[x][b], 
+                          struct = Fire_struct, prob = probs_key[b], 
+                          skip_val = -1e+10, na_return = 0)
+                               
     
                 ################
                 ### Regression
                 ################
                 
                     elif self.Fire_use[x][b]['type'] == 'lin_mod':
-    
+                        
+                        self.Fire_dat[x][b] = pd.DataFrame.from_dict(dict(zip(self.Fire_vars[x][b], 
+                                          [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Fire_dat[x][b]])))
+                        
                         self.Fire_vals[x][b] = deepcopy(self.Fire_dat[x][b])
                     
                         ### Mulitply data by regression coefs
@@ -423,7 +419,7 @@ class AFT(ap.Agent):
                                                   link = self.Fire_use[x][b]['pars']['link'][0]), 
                                                                      transformation = self.Fire_use[x][b]['pars']['transformation'][0])
                         ### control for negative values
-                        self.Fire_vals[x][b] = pd.Series([x if x > 0 else 0 for x in self.Fire_vals[x][b]])
+                        self.Fire_vals[x][b] = np.array([x if x > 0 else 0 for x in self.Fire_vals[x][b]])
                         
                 #################################
                 ### specified

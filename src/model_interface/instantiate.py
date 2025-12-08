@@ -23,7 +23,7 @@ from Core_functionality.top_down_processes.fire_constraints import fuel_ct, domi
 from Core_functionality.top_down_processes.fire_control_measures import fire_control_measures
 from Core_functionality.top_down_processes.deforestation import deforestation
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
 from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot_frame_AFT, parallel_predict, combine_bootstrap
 
@@ -67,8 +67,7 @@ parameters = {
                   'arson': arson, 
                   'fuel_constraint': fuel_ct, 
                   'dominant_afr_constraint': dominant_afr_ct, 
-                  'fire_control_measures': fire_control_measures, 
-                  'deforestation': deforestation},    
+                  'fire_control_measures': fire_control_measures},    
     
     'Fire_seasonality': Seasonality, ##defined in data load
     
@@ -106,7 +105,7 @@ parameters = {
     'reporters': ['Managed_fire', 'Escaped_fire', 'Arson'],
     
     ### house keeping
-    'bootstrap': False,
+    'bootstrap': True,
     'n_cores'  : 3,
         
     'write_annual': False,

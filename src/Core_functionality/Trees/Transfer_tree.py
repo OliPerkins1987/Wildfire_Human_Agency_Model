@@ -220,6 +220,70 @@ def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE',
     
     return(res)
         
+#######################################################################
 
+### Try to make predict faster using native numpy
+
+#######################################################################
+
+def predict_from_tree_numpy(dat, tree, struct, split_vars, prob = 'yprob.TRUE',
+                      na_return = 0, skip_val = -1e+10):
+
+    ### remove missing data    
+    missing        = np.any(np.less(dat, skip_val), axis=1)
+    dat_vals       = dat[missing == False, :]
+    
+    ### dictionary containing the splits and output probabilities for the tree
+    
+    split_vals     = []
+    
+    for i in range(tree.shape[0]):
+        
+        if tree.iloc[i, 1] != '<leaf>':
+            
+            col_key = np.where([x == tree.iloc[i, 1] for x in split_vars])[0][0]
+            split_vals.append(dat_vals[:, col_key] < float(tree.iloc[i, 5][1:]))
+                        
+        elif tree.iloc[i, 1] == '<leaf>':
+                   
+            split_vals.append(tree[prob].iloc[i])
+         
+            
+    ### dictionary containing destination of pixel
+    
+    miss_mask     = -9999999
+    
+    pixel_loc     = {'Next_node': split_vals[0], 
+                     'Destination': np.array([0] * len(split_vals[0])), 
+                     'Probability_out': np.array([miss_mask] * len(split_vals[0]))}
+    
+    ### make tree predictions
+    while len(np.where(np.less(pixel_loc['Probability_out'], 0))[0]) > 0:
+        
+        ### which split route are we heading down?
+        left = [struct[z]['Dest'][0] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == True and y == miss_mask]
+        right= [struct[z]['Dest'][1] for x, y, z in zip(pixel_loc['Next_node'], pixel_loc['Probability_out'], pixel_loc['Destination']) if x == False and y == miss_mask]
+        
+        ### where in the tree structure do data points now go
+        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == True, np.array(pixel_loc['Probability_out']) == miss_mask)] = left
+        pixel_loc['Destination'][np.logical_and(pixel_loc['Next_node'] == False, np.array(pixel_loc['Probability_out']) == miss_mask)] = right
+    
+        ### give output probs for terminal nodes
+        pixel_loc['Probability_out'] = [split_vals[x] if (type(
+            split_vals[x]) != np.ndarray) else miss_mask for x in pixel_loc['Destination']]
+        
+        ### set destination of non-terminal nodes
+        for i in range(len(pixel_loc['Next_node'])):
+            
+            if pixel_loc['Probability_out'][i] == miss_mask:
+                
+                pixel_loc['Next_node'][i] = split_vals[pixel_loc['Destination'][i]][i]
+                
+    ### compile and return    
+    res = dat[:, 0]
+    res[missing == True]  = na_return
+    res[missing == False] = pixel_loc['Probability_out']
+    
+    return(res)
 
 

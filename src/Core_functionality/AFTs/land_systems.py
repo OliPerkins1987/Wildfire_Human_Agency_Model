@@ -158,8 +158,7 @@ class Nonex(land_system):
 
 
                 ### combine numpy arrays to single pandas       
-                self.Dist_dat     = pd.DataFrame.from_dict(dict(zip(self.Dist_vars[k], 
-                                 [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+                self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
         
                 ### Parallel prediction
@@ -173,8 +172,8 @@ class Nonex(land_system):
                                     target = 'yprob.TRUE', source = 'TRUE.', boot_int = i)))
                 
                 ### Gather & Combine, NB: Theta not applied to ls classes
-                dv                = parallel_predict(boot_pred, self.model.client, 'yprob.TRUE')
-                self.Dist_vals[k] = pd.DataFrame(np.column_stack(dv)).mean(axis = 1).to_list()
+                dv                = parallel_predict(boot_pred, self.model.client, 'yprob.TRUE', self.Dist_vars[k])
+                self.Dist_vals[k] = np.nanmean(dv, axis = 0)
                 
                 
         

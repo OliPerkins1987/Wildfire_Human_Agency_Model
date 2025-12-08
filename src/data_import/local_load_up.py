@@ -22,8 +22,8 @@ from copy import deepcopy
 
 ### Set these to your local directories!
 
-root       = r'F:/PhD/Model files/'
-Map_folder = root + r'wham_dynamic/'
+root       = r'C:/Users/olive/Documents/WHAM_Postdoc/WHAM/v1/Data/'
+Map_folder = r'C:/Users/olive/Documents/WHAM_Postdoc/WHAM/v1/Drive/JULES/'
 
 Rlen       = len(root)
 Mlen       = len(Map_folder)

@@ -9,7 +9,7 @@ import agentpy as ap
 import pandas as pd
 import numpy as np
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_numpy
 from Core_functionality.Trees.parallel_predict import make_boot_frame, parallel_predict, combine_bootstrap
 
 from copy import deepcopy
@@ -91,38 +91,38 @@ class land_system(ap.Agent):
         '''
         
         if self.dist_method == 'Competition' and self.model.p.bootstrap == False:
-                
-        
-            ### gather correct numpy arrays 4 predictor variables
+             
+            
+            ### gather numpy arrays of predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
-
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
         
-            ### do prediction - NB zeroing out not applied for ls
-            self.Dist_vals = np.array(predict_from_tree_fast(dat = self.Dist_dat, 
-                              tree = self.Dist_frame, struct = self.Dist_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0))
+            ### do prediction
+            self.Dist_vals = predict_from_tree_numpy(dat = self.Dist_dat, 
+                              tree = self.Dist_frame, split_vars = self.Dist_vars, struct = self.Dist_struct,
+                               prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0)
+                
+        
+            ### apply theta zero-ing out constraint
+            self.Dist_vals = np.select([self.Dist_vals > self.model.p.theta], [self.Dist_vals], default = 0)
             
-
+            
         elif self.dist_method == 'Competition' and self.model.p.bootstrap == True:
             
             self.Dist_vals = []
             
-            ### gather correct numpy arrays 4 predictor variables
+            ### gather numpy arrays of predictor variables
             self.Dist_dat  = [self.model.p.Maps[x][self.model.timestep, :, :] if len(self.model.p.Maps[x].shape) == 3 else self.model.p.Maps[x] for x in self.Dist_vars]
 
-
             ### combine numpy arrays to single pandas       
-            self.Dist_dat  = pd.DataFrame.from_dict(dict(zip(self.Dist_vars, 
-                              [x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat])))
+            self.Dist_dat  = np.array([x.reshape(self.model.p.xlen*self.model.p.ylen).data for x in self.Dist_dat]).transpose()
             
             ### Parallel prediction - no zeroing out for ls
             boot_frame     = make_boot_frame(self)
-            dv             = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE')
-            self.Dist_vals = np.array(pd.DataFrame(np.column_stack(dv)).mean(axis = 1))
+            dv             = parallel_predict(boot_frame, self.model.client, 'yprob.TRUE', self.Dist_vars)
+            self.Dist_vals = np.nanmean(dv, axis = 0)
             
             
         elif self.dist_method == 'Prescribed':
