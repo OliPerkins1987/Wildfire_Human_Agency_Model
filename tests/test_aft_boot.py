@@ -119,7 +119,7 @@ def test_AFT_boot():
     ### which values do not equal the mode?
     gt_thresh_1 = len(pd.concat([pd.Series(np.arange(0, x)) if x >= 1 else pd.Series(0) for x in mod.agents[0].boot_AFT_pars[0]['Thresholds'][0][0]]).unique())-1
     
-    if not gt_thresh_1 == len(np.where(mod.agents[0].AFT_vals[0] != stats.mode(np.array(mod.agents[0].AFT_vals[0]))[0][0])[0]):
+    if not gt_thresh_1 == len(np.where(mod.agents[0].AFT_vals[0] != stats.mode(np.array(mod.agents[0].AFT_vals[0]))[0])[0]):
     
         errors.append("Bootstrapped prediction error")
     

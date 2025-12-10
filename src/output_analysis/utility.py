@@ -11,6 +11,12 @@ import matplotlib.pyplot as plt
 
 def get_model_output(model, kind):
 
+    """
+    Extract model output data organized by agent type. 
+    Converts agent data into a labeled DataFrame with one column per 
+    agent class for analysis and export.    
+    """
+
     if kind == 'AFT':    
 
         temp = np.column_stack([(x.reshape(27648))for x in model.AFT_scores.values()])
@@ -21,6 +27,13 @@ def get_model_output(model, kind):
 
 
 def get_afr_vals(afr_dict):
+    
+    """
+    Aggregate fire regime values across anthropogenic fire regimes. 
+    Sums distribution of anthropogenic fire regimes across land use systems 
+    (Pre, Trans, Intense, Post) and a returns dictionary.
+    """
+    
     
     afr_res = {}
     
@@ -40,7 +53,12 @@ def get_afr_vals(afr_dict):
 
 
 def get_fire_maps(model):
-        
+    
+    """
+    Create a DataFrame of fire values for each agent type across 
+    the spatial grid. Returns pixel fraction burned by AFT.
+    """
+    
     fout = {}
         
     for a in model.agents:
@@ -53,6 +71,13 @@ def get_fire_maps(model):
         
             
 def get_escape_fire(model):
+    
+    """
+    Extract escaped fire events by year and reshape to spatial grids. 
+    Returns list of spatial arrays where each array represents total 
+    escaped fire area for one year across the landscape.
+    """
+    
     
     res = []
     

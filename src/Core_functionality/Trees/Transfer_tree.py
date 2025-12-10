@@ -222,7 +222,7 @@ def predict_from_tree_fast(dat, tree, struct, prob = 'yprob.TRUE',
         
 #######################################################################
 
-### Try to make predict faster using native numpy
+### Currently implemented version using numpy
 
 #######################################################################
 
