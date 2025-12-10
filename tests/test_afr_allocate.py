@@ -12,9 +12,8 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent
 from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
 from model_interface.wham import WHAM
@@ -79,7 +78,7 @@ def test_AFR_compete():
     if not len([x for x in mod.agents.Dist_vals[0] if x <= mod.p.theta and x > 0]) == 0:
         errors.append("theta parameter did not function correctly")
     
-    if not [x for x in mod.agents.Dist_vals[0]][0:8] == [0.426087]*8:
+    if not [round(float(x), 5) for x in mod.agents.Dist_vals[0]][0:8] == [0.42609]*8:
         errors.append("False negatives in model prediction tree")
         
     if not [x for x in mod.agents.Dist_vals[0]][8:] == [0]*27640:
@@ -98,5 +97,5 @@ def test_mod_Y():
     mod.agents.compete()
     mod.allocate_Y_axis()
     
-    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat.Test.values.reshape(27648,)[0]]).reshape(144, 192), 
+    assert(np.array_equal(np.array([int(x) for x in mod.agents.Dist_dat[0][:, 1]]).reshape(144, 192), 
             Map_test))

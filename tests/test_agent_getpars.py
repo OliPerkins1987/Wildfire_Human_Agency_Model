@@ -13,15 +13,7 @@ import os
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
 
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
-
-os.chdir(wd)
-exec(open("setup_full.py").read())
-
-
-
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
 from model_interface.wham import WHAM
@@ -32,6 +24,9 @@ from model_interface.wham import WHAM
 ### Load test data
 
 #########################################################################
+
+from data_import.local_load_up_func import load_local_data
+Core_pars, Map_data, Seasonality = load_local_data()
 
 os.chdir(str(wd + '/test_data/AFTs').replace('\\', '/'))
 Trans_frame   = pd.read_csv('Trans_pars.csv')

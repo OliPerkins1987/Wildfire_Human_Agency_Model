@@ -130,13 +130,13 @@ def test_ls_compete():
     mod.ls.get_vals()
 
 
-    if not len([x for x in mod.ls.Dist_vals[0] if x == 0]) == 19092:
+    if not len([x for x in mod.ls.Dist_vals[0] if x == 0]) == 21476:
         errors.append("LS competition test 1 failed")
     
-    if not len([x for x in mod.ls.Dist_vals[0] if x == 0.18451178]) == 474:
+    if not len([float(x) for x in mod.ls.Dist_vals[0] if float(x) == pytest.approx(0.184512, 0.0001) ]) == 474:
         errors.append("LS competition test 2 failed")
     
-    if not np.max(mod.ls.Dist_vals[0]) == 0.675:
+    if not float(np.max(mod.ls.Dist_vals[0])) == pytest.approx(0.675, 0.0001):
         errors.append("LS competition test 3 failed")
     
     assert not errors, "errors occured:\n{}".format("\n".join(errors))

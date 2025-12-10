@@ -13,9 +13,8 @@ import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
-exec(open("test_setup.py").read())
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent, multiple_agent
 from model_interface.wham import WHAM
 
@@ -89,16 +88,15 @@ def test_AFT_sub_compete():
             a.AFT_dat   = [Map_data[x][0, :, :] if len(Map_data[x].shape) == 3 else Map_data[x] for x in a.AFT_vars]
         
             ### combine numpy arrays to single pandas       
-            a.AFT_dat   = pd.DataFrame.from_dict(dict(zip(a.AFT_vars, 
-                                  [x.reshape(27648).data for x in a.AFT_dat])))
+            a.AFT_dat   = np.array([x.reshape(parameters['xlen']*parameters['ylen']).data for x in a.AFT_dat]).transpose()
             
             ### do prediction
-            a.AFT_vals  = a.AFT_dat.apply(predict_from_tree, 
-                                 axis = 1, tree = a.AFT_frame, struct = a.AFT_struct, 
-                                  prob = 'dummy_agent', skip_val = -3.3999999521443642e+38, na_return = 0)
+            a.AFT_vals  = predict_from_tree_numpy(dat = a.AFT_dat, 
+                              tree = a.AFT_frame, split_vars = a.AFT_vars, struct = a.AFT_struct,
+                               prob = "dummy_agent", skip_val = -1e+10, na_return = 0)
             
 
-    assert(np.array_equal(a.AFT_vals.value_counts().values, np.array([27233,   415])))
+    assert(np.array_equal(pd.Series(a.AFT_vals).value_counts().values, np.array([27233,   415])))
 
 
 def test_AFT_sub_compete_multiple():
@@ -126,16 +124,14 @@ def test_AFT_sub_compete_multiple():
         a.AFT_dat.append([Map_data[x][i, :, :] if len(Map_data[x].shape) == 3 else (i*1000) - Map_data[x] for x in a.AFT_vars[i]])
         
         ### combine numpy arrays to single pandas
-        a.AFT_dat[i]   = pd.DataFrame.from_dict(dict(zip(a.AFT_vars[i], 
-                                         [x.reshape(27648).data for x in a.AFT_dat[i]])))
-            
+        a.AFT_dat[i]   = np.array([x.reshape(parameters['xlen']*parameters['ylen']).data for x in a.AFT_dat[i]]).transpose()
+        
         ### do prediction
-        a.AFT_vals.append(a.AFT_dat[i].apply(predict_from_tree, 
-                                         axis = 1, tree = a.AFT_frame[i], struct = a.AFT_struct[i], 
-                                         prob = 'dummy_agent', skip_val = -3.3999999521443642e+38, na_return = 0))
+        a.AFT_vals.append(predict_from_tree_numpy(dat = a.AFT_dat[i], 
+                          tree = a.AFT_frame[i], split_vars = a.AFT_vars[i], struct = a.AFT_struct[i],
+                           prob = "dummy_agent", skip_val = -1e+10, na_return = 0))
 
-
-    assert(np.array_equal(a.AFT_vals[i].value_counts().values, np.array([27064, 584])))
+    assert(np.array_equal(pd.Series(a.AFT_vals[i]).value_counts().values, np.array([27064, 584])))
 
 
 

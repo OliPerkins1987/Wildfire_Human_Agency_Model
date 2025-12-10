@@ -13,9 +13,8 @@ import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
-exec(open("test_setup.py").read())
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent, multiple_agent
 from model_interface.wham import WHAM
 
@@ -69,10 +68,11 @@ parameters = {
 ##########################################################################
 
 def test_AFT_addition():
-
+    
+    a = dummy_agent 
     
     ### setup 1st agent for test
-    a = dummy_agent  
+     
     a.afr = 'Test'
     a.ls  = 'Test'
         
@@ -82,23 +82,6 @@ def test_AFT_addition():
     a.AFT_struct = define_tree_links(a.AFT_frame)
     a.AFT_vars   = [x for x in a.AFT_frame.iloc[:,1].tolist() if x != '<leaf>']
     
-    if a.sub_AFT['exists'] == True:
-        
-        if a.sub_AFT['kind'] != 'Multiple':    
-        
-            ### gather correct numpy arrays 4 predictor variables
-            a.AFT_dat   = [Map_data[x][0, :, :] if len(Map_data[x].shape) == 3 else Map_data[x] for x in a.AFT_vars]
-        
-            ### combine numpy arrays to single pandas       
-            a.AFT_dat   = pd.DataFrame.from_dict(dict(zip(a.AFT_vars, 
-                                  [x.reshape(27648).data for x in a.AFT_dat])))
-            
-            ### do prediction
-            a.AFT_vals  = a.AFT_dat.apply(predict_from_tree, 
-                                 axis = 1, tree = a.AFT_frame, struct = a.AFT_struct, 
-                                  prob = 'dummy_agent', skip_val = -3.3999999521443642e+38, na_return = 0)
-        
-
     parameters = {
     
     'xlen': 192, 
@@ -112,6 +95,22 @@ def test_AFT_addition():
     
     }
     
+    if a.sub_AFT['exists'] == True:
+        
+        if a.sub_AFT['kind'] != 'Multiple':    
+        
+            ### gather correct numpy arrays 4 predictor variables
+            a.AFT_dat   = [Map_data[x][0, :, :] if len(Map_data[x].shape) == 3 else Map_data[x] for x in a.AFT_vars]
+        
+            ### combine numpy arrays to single pandas       
+            a.AFT_dat   = np.array([x.reshape(parameters['xlen'] * parameters['ylen']).data for x in a.AFT_dat]).transpose()
+            
+            ### do prediction
+            a.AFT_vals  = predict_from_tree_numpy(dat = a.AFT_dat, 
+                              tree = a.AFT_frame, split_vars = a.AFT_vars, struct = a.AFT_struct,
+                               prob = "dummy_agent", skip_val = -1e+10, na_return = 0)
+        
+
     mod = WHAM(parameters)
     mod.agents = [a]
     mod.ylen = mod.p.ylen
@@ -136,7 +135,7 @@ def test_AFT_multiple():
     b     = multiple_agent    
     b.afr = 'Test'
     b.ls  = 'Test'
-        
+    
     b.sub_AFT = {'exists': True, 'kind': 'Multiple',  
                         'afr': ['Test', 'Test'], 'ls': ['Test', 'Test']}      
     
@@ -148,22 +147,7 @@ def test_AFT_multiple():
     
     b.AFT_dat  = []
     b.AFT_vals = []
-                
-    for i in range(len(b.sub_AFT['afr'])): 
-            
-        ### gather correct numpy arrays 4 predictor variables
-        b.AFT_dat.append([Map_data[x][i, :, :] if len(Map_data[x].shape) == 3 else (i*1000) - Map_data[x] for x in b.AFT_vars[i]])
-        
-        ### combine numpy arrays to single pandas
-        b.AFT_dat[i]   = pd.DataFrame.from_dict(dict(zip(b.AFT_vars[i], 
-                                         [x.reshape(27648).data for x in b.AFT_dat[i]])))
-            
-        ### do prediction
-        b.AFT_vals.append(b.AFT_dat[i].apply(predict_from_tree, 
-                                         axis = 1, tree = b.AFT_frame[i], struct = b.AFT_struct[i], 
-                                         prob = 'dummy_agent', skip_val = -3.3999999521443642e+38, na_return = 0))
-
-
+    
     parameters = {
     
     'xlen': 192, 
@@ -176,6 +160,22 @@ def test_AFT_multiple():
     'theta'    : 0.1
     
     }
+    
+    for i in range(len(b.sub_AFT['afr'])): 
+            
+        ### gather correct numpy arrays 4 predictor variables
+        b.AFT_dat.append([Map_data[x][i, :, :] if len(Map_data[x].shape) == 3 else (i*1000) - Map_data[x] for x in b.AFT_vars[i]])
+        
+        ### combine numpy arrays to single pandas
+        b.AFT_dat[i]   = np.array([x.reshape(parameters['xlen'] * parameters['ylen']).data for x in b.AFT_dat[i]]).transpose()
+        
+        ### do prediction
+        b.AFT_vals.append(predict_from_tree_numpy(dat = b.AFT_dat[i], 
+                          tree = b.AFT_frame[i], split_vars = b.AFT_vars[i], struct = b.AFT_struct[i],
+                           prob = "dummy_agent", skip_val = -1e+10, na_return = 0))
+
+
+    
     
     mod = WHAM(parameters)
     mod.agents = [b]

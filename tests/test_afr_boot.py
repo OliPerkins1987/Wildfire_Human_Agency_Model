@@ -19,7 +19,7 @@ random.seed(1987)
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.AFTs.agent_class import AFT
 from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
 from model_interface.wham import WHAM

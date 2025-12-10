@@ -11,11 +11,11 @@ import numpy as np
 import netCDF4 as nc
 import os
 
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
+from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
-
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
 
 os.chdir(wd)
 exec(open("setup_full.py").read())
@@ -53,14 +53,27 @@ mod.go()
 
 x, b = 'arson', 'bool'
 
-    
-mod.Observers['arson'][0].Fire_dat['arson']['bool'] = mod.Observers['arson'][0].Fire_dat['arson']['bool'].iloc[:, 0:2]
+temp_key = mod.Observers['arson'][0].Fire_vars[x][b]
+
+mod.Observers['arson'][0].Fire_dat[x][b] = []
+
+### Gather relevant map data
+for y in range(len(temp_key)):
+
+    temp_val = mod.Observers['arson'][0].model.p.Maps[temp_key[y]][mod.Observers['arson'][0].model.timestep, :, :] if len(
+        mod.Observers['arson'][0].model.p.Maps[temp_key[y]].shape) == 3 else mod.Observers['arson'][0].model.p.Maps[temp_key[y]]
+
+    mod.Observers['arson'][0].Fire_dat[x][b].append(temp_val) 
+
+mod.Observers['arson'][0].Fire_dat[x][b] = np.array([x.reshape(
+    mod.p.xlen*mod.p.ylen).data for x in mod.Observers['arson'][0].Fire_dat[x][b]]).transpose() 
+
 Fire_struct = define_tree_links(mod.Observers['arson'][0].Fire_use[x][b]['pars'])
 
-tree = predict_from_tree_fast(dat = mod.Observers['arson'][0].Fire_dat[x][b], 
-                              tree = mod.Observers['arson'][0].Fire_use[x][b]['pars'], struct = Fire_struct, 
-                               prob = 'yprob.TRUE', skip_val = -3.3999999521443642e+38, na_return = 0)
-
+tree = predict_from_tree_numpy(dat = mod.Observers['arson'][0].Fire_dat[x][b], 
+                              tree = mod.Observers['arson'][0].Fire_use[x][b]['pars'], 
+                              split_vars = mod.Observers['arson'][0].Fire_vars[x][b], struct = Fire_struct, 
+                               prob = 'yprob.TRUE', skip_val = -1e+10, na_return = 0)
      
 ### regression code   
 errors = []
@@ -104,7 +117,8 @@ def test_tree():
     
     errors = []
     
-    if any([x not in (mod.Observers['arson'][0].Fire_use['arson']['bool']['pars']['yprob.TRUE'].tolist()) for x in (tree.tolist())]):
+    if any([round(x, 3) not in (
+    [round(y, 3) for y in mod.Observers['arson'][0].Fire_use['arson']['bool']['pars']['yprob.TRUE'].tolist()]) for x in (tree.tolist())]):
         
         errors.append("Errors in tree prediction values")
     

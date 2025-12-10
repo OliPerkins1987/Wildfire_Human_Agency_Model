@@ -37,6 +37,9 @@ from Core_functionality.Trees.parallel_predict import make_boot_frame, make_boot
 from dask.distributed import Client
 from copy import deepcopy
 
+from data_import.local_load_up_func import load_local_data
+Core_pars, Map_data, Seasonality = load_local_data()
+
 all_afts = [Swidden, SOSH, MOSH, Intense_arable, 
             Pastoralist, Ext_LF_r, Int_LF_r, Ext_LF_p, Int_LF_p,
             Agroforestry, Logger, Managed_forestry, Abandoned_forestry, 

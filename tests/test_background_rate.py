@@ -14,10 +14,9 @@ import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
-exec(open("test_setup.py").read())
 
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
+from data_import.local_load_up_func import load_local_data
+Core_pars, Map_data, Seasonality = load_local_data(Nboot = 10)
 
 os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
 R_results          = pd.read_csv('Background_rate_1990.csv')

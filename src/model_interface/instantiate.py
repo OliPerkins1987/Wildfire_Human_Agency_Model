@@ -39,7 +39,7 @@ import os
 from copy import deepcopy
 
 from data_import.local_load_up_func import load_local_data
-Core_pars, Map_data, Seasonality = load_local_data(Nboot = 'max')
+Core_pars, Map_data, Seasonality = load_local_data(Nboot = 10)
 
 
 #################################################
@@ -112,7 +112,7 @@ parameters = {
     'n_cores'  : 3,
         
     'write_annual': True,
-    'write_fp': r'C:/Users/olive/Documents/WHAM_Postdoc/WHAM/v1/OliPerkins1987-Wildfire_Human_Agency_Model-4854cfe/results/'  
+    'write_fp': r'C:/Users/olive/Documents/WHAM_Postdoc/WHAM/v1/OliPerkins1987-Wildfire_Human_Agency_Model-4854cfe/results2/'  
         
     }
 

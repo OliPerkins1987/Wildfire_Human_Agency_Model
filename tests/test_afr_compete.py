@@ -12,9 +12,9 @@ import netCDF4 as nc
 import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
+wd = os.getcwd().replace('\\', '/')
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree
+from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree_numpy
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent
 from Core_functionality.AFTs.arable_afts import SOSH, Intense_arable
 from model_interface.wham import WHAM
@@ -78,7 +78,7 @@ def test_afr_compete():
     if not len([x for x in mod.agents.Dist_vals[0] if x <= mod.p.theta and x > 0]) == 0:
         errors.append("theta parameter did not function correctly")
     
-    if not [x for x in mod.agents.Dist_vals[0]][0:8] == [0.426087]*8:
+    if not [round(float(x), 6) for x in mod.agents.Dist_vals[0]][0:8] == [0.426087]*8:
         errors.append("False negatives in model prediction tree")
         
     if not [x for x in mod.agents.Dist_vals[0]][8:] == [0]*27640:

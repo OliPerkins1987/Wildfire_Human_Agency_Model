@@ -17,7 +17,6 @@ from copy import deepcopy
 random.seed(1987)
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-exec(open("test_setup.py").read())
 
 from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars
 from Core_functionality.AFTs.agent_class import AFT, dummy_agent
@@ -32,7 +31,6 @@ from model_interface.wham import WHAM
 ### Load test data
 
 #########################################################################
-
 
 
 os.chdir((str(os.getcwd()) + '/test_data/AFTs').replace('\\', '/'))
@@ -102,7 +100,7 @@ def test_LS_boot():
     mod.ls.get_boot_vals(mod.p.AFT_pars)
     mod.ls.get_vals()
     
-    if not mod.ls[0].Dist_vals['Forest'] == mod.ls[0].Dist_vals['Other']:
+    if not np.array_equal(mod.ls[0].Dist_vals['Forest'], mod.ls[0].Dist_vals['Other']):
         
         errors.append("Bootstrapped X-axis predictions for Nonex shold be identical")
     
@@ -115,7 +113,8 @@ def test_LS_boot():
     ### which values do not equal the mode?
     gt_thresh_1 = len(pd.concat([pd.Series(np.arange(0, x)) if x >= 1 else pd.Series(0) for x in mod.ls[0].boot_Dist_pars['Forest']['Thresholds'][0][0]]).unique())-1
     
-    if not gt_thresh_1 == len(np.where(mod.ls[0].Dist_vals['Forest'] != stats.mode(np.array(mod.ls[0].Dist_vals['Forest']))[0][0])[0]):
+    if not gt_thresh_1 == len(np.where(mod.ls[0].Dist_vals['Forest'] != stats.mode(np.array(mod.ls[0].Dist_vals['Forest']),
+                                                                                           keepdims = False)[0])[0]):
     
         errors.append("Bootstrapped prediction error")
     

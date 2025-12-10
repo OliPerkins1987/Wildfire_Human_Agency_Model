@@ -40,25 +40,26 @@ class fire_control_measures(AFT):
                
             afr_res[afr] = np.sum(afr_vals, axis = 0).reshape(self.model.p.xlen*self.model.p.ylen)
     
-        self.Control_dat = np.array([x for x in afr_res.values()]).transpose()
+        self.Control_dat = afr_res
             
     
     def control(self):
         
         self.get_afr()
         self.Control_vals    = {}
-        n_col                = self.Control_dat.shape[1]
         
         for f in self.control_pars.keys():
-        
+            
+            Control_vars         = [x for x in self.control_pars[f].iloc[:,1].tolist() if x != '<leaf>']
+            Control_dat          = np.array([self.Control_dat[x] for x in Control_vars]).transpose()
+                        
             Control_struct       = define_tree_links(self.control_pars[f])
 
-            self.Control_vals[f] = predict_from_tree_numpy(dat =  self.Control_dat, 
-                                    tree = self.control_pars[f], split_vars = ['Pre', 'Trans', 'Intense', 'Post'], 
-                                     struct = Control_struct, prob = 'yprob.TRUE', 
-                                     skip_val = -1e+10, na_return = 0)
-        
-            self.Control_dat     = self.Control_dat[:, 0:(n_col+1)]
+            self.Control_vals[f] = predict_from_tree_numpy(dat =  Control_dat, tree = self.control_pars[f], 
+                                   split_vars = Control_vars, struct = Control_struct, 
+                                     prob = 'yprob.TRUE', skip_val = -1.0e+10, na_return = 0.5)
+            
+            #self.Control_dat     = self.Control_dat[:, 0:(n_col+1)]
         
        
         

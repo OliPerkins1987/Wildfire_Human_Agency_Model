@@ -13,19 +13,6 @@ import numpy as np
 import netCDF4 as nc
 import os
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-wd = os.getcwd().replace('\\', '/')
-
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
-
-os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
-R_fire = pd.read_csv('Fire_1990.csv')
-R_afr  = pd.read_csv('afr_constraint_1990.csv')
-R_afr['fire']     = R_fire['value']
-R_afr['afr_fire'] = R_afr['fire'] * R_afr['value']
-
-
 from model_interface.wham import WHAM
 from Core_functionality.AFTs.agent_class import AFT
 
@@ -41,8 +28,22 @@ from Core_functionality.top_down_processes.arson import arson
 from Core_functionality.top_down_processes.background_ignitions import background_rate
 from Core_functionality.top_down_processes.fire_constraints import fuel_ct, dominant_afr_ct
 
-from Core_functionality.Trees.Transfer_tree import define_tree_links, predict_from_tree, update_pars, predict_from_tree_fast
+from Core_functionality.Trees.Transfer_tree import define_tree_links, update_pars, predict_from_tree_numpy
 from Core_functionality.prediction_tools.regression_families import regression_link, regression_transformation
+
+### Load data
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+wd = os.getcwd().replace('\\', '/')
+
+from data_import.local_load_up_func import load_local_data
+Core_pars, Map_data, Seasonality = load_local_data()
+
+os.chdir(str(wd + '/test_data/R_outputs').replace('\\', '/'))
+R_fire = pd.read_csv('Fire_1990.csv')
+R_afr  = pd.read_csv('afr_constraint_1990.csv')
+R_afr['fire']     = R_fire['value']
+R_afr['afr_fire'] = R_afr['fire'] * R_afr['value']
 
 
 #####################################################################

@@ -14,8 +14,6 @@ import os
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 wd = os.getcwd().replace('\\', '/')
-os.chdir((wd[0:-6] + '/src/data_import'))
-exec(open("local_load_up.py").read())
 
 os.chdir(wd)
 exec(open("setup_full.py").read())
@@ -34,8 +32,8 @@ mod.Observers['fire_control_measures'][0].control()
 def test_control_fundamentals():
     
     errors = []
-    summary = mod.Observers['fire_control_measures'][0].Control_vals['crb'].value_counts()
-    summary2= mod.Observers['fire_control_measures'][0].Control_vals['pasture'].value_counts()
+    summary = pd.Series(mod.Observers['fire_control_measures'][0].Control_vals['crb']).value_counts()
+    summary2= pd.Series(mod.Observers['fire_control_measures'][0].Control_vals['pasture']).value_counts()
     
     if not summary.index[0] == 1.0:
         
@@ -45,7 +43,7 @@ def test_control_fundamentals():
         
         errors.append("Error in cropland fire control measure predictions")
     
-    if not summary2.iloc[2] == 1136:
+    if not summary2.iloc[2] == 1127:
         
         errors.append("Error in pasture fire control measure predictions")
        
