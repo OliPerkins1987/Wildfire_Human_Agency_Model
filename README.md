@@ -42,8 +42,8 @@ pip install -r requirements_312.txt
 
 1.3 Install wham code
 
-Installation of wham code is done using python install from command line or terminal. Install the code by navigating to the directory where you unzipped the code, and running the following commands: 
-python setup.py install
+Installation of wham code is done using python install from command line or terminal. Install the code by navigating to the directory where you unzipped the code, and running the following command: 
+pip install -e .
 
 
 1.4 Data download and set up
