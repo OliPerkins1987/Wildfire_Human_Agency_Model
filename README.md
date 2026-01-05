@@ -21,7 +21,7 @@ Package requirements are provided as a wham_312.yml file for Windows users, a re
 
 1.2.1	Windows:
 Windows users can either use the .yml file for convenience, or follow Linux instructions below using requirements.txt. 
-Open an anaconda command prompt and navigate to the where wham38.yml file is saved then run the following commands:
+Open an anaconda command prompt and navigate to the where wham_312.yml file is saved then run the following commands:
 conda env create -f wham_312.yml
 conda activate wham_312
 
@@ -51,7 +51,7 @@ python setup.py install
 Check where you have saved (and unzipped) the model data (from step 1). We now need to modify a line of code to specify to the model where data are saved: 
 
 i.	Open the ‘local_load_up_func.py’ script (in the src/data_import directory) in a text editor
-ii.	Go to lines 25-26 & edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored. by default these are ~/data/ and ~/drive/ respectively.
+ii.	Go to lines 41 & 43, edit the paths to point to where the data files are stored (i.e. the unzipped model data folder), and the sub directory where the map data is stored. by default these are ~/data/ and ~/drive/ respectively.
 	If copying and pasting the path on Windows, please replace any backslash (\) characters in the path either with Unix-style forward slash (/), or with a double backslash (\\), since a single backslash is interpreted as an escape character in Python.
 	Ensure the file paths both end in a trailing slash - e.g. -  ‘…/mypath/’ or ‘…\\mypath\\’
 iii.	save your edits to ‘local_load_up_func.py’ 
