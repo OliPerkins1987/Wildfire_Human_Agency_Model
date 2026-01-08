@@ -2,7 +2,7 @@ Wildfire_Human_Agency_Model
 
 This repository contains code to run the Wildfire Human Agency Model, a global geospatial model of human fire use and management. 
 
-It has two main branches. These are main (here) and v2_025. Main is setup as in the GMD model description paper (https://doi.org/10.5194/gmd-17-3993-2024). V2_025 is setup as in this subsequent paper (https://iopscience.iop.org/article/10.1088/1748-9326/adeff5). 
+It has two principle branches. These are main (here) and v2_025. Main is setup as in the GMD model description paper (https://doi.org/10.5194/gmd-17-3993-2024). V2_025 is setup as in this subsequent paper (https://iopscience.iop.org/article/10.1088/1748-9326/adeff5). 
 
 Please see the note on differences (v1 vs vs_025). The essence is that main [v1] is setup for use in Earth System Model resolution (~1.5 degrees), whilst V2_025 is designed for use in ISIMIP & other impacts modelling protocols.
 
