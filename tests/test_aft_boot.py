@@ -141,7 +141,7 @@ def test_prediction_frame(mod_pars):
     
     for i in range(len(results)):
         
-        if not pd.Series(results[i]).round(6).isin(pd.concat([x['df'][i]['yprob.TRUE'].round(6), pd.Series([0])])).all():
+        if not pd.Series(results[i]).astype("float64").round(6).isin(pd.concat([x['df'][i]['yprob.TRUE'].astype("float64").round(6), pd.Series([0])])).all():
             
             errors.append('boostrapped prediction failure')
             
