@@ -15,7 +15,7 @@ Installation instructions follow below. see /docs for user guidelines. All quest
 Download or clone code from main branch.
 
 Data for historical model runs can be downloaded from: 
-https://zenodo.org/records/8363979
+https://zenodo.org/records/18258699
 
 
 1.2	Set up virtual environment
