@@ -86,3 +86,10 @@ Tests should take around 1-2 mins to run on a medium performance desktop. Tests 
 
 However, any test failures need to be explored. Please report them to oliver.perkins@kcl.ac.uk
 
+2. Running the model
+
+The file instantiate.py controls model runs & sets parameters. Open it up & see the parameters dictionary. These are described in more detail under /docs.
+
+To run the model, in the command line / conda prompt, navigate to ~/src/model_interface/
+
+Type: python instantiate.py
