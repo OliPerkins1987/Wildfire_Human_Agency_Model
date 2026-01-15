@@ -8,10 +8,10 @@ Installation instructions follow below. see /docs for user guidelines. All quest
 
 1.1 Install code and data	
 
-Download or clone code from main branch.
+Download or clone code from branch v2_025. If using git terminal, use the -b option. 
 
 Data for historical model runs can be downloaded from: 
-https://zenodo.org/records/8363979
+https://zenodo.org/records/18258699
 
 
 1.2	Set up virtual environment
